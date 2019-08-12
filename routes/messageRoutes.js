@@ -2,7 +2,7 @@ const express = require('express');
 const bodyParser = require("body-parser");
 const router = express.Router().use(bodyParser.json());
 const request = require("request");
-const db = require('./data/dbConfig');
+const db = require('../data/dbConfig');
 
 
 function handleMessage(senderPsid, receivedMessage) {
@@ -135,10 +135,10 @@ function handleMessage(senderPsid, receivedMessage) {
     res.status(200);
   });
   
-  const PORT = process.env.PORT || 5500;
-  router.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-  });
+//   const PORT = process.env.PORT || 5500;
+//   router.listen(PORT, () => {
+//     console.log(`Server running on port ${PORT}`);
+//   });
   
 
-module.exports = routers;
+module.exports = router;
