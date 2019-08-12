@@ -23,6 +23,7 @@
     "express": "^4.17.1",
     "express-validator": "^6.1.1",
     "helmet": "^3.20.0",
+    "knex": "^0.19.1",
     "request": "^2.88.0",
     "sqlite": "^3.0.3"
   },
