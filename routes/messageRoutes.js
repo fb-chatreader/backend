@@ -135,10 +135,10 @@ function handleMessage(senderPsid, receivedMessage) {
     res.status(200);
   });
   
-  const PORT = process.env.PORT || 5500;
-  router.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-  });
+//   const PORT = process.env.PORT || 5500;
+//   router.listen(PORT, () => {
+//     console.log(`Server running on port ${PORT}`);
+//   });
   
 
-module.exports = routers;
+module.exports = router;
