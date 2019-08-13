@@ -7,7 +7,6 @@ exports.seed = function(knex, Promise) {
     .then(function() {
       return knex('users').insert([
         {
-          user_id: 1,
           title: 'Shoe Dog',
           author: 'Phil Knight',
           synopsis:
