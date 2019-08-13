@@ -2,19 +2,12 @@ exports.up = function(knex) {
   return knex.schema
     .createTable('books', tbl => {
       tbl.increments();
-      tbl
-        .integer('user_id')
-        .references('id')
-        .inTable('users')
-        .onDelete('CASCADE')
-        .onUpdate('CASCADE')
-        .notNullable();
       tbl.text('title');
       tbl.text('author');
       tbl.text('synopsis');
       tbl.text('cover_img');
       tbl.date('publish_date');
-      tbl.timestamp('created_at');
+      tbl.timestamps('created_at',true);
     })
     .createTable('summary_parts', tbl => {
       tbl.increments();
@@ -24,9 +17,9 @@ exports.up = function(knex) {
         .inTable('books')
         .onDelete('CASCADE')
         .onUpdate('CASCADE')
-        .notNullable();
+        .notNullable(); 
       tbl.text('summary');
-      tbl.timestamp('created_at');
+      tbl.timestamps('created_at');
     })
     .createTable('chat_reads', tbl => {
       tbl.increments();
@@ -51,13 +44,13 @@ exports.up = function(knex) {
         .onDelete('CASCADE')
         .onUpdate('CASCADE')
         .notNullable();
-      tbl.timestamp('created_at');
+      tbl.timestamps('created_at');
     });
 };
 
 exports.down = function(knex) {
   return knex.schema
-    .dropTable('book')
-    .dropTable('chat_reads')
-    .dropTable('summary_parts');
+  .dropTable('chat_reads')
+  .dropTable('summary_parts')
+  .dropTable('books');
 };
