@@ -5,8 +5,10 @@ exports.seed = function(knex, Promise) {
     .then(function() {
         return knex('users').insert([
             {
-                user_id:'1',
-                
+                facebook_id:'1',
+            },
+            {
+                facebook_id:'1',
             }
         ])
     })
