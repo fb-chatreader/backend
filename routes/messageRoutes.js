@@ -2,7 +2,7 @@ const express = require('express');
 const bodyParser = require("body-parser");
 const router = express.Router().use(bodyParser.json());
 const request = require("request");
-const db = require('../data/dbConfig');
+const db = require('../models/dbConfig');
 
 
 function handleMessage(senderPsid, receivedMessage) {
