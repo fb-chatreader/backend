@@ -8,8 +8,17 @@ const db = require('../models/dbConfig');
 function handleMessage(senderPsid, receivedMessage) {
     let response;
     // Checks if the message contains text
-    let attachmentUrl = receivedMessage;
-    if (receivedMessage.text === 'test') {
+    let attachmentUrl = receivedMessage.text;
+    if (attachmentUrl === 'book') {
+      axios.get('/api/books')
+      .then(function(res) {
+        console.log(res)
+      })
+      .catch(function(err) {
+        console.log(err)
+      })
+      
+      
       response = {
         attachment: {
           type: "template",
@@ -38,7 +47,7 @@ function handleMessage(senderPsid, receivedMessage) {
         }
       };
     } else if (receivedMessage.attachments) {
-      // Get the URL of the message attachment
+      // Get the URL of the message attachment edge case if user puts attachment 
       let attachmentUrl = receivedMessage.attachments[0].payload.url;
       response = {
         attachment: {
@@ -47,19 +56,19 @@ function handleMessage(senderPsid, receivedMessage) {
             template_type: "generic",
             elements: [
               {
-                title: "Is this the right picture?",
+                title: `Sorry can't receive attachments at this time. Please select valid input`,
                 subtitle: "Tap a button to answer.",
                 image_url: attachmentUrl,
                 buttons: [
                   {
                     type: "postback",
-                    title: "Yes!",
-                    payload: "yes"
+                    title: "Continue",
+                    payload: "continue"
                   },
                   {
                     type: "postback",
-                    title: "No!",
-                    payload: "no"
+                    title: "Next",
+                    payload: "next"
                   }
                 ]
               }
@@ -90,10 +99,7 @@ function handleMessage(senderPsid, receivedMessage) {
       },
       message: response
     };
-  
-    if(response.attachment.payload.elements[0].buttons.type === 'postback') {
-      handlePostback(requestBody.recipient.id,requestBody.message )
-    }
+
     request(
       {
         uri: "https://graph.facebook.com/v2.6/me/messages",
