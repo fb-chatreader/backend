@@ -7,66 +7,53 @@ const db = require('../models/dbConfig');
 
 function handleMessage(senderPsid, receivedMessage) {
     let response;
+    console.log(senderPsid);
+    console.log(receivedMessage);
     // Checks if the message contains text
-    let attachmentUrl = receivedMessage;
-    if (receivedMessage.text === 'test') {
-      response = {
-        attachment: {
-          type: "template",
-          payload: {
-            template_type: "generic",
-            elements: [
-              {
-                title: "Is this the right picture?",
-                subtitle: "Tap a button to answer.",
-                image_url: attachmentUrl,
-                buttons: [
-                  {
-                    type: "postback",
-                    title: "Yes!",
-                    payload: "yes"
-                  },
-                  {
-                    type: "postback",
-                    title: "No!",
-                    payload: "no"
-                  }
-                ]
-              }
-            ]
-          }
-        }
-      };
-    } else if (receivedMessage.attachments) {
+    if (receivedMessage.text === '') {
+      //arg to pass through
+      // obj containing: user first name, auther name, book title, book id, book cover, publish date
+
+
+
+
+
+    } else if (receivedMessage.text === 'quick synopsis') {
+      //arg to pass through
+      //synopsis  
+      
+
+
+
+
+    }else if (receivedMessage.text === 'read now') {
+      //arg to pass through
+      //trigger and return get summary
+      
+
+
+
+
+    }else if (receivedMessage.text === 'next') {
+      //arg to pass through
+      //Obj  book_id, id (summarypart 1), summary
+      
+
+
+
+
+    }else if (receivedMessage.text === 'continue') {
+      //arg to pass through
+      // book_id, id (summarypart need to increment), summary
+      
+
+
+
+
+    }else if (receivedMessage.attachments) {
       // Get the URL of the message attachment
       let attachmentUrl = receivedMessage.attachments[0].payload.url;
-      response = {
-        attachment: {
-          type: "template",
-          payload: {
-            template_type: "generic",
-            elements: [
-              {
-                title: "Is this the right picture?",
-                subtitle: "Tap a button to answer.",
-                image_url: attachmentUrl,
-                buttons: [
-                  {
-                    type: "postback",
-                    title: "Yes!",
-                    payload: "yes"
-                  },
-                  {
-                    type: "postback",
-                    title: "No!",
-                    payload: "no"
-                  }
-                ]
-              }
-            ]
-          }
-        }
-      };
+      response = `Sorry can't receive attachments at this time. Please select valid input`
     }
     // Send the response message
     callSendAPI(senderPsid, response);
@@ -75,7 +62,7 @@ function handleMessage(senderPsid, receivedMessage) {
   function handlePostback(senderPsid, receivedPostback) {
     let response;
     let payload = receivedPostback.payload;
-    if (payload === "yes") {
+    if (payload === "get started") {
       response = { text: "Thanks!" };
     } else if (payload === "no") {
       response = { text: "Oops, try sending another image." };
@@ -91,13 +78,10 @@ function handleMessage(senderPsid, receivedMessage) {
       message: response
     };
   
-    if(response.attachment.payload.elements[0].buttons.type === 'postback') {
-      handlePostback(requestBody.recipient.id,requestBody.message )
-    }
     request(
       {
         uri: "https://graph.facebook.com/v2.6/me/messages",
-        qs: { access_token: process.env.ACCESS_TOKEN },
+        qs: { access_token: process.env.PAGE_ACCESS_TOKEN },
         method: "POST",
         json: requestBody
       },
@@ -111,6 +95,12 @@ function handleMessage(senderPsid, receivedMessage) {
     );
   }
   
+
+  function nextPartSummary() {
+
+  }
+
+
   router.post("/webhook", (req, res) => {
     let body = req.body;
     if (body.object === "page") {
@@ -135,7 +125,7 @@ function handleMessage(senderPsid, receivedMessage) {
   });
   
   router.get("/webhook", (req, res) => {
-    let VERIFY_TOKEN = process.env.VERIFY_TOKEN
+    let VERIFY_TOKEN = process.env.VERIFY_TOKEN;
     let mode = req.query["hub.mode"];
     let token = req.query["hub.verify_token"];
     let challenge = req.query["hub.challenge"];
@@ -152,15 +142,10 @@ function handleMessage(senderPsid, receivedMessage) {
     }
   });
   
+
   router.get("/", (req, res) => {
     res.send("API RUNNING!!!");
     res.status(200);
   });
-  
-//   const PORT = process.env.PORT || 5500;
-//   router.listen(PORT, () => {
-//     console.log(`Server running on port ${PORT}`);
-//   });
-  
 
 module.exports = router;
