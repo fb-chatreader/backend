@@ -6,8 +6,8 @@ const dbSummaryParts = require('../data/summaryPartsDB');
 
 router.get("/", async (req, res) => {
   try {
-    const summeries = await dbSummaryParts.retrieve();
-    res.status(200).json(summeries);
+    const summaries = await dbSummaryParts.retrieve();
+    res.status(200).json(summaries);
   } catch (error) {
     res.status(500).json({
       messege: 'failed to retrieve summary'
