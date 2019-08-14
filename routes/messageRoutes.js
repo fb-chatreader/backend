@@ -166,11 +166,11 @@ function callSendAPI(sender_psid, response) {
 async function handleAxiosGet() {
   const books = await axios
   .get(`${URL}/books`)
-  console.log("axios",books);
+  // console.log("axios",books);
+  .catch(function(err) {
+    console.log(err);
+  })
   return books;
-  // .catch(function(err) {
-  //   console.log(err);
-  // })
 
 }
 
