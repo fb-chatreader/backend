@@ -7,6 +7,8 @@ const db = require('../models/dbConfig');
 
 function handleMessage(senderPsid, receivedMessage) {
     let response;
+    console.log(senderPsid);
+    console.log(receivedMessage);
     // Checks if the message contains text
     if (receivedMessage.text) {
       // Create the payload for a basic text message, which
@@ -127,9 +129,23 @@ function handleMessage(senderPsid, receivedMessage) {
     }
   });
   
+
+  router.get('/webhook/books', (req, res) => {
+    let VERIFY_TOKEN = process.env.VERIFY_TOKEN;
+    let mode = req.query["hub.mode"];
+    let token = req.query["hub.verify_token"];
+    let challenge = req.query["hub.challenge"];
+
+    if(mode && token) {
+
+    }
+  })
+
+
+
   router.get("/", (req, res) => {
     res.send("API RUNNING!!!");
     res.status(200);
   });
-  
+
 module.exports = router;
