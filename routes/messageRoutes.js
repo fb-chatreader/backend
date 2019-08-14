@@ -41,15 +41,38 @@ function handleMessage(sender_psid, received_message) {
         }
       }
     }
-  } else if (received_message.text === "book details"){
+  } else if (received_message.text === "synopsis"){
     console.log("book", responseData.book)
     response = {
-      "text": responseData.book.synopsis
-      }
-      
-  
-  
-  }else if (received_message.attachments) {
+      "text": responseData.book.synopsis, 
+      } 
+  }
+  else if (received_message.text === "author"){
+    console.log("book", responseData.book)
+    response = {
+      "text": responseData.book.author
+      } 
+  }
+  else if (received_message.text === "summary"){
+    console.log("book", responseData.book)
+    response = {
+      "text": responseData.summary.summary
+      } 
+  }
+  // else if (received_message.text === "image"){
+  //   console.log("book", responseData.book)
+  //   response ={ "message":{
+  //     "attachment":{
+  //       "type":"image", 
+  //       "payload":{
+  //         "url":, 
+  //         "is_reusable":true
+  //       }
+  //     }
+  //   }
+  //   }
+  // }
+  else if (received_message.attachments) {
     // Get the URL of the message attachment
     let attachment_url = received_message.attachments[0].payload.url;
     response = {
@@ -124,7 +147,7 @@ function handlePostback(sender_psid, received_postback) {
                 "title": bookTitle,
                 "buttons": [
                   {
-                    "type": "message",
+                    "type": "postback",
                     "title": "Book Synopsis",
                     "payload": "book details"
                   }
@@ -177,10 +200,19 @@ async function handleAxiosGetBooks() {
 
 }
 
+async function handleAxiosGetSummaries() {
+  const summary = await axios
+  .get(`${URL}/summaries`)
+  .catch(function(err){
+    console.log(err);
+  })
+  return summary
+}
 
 function responseDataFunc() {
 
   handleAxiosGetBooks().then(res => responseData.book = res.data[0]); 
+  handleAxiosGetSummaries().then(res => responseData.summary = res.data[0]); 
   // console.log('await function', );
   // stage++;
   return responseData;
