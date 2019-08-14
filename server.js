@@ -1,6 +1,6 @@
 "use strict";
 const express = require("express");
-const cors = require('cors');
+// const cors = require('cors');
 
 // route declarations
 const messageRouter = require('./routes/messageRoutes');
@@ -10,7 +10,7 @@ const summaryRouter = require('./routes/summaryPartRoute')
 const chatReadRouter = require('./routes/chatReadRoute')
 
 const server = express();
-server.use(cors());
+// server.use(cors());
 server.use(express.json());
 
 // routes
