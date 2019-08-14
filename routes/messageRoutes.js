@@ -9,9 +9,10 @@ const URL = 'http://localhost:8000/api';
 
 function handleMessage(sender_psid, received_message) {
   let response;
+  let stage = 0;
   
   // Checks if the message contains text
-  if (received_message.text) {    
+  if (received_message.text === "get started" || received_message.text === "Get started") {    
     // Create the payload for a basic text message, which
     // will be added to the body of our request to the Send API
     response = {
@@ -38,6 +39,7 @@ function handleMessage(sender_psid, received_message) {
         }
       }
     }
+    stage++;
   } else if (received_message.attachments) {
     // Get the URL of the message attachment
     let attachment_url = received_message.attachments[0].payload.url;
@@ -80,7 +82,7 @@ function handlePostback(sender_psid, received_postback) {
 
   // Set the response based on the postback payload
   if (payload === 'continue') {
-    response = 
+    // response = 
     // axios
     //   .get(`${URL}/books`)
     //   .then(function(res) {
@@ -96,8 +98,8 @@ function handlePostback(sender_psid, received_postback) {
                   "buttons": [
                     {
                       "type": "postback",
-                      "title": "Continue",
-                      "payload": "continue"
+                      "title": "Next",
+                      "payload": "next"
                     }
                   ]
                 }
@@ -105,12 +107,55 @@ function handlePostback(sender_psid, received_postback) {
             }
           }
         };
-    //   })
-    //   .catch(function(err) {
-    //     console.log(err);
-    //   });
+  }  else if (payload === 'next') {
+    // response = 
+    // axios
+    //   .get(`${URL}/books`)
+    //   .then(function(res) {
+      response = {
+        "attachment": {
+          "type": "template",
+          "payload": {
+            "template_type": "generic",
+            "elements": [
+              {
+                "title": "a;slkdasl;dkas;ldk",
+                "buttons": [
+                  {
+                    "type": "postback",
+                    "title": "Next",
+                    "payload": "next"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      }; 
+        
+        // {
+        //   "attachment": {
+        //     "type": "template",
+        //     "payload": {
+        //       "template_type": "generic",
+        //       "elements": [
+        //         {
+        //           "title": "Hi [first name], my name is Phil Knight and 'm the founding CEO of Nike. I wanted to share with you a quick preview of my book Shoe Dog",
+        //           "subtitle": "Tap a button to answer.",
+        //           "buttons": [
+        //             {
+        //               "type": "postback",
+        //               "title": "Next",
+        //               "payload": "next"
+        //             }
+        //           ]
+        //         }
+        //       ]
+        //     }
+        //   }
+        // };
   } else if (payload === 'no') {
-    response = { "text": "Oops, try sending another image." }
+    response = { "text": "Oops try different input" }
   }
   // Send the message to acknowledge the postback
   callSendAPI(sender_psid, response);
