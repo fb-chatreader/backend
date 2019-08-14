@@ -5,6 +5,9 @@ const router = express.Router().use(bodyParser.json());
 const request = require('request');
 const db = require('../models/dbConfig');
 
+const responseData = {};
+
+
 const URL = 'http://localhost:8000/api';
 
 function handleMessage(sender_psid, received_message) {
@@ -105,7 +108,9 @@ function handlePostback(sender_psid, received_postback) {
         };
     //  stage += 1;
   }  else if (payload === 'next') {
-    let bookTitle = handleAxiosGet()
+    let bookTitle = responseData.title;
+    
+    // console.log("handlePostback", bookTitle);
     response = {
       "attachment": {
           "type": "template",
@@ -158,33 +163,41 @@ function callSendAPI(sender_psid, response) {
   }); 
 }
 
-function handleAxiosGet() {
-  axios
+async function handleAxiosGet() {
+  const books = await axios
   .get(`${URL}/books`)
-  .then(function(res) {
-    const bookTitle = res.data[0].title
-    console.log(bookTitle)
-  })
-  .catch(function(err) {
-    console.log(err);
-  })
+  console.log("axios",books);
+  return books;
+  // .catch(function(err) {
+  //   console.log(err);
+  // })
+
 }
 
+
+function responseDataFunc() {
+  handleAxiosGet().then(res => responseData.title = res.data[0].title); 
+  // console.log('await function', );
+  return responseData;
+}
 
 router.post('/webhook', (req, res) => {
   let body = req.body;
   if (body.object === 'page') {
     body.entry.forEach(function(entry) {
       let webhookEvent = entry.messaging[0];
-      console.log(webhookEvent);
+      // console.log(webhookEvent);
       // sender PSID
       let senderPsid = webhookEvent.sender.id;
       // reciever PSID
       let receiverPsid = webhookEvent.recipient.id;
-
+      
       if (webhookEvent.message) {
         handleMessage(senderPsid, webhookEvent.message);
       } else if (webhookEvent.postback) {
+        // console.log("firing response DATA");
+        // 
+        responseDataFunc()
         handlePostback(senderPsid, webhookEvent.postback);
       }
     });
