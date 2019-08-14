@@ -1,4 +1,5 @@
 const express = require('express');
+const axios = require('axios');
 const bodyParser = require("body-parser");
 const router = express.Router().use(bodyParser.json());
 const request = require("request");
@@ -10,42 +11,44 @@ function handleMessage(senderPsid, receivedMessage) {
     // Checks if the message contains text
     let attachmentUrl = receivedMessage.text;
     if (attachmentUrl === 'book') {
-      axios.get('/api/books')
+      axios.get('http://localhost:8000/api/books')
       .then(function(res) {
-        console.log(res)
+        response = {text: res.data}
+        // {
+        //   attachment: {
+        //     type: "template",
+        //     payload: {
+        //       template_type: "generic",
+        //       elements: [
+        //         {
+        //           title: "Is this the right picture?",
+        //           subtitle: "Tap a button to answer.",
+        //           image_url: attachmentUrl,
+        //           buttons: [
+        //             {
+        //               type: "postback",
+        //               title: "Yes!",
+        //               payload: "yes"
+        //             },
+        //             {
+        //               type: "postback",
+        //               title: "No!",
+        //               payload: "no"
+        //             }
+        //           ]
+        //         }
+        //       ]
+        //     }
+        //   }
+        // };
+        console.log("format response",response)
+        // console.log(attachmentUrl)
       })
       .catch(function(err) {
         console.log(err)
       })
       
       
-      response = {
-        attachment: {
-          type: "template",
-          payload: {
-            template_type: "generic",
-            elements: [
-              {
-                title: "Is this the right picture?",
-                subtitle: "Tap a button to answer.",
-                image_url: attachmentUrl,
-                buttons: [
-                  {
-                    type: "postback",
-                    title: "Yes!",
-                    payload: "yes"
-                  },
-                  {
-                    type: "postback",
-                    title: "No!",
-                    payload: "no"
-                  }
-                ]
-              }
-            ]
-          }
-        }
-      };
     } else if (receivedMessage.attachments) {
       // Get the URL of the message attachment edge case if user puts attachment 
       let attachmentUrl = receivedMessage.attachments[0].payload.url;
