@@ -1,151 +1,239 @@
 const express = require('express');
-const bodyParser = require("body-parser");
+const axios = require('axios');
+const bodyParser = require('body-parser');
 const router = express.Router().use(bodyParser.json());
-const request = require("request");
+const request = require('request');
 const db = require('../models/dbConfig');
 
-
-function handleMessage(senderPsid, receivedMessage) {
-    let response;
-    console.log(senderPsid);
-    console.log(receivedMessage);
-    // Checks if the message contains text
-    if (receivedMessage.text === 'get started') {
-      //arg to pass through
-      // obj containing: user first name, auther name, book title, book id, book cover, 
+const responseData = {};
 
 
+const URL = 'http://localhost:8000/api';
 
-
-
-    } else if (receivedMessage.text === 'quick synopsis') {
-      //arg to pass through
-      //Obj  
-      
-
-
-
-
-    }else if (receivedMessage.text === 'read now') {
-      //arg to pass through
-      //trigger and return get summary
-      
-
-
-
-
-    }else if (receivedMessage.text === 'next') {
-      //arg to pass through
-      //Obj  book_id, id (summarypart need to increment), summary
-      
-
-
-
-
-    }else if (receivedMessage.text === 'continue') {
-      //arg to pass through
-      // book_id, id (summarypart need to increment), summary
-      
-
-
-
-
-    }else if (receivedMessage.attachments) {
-      // Get the URL of the message attachment
-      let attachmentUrl = receivedMessage.attachments[0].payload.url;
-      response = `Sorry can't receive attachments at this time. Please select valid input `
-    }
-    // Send the response message
-    callSendAPI(senderPsid, response);
-  }
+function handleMessage(sender_psid, received_message) {
+  let response;
   
-  function handlePostback(senderPsid, receivedPostback) {
-    let response;
-    let payload = receivedPostback.payload;
-    if (payload === "yes") {
-      response = { text: "Thanks!" };
-    } else if (payload === "no") {
-      response = { text: "Oops, try sending another image." };
-    }
-    callSendAPI(senderPsid, response);
-  }
-  
-  function callSendAPI(senderPsid, response) {
-    let requestBody = {
-      recipient: {
-        id: senderPsid
-      },
-      message: response
-    };
-  
-    request(
-      {
-        uri: "https://graph.facebook.com/v2.6/me/messages",
-        qs: { access_token: process.env.PAGE_ACCESS_TOKEN },
-        method: "POST",
-        json: requestBody
-      },
-      (err, res, body) => {
-        if (!err) {
-          console.log("message sent");
-        } else {
-          console.error("unable to send message" + err);
+  // Checks if the message contains text
+  if (received_message.text === "get started" || received_message.text === "Get started") {    
+    // Create the payload for a basic text message, which
+    // will be added to the body of our request to the Send API
+    response = {
+      "attachment": {
+        "type": "template",
+        "payload": {
+          "template_type": "generic",
+          "elements": [{
+            "title": "Continue to book",
+            "subtitle": "Tap a button to answer.",
+            "buttons": [
+              {
+                "type": "postback",
+                "title": "Continue",
+                "payload": "continue",
+              },
+              {
+                "type": "postback",
+                "title": "No!",
+                "payload": "no",
+              }
+            ],
+          }]
         }
       }
-    );
-  }
-  
-
-  function nextPartSummary() {
-
-  }
-
-
-  router.post("/webhook", (req, res) => {
-    let body = req.body;
-    if (body.object === "page") {
-      body.entry.forEach(function(entry) {
-        let webhookEvent = entry.messaging[0];
-        console.log(webhookEvent);
-        // sender PSID
-        let senderPsid = webhookEvent.sender.id;
-        // reciever PSID
-        let receiverPsid = webhookEvent.recipient.id;
-  
-        if (webhookEvent.message) {
-          handleMessage(senderPsid, webhookEvent.message);
-        } else if (webhookEvent.postback) {
-          handlePostback(senderPsid, webhookEvent.postback);
+    }
+  } else if (received_message.attachments) {
+    // Get the URL of the message attachment
+    let attachment_url = received_message.attachments[0].payload.url;
+    response = {
+      "attachment": {
+        "type": "template",
+        "payload": {
+          "template_type": "generic",
+          "elements": [{
+            "title": "Is this the right picture?",
+            "subtitle": "Tap a button to answer.",
+            "image_url": attachment_url,
+            "buttons": [
+              {
+                "type": "postback",
+                "title": "Yes!",
+                "payload": "yes",
+              },
+              {
+                "type": "postback",
+                "title": "No!",
+                "payload": "no",
+              }
+            ],
+          }]
         }
-      });
-      res.status(200).send("Event received");
-    } else {
-      res.sendStatus(404);
-    }
-  });
-  
-  router.get("/webhook", (req, res) => {
-    let VERIFY_TOKEN = process.env.VERIFY_TOKEN;
-    let mode = req.query["hub.mode"];
-    let token = req.query["hub.verify_token"];
-    let challenge = req.query["hub.challenge"];
-  
-    if (mode && token) {
-      if (mode === "subscribe" && token === VERIFY_TOKEN) {
-        console.log("Webhook verified");
-        res.status(200).send(challenge);
-      } else {
-        res.sendStatus(403);
       }
-    } else {
-      res.sendStatus(404);
     }
-  });
+  } 
   
+  // Send the response message
+  callSendAPI(sender_psid, response);    
+}
+function handlePostback(sender_psid, received_postback) {
+  let response;
+  // Get the payload for the postback
+  let payload = received_postback.payload;
 
-  router.get("/", (req, res) => {
-    res.send("API RUNNING!!!");
-    res.status(200);
-  });
+  // Set the response based on the postback payload
+  if (payload === 'continue') {
+    // response = 
+    // axios
+    //   .get(`${URL}/books`)
+    //   .then(function(res) {
+      response = {
+        "attachment": {
+            "type": "template",
+            "payload": {
+              "template_type": "generic",
+              "elements": [
+                {
+                  "title": "Hi [first name], my name is Phil Knight and 'm the founding CEO of Nike. I wanted to share with you a quick preview of my book Shoe Dog",
+                  "subtitle": "Tap a button to answer.",
+                  "buttons": [
+                    {
+                      "type": "postback",
+                      "title": "Next",
+                      "payload": "next"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        };
+    //  stage += 1;
+  }  else if (payload === 'next') {
+    let bookTitle = responseData.title;
+    
+    // console.log("handlePostback", bookTitle);
+    response = {
+      "attachment": {
+          "type": "template",
+          "payload": {
+            "template_type": "generic",
+            "elements": [
+              {
+                "title": bookTitle,
+                "buttons": [
+                  {
+                    "type": "postback",
+                    "title": "Next",
+                    "payload": "next"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      };
+
+  } else if (payload === 'no') {
+    response = { "text": "Oops try different input" }
+  }
+  // Send the message to acknowledge the postback
+  callSendAPI(sender_psid, response);
+}
+
+function callSendAPI(sender_psid, response) {
+  // Construct the message body
+  let request_body = {
+    "recipient": {
+      "id": sender_psid
+    },
+    "message": response
+  }
+
+  // Send the HTTP request to the Messenger Platform
+  request({
+    "uri": "https://graph.facebook.com/v2.6/me/messages",
+    "qs": { "access_token": process.env.PAGE_ACCESS_TOKEN },
+    "method": "POST",
+    "json": request_body
+  }, (err, res, body) => {
+    if (!err) {
+      console.log('message sent!')
+    } else {
+      console.error("Unable to send message:" + err);
+    }
+  }); 
+}
+
+async function handleAxiosGet() {
+  const books = await axios
+  .get(`${URL}/books`)
+  console.log("axios",books);
+  return books;
+  // .catch(function(err) {
+  //   console.log(err);
+  // })
+
+}
+
+
+function responseDataFunc() {
+  handleAxiosGet().then(res => responseData.title = res.data[0].title); 
+  // console.log('await function', );
+  return responseData;
+}
+
+router.post('/webhook', (req, res) => {
+  let body = req.body;
+  if (body.object === 'page') {
+    body.entry.forEach(function(entry) {
+      let webhookEvent = entry.messaging[0];
+      // console.log(webhookEvent);
+      // sender PSID
+      let senderPsid = webhookEvent.sender.id;
+      // reciever PSID
+      let receiverPsid = webhookEvent.recipient.id;
+      
+      if (webhookEvent.message) {
+        handleMessage(senderPsid, webhookEvent.message);
+      } else if (webhookEvent.postback) {
+        // console.log("firing response DATA");
+        // 
+        responseDataFunc()
+        handlePostback(senderPsid, webhookEvent.postback);
+      }
+    });
+    res.status(200).send('Event received');
+  } else {
+    res.sendStatus(404);
+  }
+});
+
+router.get('/webhook', (req, res) => {
+  let VERIFY_TOKEN = process.env.VERIFY_TOKEN;
+  let mode = req.query['hub.mode'];
+  let token = req.query['hub.verify_token'];
+  let challenge = req.query['hub.challenge'];
+
+  if (mode && token) {
+    if (mode === 'subscribe' && token === VERIFY_TOKEN) {
+      console.log('Webhook verified');
+      res.status(200).send(challenge);
+    } else {
+      res.sendStatus(403);
+    }
+  } else {
+    res.sendStatus(404);
+  }
+});
+
+// router.get('/', (req, res) => {
+//   res.send('API RUNNING!!!');
+//   res.status(200);
+// });
+
+//   const PORT = process.env.PORT || 5500;
+//   router.listen(PORT, () => {
+//     console.log(`Server running on port ${PORT}`);
+//   });
 
 module.exports = router;
+
