@@ -15,7 +15,28 @@ function handleMessage(sender_psid, received_message) {
     // Create the payload for a basic text message, which
     // will be added to the body of our request to the Send API
     response = {
-      "text": `You sent the message: "${received_message.text}". Now send me an attachment!`
+      "attachment": {
+        "type": "template",
+        "payload": {
+          "template_type": "generic",
+          "elements": [{
+            "title": "Continue to book",
+            "subtitle": "Tap a button to answer.",
+            "buttons": [
+              {
+                "type": "postback",
+                "title": "Continue",
+                "payload": "continue",
+              },
+              {
+                "type": "postback",
+                "title": "No!",
+                "payload": "no",
+              }
+            ],
+          }]
+        }
+      }
     }
   } else if (received_message.attachments) {
     // Get the URL of the message attachment
@@ -58,8 +79,36 @@ function handlePostback(sender_psid, received_postback) {
   let payload = received_postback.payload;
 
   // Set the response based on the postback payload
-  if (payload === 'yes') {
-    response = { "text": "Thanks!" }
+  if (payload === 'continue') {
+    response = 
+    // axios
+    //   .get(`${URL}/books`)
+    //   .then(function(res) {
+        response = {
+          "attachment": {
+            "type": "template",
+            "payload": {
+              "template_type": "generic",
+              "elements": [
+                {
+                  "title": "Hi [first name], my name is Phil Knight and 'm the founding CEO of Nike. I wanted to share with you a quick preview of my book Shoe Dog",
+                  "subtitle": "Tap a button to answer.",
+                  "buttons": [
+                    {
+                      "type": "postback",
+                      "title": "Continue",
+                      "payload": "continue"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        };
+    //   })
+    //   .catch(function(err) {
+    //     console.log(err);
+    //   });
   } else if (payload === 'no') {
     response = { "text": "Oops, try sending another image." }
   }
