@@ -38,32 +38,32 @@ function handleMessage(senderPsid, receivedMessage) {
     console.log('format response', response);
     // console.log(attachmentUrl)
 
-// axios
-//   .get(`${URL}/books`)
-//   .then(function(res) {
-//     const getStartedURL =
-//     'https://graph.facebook.com/v2.6/me/messenger_profile?access_token=';
-//     response = {
-//       attachment: {
-//         type: 'template',
-//         payload: {
-//           template_type: 'generic',
-//           elements: [
-//             {
-//               title: `get started`,
-//               subtitle: 'Tap a button to answer.',
-//               buttons: [
-//                 {
-//                   type: 'postback',
-//                   title: 'Continue',
-//                   payload: 'start'
-//                 }
-//               ]
-//             }
-//           ]
-//         }
-//       }
-//     };
+axios
+  .get(`${URL}/books`)
+  .then(function(res) {
+    const getStartedURL =
+    'https://graph.facebook.com/v2.6/me/messenger_profile?access_token=';
+    response = {
+      attachment: {
+        type: 'template',
+        payload: {
+          template_type: 'generic',
+          elements: [
+            {
+              title: `get started`,
+              subtitle: 'Tap a button to answer.',
+              buttons: [
+                {
+                  type: 'postback',
+                  title: 'Continue',
+                  payload: 'start'
+                }
+              ]
+            }
+          ]
+        }
+      }
+    };
 //     handlePostback(senderPsid, response);
 //     console.log('format response', response);
 //     // console.log(attachmentUrl)

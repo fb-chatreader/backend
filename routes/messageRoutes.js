@@ -9,7 +9,6 @@ const URL = 'http://localhost:8000/api';
 
 function handleMessage(sender_psid, received_message) {
   let response;
-  let stage = 0;
   
   // Checks if the message contains text
   if (received_message.text === "get started" || received_message.text === "Get started") {    
@@ -39,7 +38,6 @@ function handleMessage(sender_psid, received_message) {
         }
       }
     }
-    stage++;
   } else if (received_message.attachments) {
     // Get the URL of the message attachment
     let attachment_url = received_message.attachments[0].payload.url;
@@ -73,10 +71,8 @@ function handleMessage(sender_psid, received_message) {
   // Send the response message
   callSendAPI(sender_psid, response);    
 }
-
 function handlePostback(sender_psid, received_postback) {
   let response;
-  
   // Get the payload for the postback
   let payload = received_postback.payload;
 
@@ -86,8 +82,8 @@ function handlePostback(sender_psid, received_postback) {
     // axios
     //   .get(`${URL}/books`)
     //   .then(function(res) {
-        response = {
-          "attachment": {
+      response = {
+        "attachment": {
             "type": "template",
             "payload": {
               "template_type": "generic",
@@ -107,19 +103,17 @@ function handlePostback(sender_psid, received_postback) {
             }
           }
         };
+    //  stage += 1;
   }  else if (payload === 'next') {
-    // response = 
-    // axios
-    //   .get(`${URL}/books`)
-    //   .then(function(res) {
-      response = {
-        "attachment": {
+    let bookTitle = handleAxiosGet()
+    response = {
+      "attachment": {
           "type": "template",
           "payload": {
             "template_type": "generic",
             "elements": [
               {
-                "title": "a;slkdasl;dkas;ldk",
+                "title": bookTitle,
                 "buttons": [
                   {
                     "type": "postback",
@@ -131,29 +125,8 @@ function handlePostback(sender_psid, received_postback) {
             ]
           }
         }
-      }; 
-        
-        // {
-        //   "attachment": {
-        //     "type": "template",
-        //     "payload": {
-        //       "template_type": "generic",
-        //       "elements": [
-        //         {
-        //           "title": "Hi [first name], my name is Phil Knight and 'm the founding CEO of Nike. I wanted to share with you a quick preview of my book Shoe Dog",
-        //           "subtitle": "Tap a button to answer.",
-        //           "buttons": [
-        //             {
-        //               "type": "postback",
-        //               "title": "Next",
-        //               "payload": "next"
-        //             }
-        //           ]
-        //         }
-        //       ]
-        //     }
-        //   }
-        // };
+      };
+
   } else if (payload === 'no') {
     response = { "text": "Oops try different input" }
   }
@@ -184,6 +157,19 @@ function callSendAPI(sender_psid, response) {
     }
   }); 
 }
+
+function handleAxiosGet() {
+  axios
+  .get(`${URL}/books`)
+  .then(function(res) {
+    const bookTitle = res.data[0].title
+    console.log(bookTitle)
+  })
+  .catch(function(err) {
+    console.log(err);
+  })
+}
+
 
 router.post('/webhook', (req, res) => {
   let body = req.body;
