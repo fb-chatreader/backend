@@ -132,5 +132,4 @@ function handleMessage(senderPsid, receivedMessage) {
     res.status(200);
   });
   
-
 module.exports = router;
