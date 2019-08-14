@@ -41,7 +41,38 @@ function handleMessage(sender_psid, received_message) {
         }
       }
     }
-  } else if (received_message.attachments) {
+  } else if (received_message.text === "synopsis"){
+    console.log("book", responseData.book)
+    response = {
+      "text": responseData.book.synopsis, 
+      } 
+  }
+  else if (received_message.text === "author"){
+    console.log("book", responseData.book)
+    response = {
+      "text": responseData.book.author
+      } 
+  }
+  else if (received_message.text === "summary"){
+    console.log("book", responseData.book)
+    response = {
+      "text": responseData.summary.summary
+      } 
+  }
+  // else if (received_message.text === "image"){
+  //   console.log("book", responseData.book)
+  //   response ={ "message":{
+  //     "attachment":{
+  //       "type":"image", 
+  //       "payload":{
+  //         "url":, 
+  //         "is_reusable":true
+  //       }
+  //     }
+  //   }
+  //   }
+  // }
+  else if (received_message.attachments) {
     // Get the URL of the message attachment
     let attachment_url = received_message.attachments[0].payload.url;
     response = {
@@ -81,10 +112,6 @@ function handlePostback(sender_psid, received_postback) {
 
   // Set the response based on the postback payload
   if (payload === 'continue') {
-    // response = 
-    // axios
-    //   .get(`${URL}/books`)
-    //   .then(function(res) {
       response = {
         "attachment": {
             "type": "template",
@@ -106,9 +133,8 @@ function handlePostback(sender_psid, received_postback) {
             }
           }
         };
-    //  stage += 1;
   }  else if (payload === 'next') {
-    let bookTitle = responseData.title;
+    let bookTitle = responseData.book.title;
     
     // console.log("handlePostback", bookTitle);
     response = {
@@ -122,8 +148,8 @@ function handlePostback(sender_psid, received_postback) {
                 "buttons": [
                   {
                     "type": "postback",
-                    "title": "Next",
-                    "payload": "next"
+                    "title": "Book Synopsis",
+                    "payload": "book details"
                   }
                 ]
               }
@@ -163,21 +189,32 @@ function callSendAPI(sender_psid, response) {
   }); 
 }
 
-async function handleAxiosGet() {
+async function handleAxiosGetBooks() {
   const books = await axios
   .get(`${URL}/books`)
-  console.log("axios",books);
+  // console.log("axios",books);
+  .catch(function(err) {
+    console.log(err);
+  })
   return books;
-  // .catch(function(err) {
-  //   console.log(err);
-  // })
 
 }
 
+async function handleAxiosGetSummaries() {
+  const summary = await axios
+  .get(`${URL}/summaries`)
+  .catch(function(err){
+    console.log(err);
+  })
+  return summary
+}
 
 function responseDataFunc() {
-  handleAxiosGet().then(res => responseData.title = res.data[0].title); 
+
+  handleAxiosGetBooks().then(res => responseData.book = res.data[0]); 
+  handleAxiosGetSummaries().then(res => responseData.summary = res.data[0]); 
   // console.log('await function', );
+  // stage++;
   return responseData;
 }
 
@@ -196,8 +233,10 @@ router.post('/webhook', (req, res) => {
         handleMessage(senderPsid, webhookEvent.message);
       } else if (webhookEvent.postback) {
         // console.log("firing response DATA");
-        // 
+        // if(stage < 1) {
         responseDataFunc()
+
+        // }
         handlePostback(senderPsid, webhookEvent.postback);
       }
     });
