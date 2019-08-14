@@ -10,14 +10,46 @@ function handleMessage(senderPsid, receivedMessage) {
     console.log(senderPsid);
     console.log(receivedMessage);
     // Checks if the message contains text
-    if (receivedMessage.text === 'Next') {
+    if (receivedMessage.text === 'get started') {
+      //arg to pass through
+      // obj containing: user first name, auther name, book title, book id, book cover, 
 
-    } else if (receivedMessage.text) {
-      // Create the payload for a basic text message, which
-      // will be added to the body of our request to the Send API
-      response = {
-        'text': db
-      };
+
+
+
+
+    } else if (receivedMessage.text === 'quick synopsis') {
+      //arg to pass through
+      //Obj  
+      
+
+
+
+
+    }else if (receivedMessage.text === 'read now') {
+      //arg to pass through
+      //trigger and return get summary
+      
+
+
+
+
+    }else if (receivedMessage.text === 'next') {
+      //arg to pass through
+      //Obj  book_id, id (summarypart need to increment), summary
+      
+
+
+
+
+    }else if (receivedMessage.text === 'continue') {
+      //arg to pass through
+      // book_id, id (summarypart need to increment), summary
+      
+
+
+
+
     }else if (receivedMessage.attachments) {
       // Get the URL of the message attachment
       let attachmentUrl = receivedMessage.attachments[0].payload.url;
@@ -63,6 +95,12 @@ function handleMessage(senderPsid, receivedMessage) {
     );
   }
   
+
+  function nextPartSummary() {
+
+  }
+
+
   router.post("/webhook", (req, res) => {
     let body = req.body;
     if (body.object === "page") {
