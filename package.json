@@ -28,10 +28,10 @@
     "pg": "^7.12.1",
     "request": "^2.88.0",
     "sqlite": "^3.0.3",
-    "sqlite3": "^4.0.9"
+    "sqlite3": "^4.0.9",
+    "knex": "^0.19.1"
   },
   "devDependencies": {
-    "nodemon": "^1.19.1",
-    "knex": "^0.19.1"
+    "nodemon": "^1.19.1"
   }
 }
