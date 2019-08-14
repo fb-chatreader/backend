@@ -74,7 +74,7 @@ function handleMessage(senderPsid, receivedMessage) {
     request(
       {
         uri: "https://graph.facebook.com/v2.6/me/messages",
-        qs: { access_token: process.env.PAGE_ACCESS_TOKEN },
+        qs: { access_token: 'EAAJN50qr7CYBAB17fSGx7vnnWzAsNvcC4YafRJI7qvTYOkx9fcr7ZBYmjHZCysPdafvCrGXBQNPO5JMMj026tzKoVcY07JHl3HxzeFbuvqIRZCZBbFst7ZBt5eyuP77BfcaGS0y8UTjwCxZBE9baZCkjGzsyIu4Lvsy67TFb1bpawZDZD' },
         method: "POST",
         json: requestBody
       },
@@ -112,7 +112,7 @@ function handleMessage(senderPsid, receivedMessage) {
   });
   
   router.get("/webhook", (req, res) => {
-    let VERIFY_TOKEN = process.env.VERIFY_TOKEN;
+    let VERIFY_TOKEN = 'EAAJN50qr7CYBAB17fSGx7vnnWzAsNvcC4YafRJI7qvTYOkx9fcr7ZBYmjHZCysPdafvCrGXBQNPO5JMMj026tzKoVcY07JHl3HxzeFbuvqIRZCZBbFst7ZBt5eyuP77BfcaGS0y8UTjwCxZBE9baZCkjGzsyIu4Lvsy67TFb1bpawZDZD';
     let mode = req.query["hub.mode"];
     let token = req.query["hub.verify_token"];
     let challenge = req.query["hub.challenge"];
