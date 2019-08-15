@@ -8,7 +8,10 @@ module.exports = {
   remove
 };
 
-function retrieve() {
+function retrieve(filter) {
+  if (filter) {
+    return db('chat_reads').where(filter);
+  }
   return db('chat_reads');
 }
 
@@ -16,10 +19,11 @@ function retrieveByID(chatReadid) {
   return db('chat_reads').where({ id: chatReadid });
 }
 
-function write(chatSummary) {
+function write(filter, summary) {
   return db(`chat_reads`)
-    .where({ chatSummary })
-    .then(ids => ({ id: ids[0] }));
+    .update(summary, ['*'])
+    .where(filter);
+  // .then(ids => ({ id: ids[0] }));
 }
 
 function edit(chatReadid, chatSummary) {
