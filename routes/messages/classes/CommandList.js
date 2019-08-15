@@ -28,6 +28,7 @@ module.exports = class CommandList {
     // Execute either the command or postback
     if (this[type][parsedInput]) {
       this[type][parsedInput](event);
+
       return true;
     }
     // Could write an 'else' statement here that runs a 'help' command

@@ -8,7 +8,10 @@ module.exports = {
   remove
 };
 
-function retrieve() {
+function retrieve(filter) {
+  if (filter) {
+    return db('summary_parts').where(filter);
+  }
   return db('summary_parts');
 }
 

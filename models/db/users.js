@@ -1,14 +1,14 @@
 const db = require('../dbConfig.js');
 
 module.exports = {
-  find,
+  retrieve,
   retrieveByID,
   write,
   edit,
   remove
 };
 
-function find(filter) {
+function retrieve(filter) {
   if (filter) {
     return db('users').where(filter);
   }
