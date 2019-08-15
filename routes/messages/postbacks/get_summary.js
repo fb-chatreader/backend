@@ -24,17 +24,8 @@ module.exports = async event => {
   const nextSummary = await Summaries.retrieve({
     id: current_part + 1
   }).first();
-  /* HARD CODED */
-  let text = nextSummary ? nextSummary.summary : null;
-  /* HARD CODED */
-  let next_part = nextSummary ? current_part + 1 : 1;
-  let buttons = [
-    {
-      type: 'postback',
-      title: 'Continue',
-      payload: 'get_summary'
-    }
-  ];
+  let text, next_part, buttons;
+
   if (!nextSummary || nextSummary.book_id !== book_id) {
     // We've reached the end of our database or the next summary is a different book
     text =
@@ -46,7 +37,25 @@ module.exports = async event => {
         payload: 'get_synopsis'
       }
     ];
+    /* HARD CODED */
+    next_part = 1;
+  } else {
+    // Grab next entry
+    text = nextSummary.summary;
+    next_part = current_part + 1;
+    buttons = [
+      {
+        type: 'postback',
+        title: 'Continue',
+        payload: 'get_summary'
+      }
+    ];
   }
+
+  await ChatReads.write(
+    { user_id: 1, book_id: 1 },
+    { current_summary_id: next_part }
+  );
 
   const response = {
     attachment: {
