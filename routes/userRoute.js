@@ -1,12 +1,11 @@
 const express = require('express');
-const bodyParser = require("body-parser");
+const bodyParser = require('body-parser');
 const router = express.Router().use(bodyParser.json());
-const db = require('../models/dbConfig');
-const dbUsers = require('../data/usersDB');
+const Users = require('../models/db/users.js');
 
-router.get("/", async (req, res) => {
+router.get('/', async (req, res) => {
   try {
-    const users = await dbUsers.retrieve();
+    const users = await Users.retrieve();
     res.status(200).json(users);
   } catch (error) {
     res.status(500).json({
@@ -14,6 +13,5 @@ router.get("/", async (req, res) => {
     });
   }
 });
-
 
 module.exports = router;
