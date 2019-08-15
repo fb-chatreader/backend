@@ -30,4 +30,8 @@ router.get('/webhook', (req, res) => {
     res.sendStatus(404);
   }
 });
+
+router.get('/', (req, res) => {
+  res.status(200).send('API RUNNING!!!');
+});
 module.exports = router;
