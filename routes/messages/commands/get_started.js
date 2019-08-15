@@ -1,6 +1,9 @@
 const Command = require('../classes/Command.js');
+const ChatReads = require('../../../models/db/chatReads.js');
 
-module.exports = event => {
+module.exports = async event => {
+  /* HARD CODED */
+  await ChatReads.write({ user_id: 1, book_id: 1 }, { current_summary_id: 1 });
   const response = {
     attachment: {
       type: 'template',
@@ -13,14 +16,9 @@ module.exports = event => {
             buttons: [
               {
                 type: 'postback',
-                title: 'Get Summary',
-                payload: 'start_summary'
+                title: 'Synopsis',
+                payload: 'get_synopsis'
               }
-              // {
-              //   type: 'postback',
-              //   title: 'No Thanks',
-              //   payload: 'no'
-              // }
             ]
           }
         ]
@@ -28,5 +26,5 @@ module.exports = event => {
     }
   };
 
-  const command = new Command(response, event).sendResponse();
+  new Command(response, event).sendResponse();
 };
