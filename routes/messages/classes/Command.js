@@ -13,7 +13,6 @@ module.exports = class Command {
       },
       message: this.response
     };
-
     request(
       {
         uri: 'https://graph.facebook.com/v2.6/me/messages',
@@ -23,7 +22,7 @@ module.exports = class Command {
       },
       (err, res, body) => {
         if (!err) {
-          console.log('message sent!');
+          console.log('Message sent!');
         } else {
           console.error('Unable to send message:' + err);
         }
