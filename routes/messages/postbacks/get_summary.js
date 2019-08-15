@@ -21,11 +21,13 @@ module.exports = async event => {
     // Create a new chat read in the database (only one right now so no need to code it)
     current_part = 1;
   }
-  let next_part = current_part + 1;
   const nextSummary = await Summaries.retrieve({
-    id: next_part
+    id: current_part + 1
   }).first();
-  let text = nextSummary.summary;
+  /* HARD CODED */
+  let text = nextSummary ? nextSummary.summary : null;
+  /* HARD CODED */
+  let next_part = nextSummary ? current_part + 1 : 1;
   let buttons = [
     {
       type: 'postback',
@@ -44,17 +46,7 @@ module.exports = async event => {
         payload: 'get_synopsis'
       }
     ];
-    /* HARD CODED */
-    next_part = 1;
   }
-
-  console.log(
-    'UPDATE: ',
-    await ChatReads.write(
-      { user_id, book_id },
-      { current_summary_id: next_part }
-    )
-  );
 
   const response = {
     attachment: {
