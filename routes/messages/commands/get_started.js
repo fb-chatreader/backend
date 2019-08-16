@@ -16,7 +16,14 @@ module.exports = async event => {
         elements: [
           {
             title: 'Shoe Dog',
+            image_url: 'https://cdn1.imggmi.com/uploads/2019/8/16/0157bb1918ef12d284b5061e3153ddd5-full.png',
             subtitle: 'by Phil Knight',
+            // default_action: {
+            //   type: 'web_url',
+            //   url: 'https://cdn1.imggmi.com/uploads/2019/8/16/0157bb1918ef12d284b5061e3153ddd5-full.png',
+            //   messenger_extensions: 'TRUE',
+            //   webview_height_ratio: "FULL"
+            // },
             buttons: [
               {
                 type: 'postback',
