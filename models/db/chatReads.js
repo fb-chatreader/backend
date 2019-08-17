@@ -5,7 +5,8 @@ module.exports = {
   retrieveByID,
   write,
   edit,
-  remove
+  remove,
+  editOrCreate
 };
 
 function retrieve(filter) {
@@ -16,24 +17,35 @@ function retrieve(filter) {
 }
 
 function retrieveByID(chatReadid) {
-  return db('chat_reads').where({ id: chatReadid });
+  return db('chat_reads')
+    .where({ id: chatReadid })
+    .first();
 }
 
-function write(filter, summary) {
+function write(chatRead) {
+  return db(`chat_reads`)
+    .insert(chatRead, ['*'])
+    .then(cr => retrieve({ id: cr[0].id }).first());
+}
+
+function edit(filter, summary) {
   return db(`chat_reads`)
     .update(summary, ['*'])
     .where(filter);
-  // .then(ids => ({ id: ids[0] }));
-}
-
-function edit(chatReadid, chatSummary) {
-  return db('chat_summary')
-    .where({ id: chatReadid })
-    .update(chatSummary);
 }
 
 function remove(chatReadid) {
-  return db('chat_summary')
+  return db('chat_reads')
     .where({ id: chatReadid })
     .del();
+}
+
+async function editOrCreate(filter, summary_id) {
+  const chatRead = await retrieve(filter).first();
+  if (chatRead) {
+    return edit(filter, summary_id);
+  } else {
+    const { id, ...noID } = filter;
+    return write({ ...noID, ...summary_id, created_at: new Date() });
+  }
 }
