@@ -3,12 +3,16 @@ const router = require('express')
   .Router()
   .use(bodyParser.json());
 
-const { verifyWebhook } = require('./middleware.js');
+const {
+  verifyWebhook,
+  formatWebhook
+} = require('../../middleware/webhooks.js');
+
 const CommandList = require('./classes/CommandList.js');
 const Commands = new CommandList();
 
-router.post('/webhook', verifyWebhook, ({ body: { entry } }, res) => {
-  const event = entry[0].messaging[0];
+router.post('/webhook', verifyWebhook, formatWebhook, (req, res) => {
+  const event = req.body.entry[0].input;
   const sent = Commands.execute(event);
   sent ? res.sendStatus(200) : res.sendStatus(404);
 });
