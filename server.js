@@ -9,6 +9,9 @@ const userRouter = require('./routes/userRoute');
 const summaryRouter = require('./routes/summaryPartRoute');
 const chatReadRouter = require('./routes/chatReadRoute');
 
+// Error handling
+const errorHandler = require('./middleware/errorHandling');
+
 const server = express();
 server.use(cors());
 server.use(express.json());
@@ -24,6 +27,7 @@ server.get('/', (req, res) => {
   res.status(200).json('Welcome to ChatReader server!');
 });
 
-server.get;
+//async error handling middleware MUST come after routes or else will just throw Type error
+server.use(errorHandler);
 
 module.exports = server;
