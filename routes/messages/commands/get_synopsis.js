@@ -8,7 +8,7 @@ module.exports = async event => {
   const id = 1;
   const book = await Books.retrieve({ id }).first();
 
-  const response = {
+  return {
     attachment: {
       type: 'template',
       payload: {
@@ -24,6 +24,4 @@ module.exports = async event => {
       }
     }
   };
-
-  new Command(response, event).sendResponse();
 };
