@@ -1,23 +1,34 @@
-const Command = require('../classes/Command.js');
 const ChatReads = require('../../../models/db/chatReads.js');
+const Books = require('../../../models/db/books.js');
+const Users = require('../../../models/db/users.js');
+
+// Verify users exists already, if not save their Facebook ID
+// Short term: reset current_summary of the book, fetch book from DB, display get Synopsis option
+// Long term: Suggest books / categories for user to select
 
 module.exports = async event => {
+  let user = await Users.retrieveOrCreate({ facebook_id: event.sender.id });
+
   /* HARD CODED */
-  await ChatReads
-  .write({ user_id: 1, book_id: 1 }, { current_summary_id: 1 })
-  .catch(function(err) {
-    console.log(err)
-  })
-  const response = {
+  const book_id = 1;
+  const book = await Books.retrieve({ id: book_id }).first();
+
+  await ChatReads.editOrCreate(
+    { user_id: user.id, book_id },
+    { current_summary_id: 1 }
+  );
+
+  return {
     attachment: {
       type: 'template',
       payload: {
         template_type: 'generic',
         elements: [
           {
-            title: 'Shoe Dog',
-            image_url: 'https://cdn1.imggmi.com/uploads/2019/8/16/0157bb1918ef12d284b5061e3153ddd5-full.png',
-            subtitle: 'by Phil Knight',
+            title: book.title,
+            image_url:
+              'https://cdn1.imggmi.com/uploads/2019/8/16/0157bb1918ef12d284b5061e3153ddd5-full.png',
+            subtitle: `by ${book.author}`,
             buttons: [
               {
                 type: 'postback',
@@ -30,6 +41,4 @@ module.exports = async event => {
       }
     }
   };
-
-  new Command(response, event).sendResponse();
 };
