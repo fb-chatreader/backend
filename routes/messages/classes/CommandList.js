@@ -1,34 +1,16 @@
+const Command = require('../classes/Command.js');
 const reqDir = require('require-dir');
 
 module.exports = class CommandList {
   constructor() {
     this.commands = reqDir('../commands/');
-    this.postbacks = reqDir('../postbacks/');
   }
 
   execute(event) {
-    const type = event.postback
-      ? 'postbacks'
-      : event.message
-      ? 'commands'
-      : null;
-
-    if (!type) {
-      return;
-    }
-
-    const parsedInput =
-      type === 'commands'
-        ? event.message.text
-            .toLowerCase()
-            .split(' ')
-            .join('_')
-        : event.postback.payload.toLowerCase();
-
-    // Execute either the command or postback
-    if (this[type][parsedInput]) {
-      this[type][parsedInput](event);
-
+    // If the command exists, execute it
+    if (this.commands[event.command]) {
+      const command = new Command(this.commands[event.command](event), event);
+      command.sendResponse();
       return true;
     }
     // Could write an 'else' statement here that runs a 'help' command

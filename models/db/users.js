@@ -5,7 +5,8 @@ module.exports = {
   retrieveByID,
   write,
   edit,
-  remove
+  remove,
+  retrieveOrCreate
 };
 
 function retrieve(filter) {
@@ -20,9 +21,10 @@ function retrieveByID(userid) {
 }
 
 function write(user) {
+  console.log('INSERTING: ', user);
   return db(`users`)
-    .where({ user })
-    .then(ids => ({ id: ids[0] }));
+    .insert(user, ['*'])
+    .then(u => retrieve({ id: u[0].id }).first());
 }
 
 function edit(userid, user) {
@@ -35,4 +37,14 @@ function remove(userid) {
   return db('users')
     .where({ id: userid })
     .del();
+}
+
+async function retrieveOrCreate(query) {
+  const user = await retrieve(query).first();
+  if (!user) {
+    const { id, ...noID } = query;
+    noID.created_at = new Date();
+    return write(noID);
+  }
+  return user;
 }

@@ -24,7 +24,7 @@ genius entrepreneur Phil Knight and detail the rollercoaster ride he went to thr
   updated_at: 2019-08-15T20:10:51.292Z } '<<<<<<<<<<<<<<'*/
 
 
-  const response = {
+  return {
     attachment: {
       type: 'template',
       payload: {
@@ -40,12 +40,4 @@ genius entrepreneur Phil Knight and detail the rollercoaster ride he went to thr
       }
     }
   };
-/**
- * response = text: 'Shoe Dog (2016) tells the story of the man behind the famous footwear company Nike. These blinks offer a peek into the mind of
-genius entrepreneur Phil Knight and detail the rollercoaster ride he went to through to build up his company.',
-  button with titlt 'start summary; 
-  Payload sent back to your webhook in a messaging_postbacks event 
-   1000 character limit.payload 
- */
-  new Command(response, event).sendResponse();
 };
