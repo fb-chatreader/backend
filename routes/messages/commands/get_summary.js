@@ -1,16 +1,14 @@
-const Command = require('../classes/Command.js');
 const Users = require('../../../models/db/users.js');
 const ChatReads = require('../../../models/db/chatReads.js');
 const Summaries = require('../../../models/db/summaryParts.js');
 
-module.exports = async event => {
-  // Query database to get current summary location
-  // If there isn't one, create it
-  // Otherwise, increment and get next summary (check for end of book)
-  const command = new Command(null, event);
+// Query database to get current summary location
+// If there isn't one, create it
+// Otherwise, increment and get next summary (check for end of book)
 
+module.exports = async event => {
   /* HARD CODED */
-  const user_id = 1; // await Users.retrieve({ facebook_id: command.sender });
+  const user_id = 1; // await Users.retrieve({ facebook_id: event.sender.id }).first(); // then get the ID
   /* HARD CODED */
   const book_id = 1;
   const chatread = await ChatReads.retrieve({ user_id, book_id }).first();
@@ -52,12 +50,12 @@ module.exports = async event => {
     ];
   }
 
-  await ChatReads.write(
+  await ChatReads.edit(
     { user_id: 1, book_id: 1 },
     { current_summary_id: next_part }
   );
 
-  const response = {
+  return {
     attachment: {
       type: 'template',
       payload: {
@@ -67,6 +65,4 @@ module.exports = async event => {
       }
     }
   };
-  command.response = response;
-  command.sendResponse();
 };
