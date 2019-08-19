@@ -15,7 +15,7 @@ exports.seed = function(knex, Promise) {
           cover_img: '../../ShoeDog.png',
           publish_date: 'April 26, 2016',
           intro:
-            "Hi, I'm Phil Knight and I'm the founding CEO of Nike, wanted to share with you a quick preview of my book Shoe Dog",
+            "I'm Phil Knight and I'm the founding CEO of Nike, wanted to share with you a quick preview of my book Shoe Dog",
           created_at: new Date()
         }
       ]);
