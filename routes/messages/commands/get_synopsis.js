@@ -7,23 +7,6 @@ module.exports = async event => {
   /* HARD CODED */
   const id = 1;
   const book = await Books.retrieve({ id }).first();
-  // retrieve book where id === 1
-  // book = {id, author}
-  // console.log(book, '<<<<<<<<<<<<<<')
-  /*
-  book = 
-  { id: 1,
-  title: 'Shoe Dog',
-  author: 'Phil Knight',
-  synopsis:
-   'Shoe Dog (2016) tells the story of the man behind the famous footwear company Nike. These blinks offer a peek into the mind of
-genius entrepreneur Phil Knight and detail the rollercoaster ride he went to through to build up his company.',
-  cover_img: '../../ShoeDog.png',
-  publish_date: 2016-04-26T04:00:00.000Z,
-  created_at: 2019-08-15T20:10:51.290Z,
-  updated_at: 2019-08-15T20:10:51.292Z } '<<<<<<<<<<<<<<'*/
-
-
   return {
     attachment: {
       type: 'template',
