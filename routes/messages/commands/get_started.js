@@ -25,15 +25,21 @@ module.exports = async event => {
         template_type: 'generic',
         elements: [
           {
-            title: book.title,
+            // title: book.title,
+            title: 'Hi, I\'m Phil Knight and I\'m the founding CEO of Nike, wanted to share with you a quick preview of my book Shoe Dog',
             image_url:
-              'https://cdn1.imggmi.com/uploads/2019/8/16/0157bb1918ef12d284b5061e3153ddd5-full.png',
+              'https://cdn1.imggmi.com/uploads/2019/8/19/31e08cd0fb2b8cef8a946c7ea4a28a0e-full.png',
             subtitle: `by ${book.author}`,
             buttons: [
               {
                 type: 'postback',
-                title: 'Synopsis',
+                title: 'Quick Synopsis',
                 payload: 'get_synopsis'
+              },
+              {
+                type: 'postback',
+                title: 'Read Now',
+                payload: 'get_summary'
               }
             ]
           }

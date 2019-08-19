@@ -12,6 +12,15 @@ module.exports = async event => {
   /* HARD CODED */
   const book_id = 1;
   const chatread = await ChatReads.retrieve({ user_id, book_id }).first();
+  /**
+   console.log(chatread, '<<<<<<<<<<<<<<<<<')
+   { id: 1,
+  user_id: 1,
+  book_id: 1,
+  current_summary_id: 3,
+  created_at: 2019-08-15T20:10:51.406Z,
+  updated_at: null } '<<<<<<<<<<<<<<<<<'
+   */
   let current_part = chatread ? chatread.current_summary_id : null;
 
   if (!current_part) {
@@ -22,6 +31,7 @@ module.exports = async event => {
   const nextSummary = await Summaries.retrieve({
     id: current_part + 1
   }).first();
+  
   let text, next_part, buttons;
 
   if (!nextSummary || nextSummary.book_id !== book_id) {

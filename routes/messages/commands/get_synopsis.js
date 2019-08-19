@@ -7,7 +7,6 @@ module.exports = async event => {
   /* HARD CODED */
   const id = 1;
   const book = await Books.retrieve({ id }).first();
-
   return {
     attachment: {
       type: 'template',
