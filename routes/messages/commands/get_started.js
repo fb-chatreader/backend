@@ -19,7 +19,6 @@ module.exports = async event => {
   );
   /* INCOMPLETE - API CALL TO GET USER INFO */
   let user_info;
-
   const book_intro = user_info
     ? `Hi, ${user_info.first_name}! ${book.intro}`
     : book.intro;
