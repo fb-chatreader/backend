@@ -16,26 +16,25 @@ function retrieve(filter) {
   return db('users');
 }
 
-function retrieveByID(userid) {
-  return db('users').where({ id: userid });
+function retrieveByID(id) {
+  return db('users').where({ id });
 }
 
 function write(user) {
-  console.log('INSERTING: ', user);
   return db(`users`)
     .insert(user, ['*'])
     .then(u => retrieve({ id: u[0].id }).first());
 }
 
-function edit(userid, user) {
+function edit(id, user) {
   return db('users')
-    .where({ id: userid })
+    .where({ id })
     .update(user);
 }
 
-function remove(userid) {
+function remove(id) {
   return db('users')
-    .where({ id: userid })
+    .where({ id })
     .del();
 }
 
