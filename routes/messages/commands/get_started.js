@@ -36,8 +36,7 @@ module.exports = async event => {
           elements: [
             {
               title: book.title,
-              image_url:
-                'https://cdn1.imggmi.com/uploads/2019/8/19/31e08cd0fb2b8cef8a946c7ea4a28a0e-full.png',
+              image_url: book.cover_img,
               subtitle: `by ${book.author}`,
               buttons: [
                 {
