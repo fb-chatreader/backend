@@ -9,17 +9,15 @@ const timedMessages = require('../../../models/db/timedMessages.js');
 
 module.exports = async event => {
   /* HARD CODED */
-  const user_id = 1; // await Users.retrieve({ facebook_id: event.sender.id }).first(); // then get the ID
+  const user = await Users.retrieve({ facebook_id: event.sender.id }).first(); // then get the ID
+  const user_id = user.id;
   /* HARD CODED */
   const book_id = 1;
 
   const chatread = await ChatReads.retrieve({ user_id, book_id }).first();
-  console.log(chatread);
 
   /* HARD CODED */
   let current_summary_id = chatread ? chatread.current_summary_id : 1;
-  console.log(chatread.current_summary_id);
-  console.log(current_summary_id);
 
   const summaries = await Summaries.retrieveBlock(
     { book_id },
