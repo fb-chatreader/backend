@@ -1,3 +1,4 @@
+const axios = require('axios');
 const ChatReads = require('../../../models/db/chatReads.js');
 const Books = require('../../../models/db/books.js');
 const Users = require('../../../models/db/users.js');
@@ -18,37 +19,50 @@ module.exports = async event => {
     { current_summary_id: 1 }
   );
   /* INCOMPLETE - API CALL TO GET USER INFO */
-  let user_info;
+  const user_info = await getUserInfo(event.sender.id);
   const book_intro = user_info
     ? `Hi, ${user_info.first_name}! ${book.intro}`
     : book.intro;
 
-  return {
-    attachment: {
-      type: 'template',
-      payload: {
-        template_type: 'generic',
-        elements: [
-          {
-            title: book.intro ? book_intro : book.title,
-            image_url:
-              'https://cdn1.imggmi.com/uploads/2019/8/19/31e08cd0fb2b8cef8a946c7ea4a28a0e-full.png',
-            subtitle: `${book.intro ? book.title + ' ' : ''}by ${book.author}`,
-            buttons: [
-              {
-                type: 'postback',
-                title: 'Quick Synopsis',
-                payload: 'get_synopsis'
-              },
-              {
-                type: 'postback',
-                title: 'Read Now',
-                payload: 'get_summary'
-              }
-            ]
-          }
-        ]
+  return [
+    {
+      text: book_intro
+    },
+    {
+      attachment: {
+        type: 'template',
+        payload: {
+          template_type: 'generic',
+          elements: [
+            {
+              title: book.title,
+              image_url:
+                'https://cdn1.imggmi.com/uploads/2019/8/19/31e08cd0fb2b8cef8a946c7ea4a28a0e-full.png',
+              subtitle: `by ${book.author}`,
+              buttons: [
+                {
+                  type: 'postback',
+                  title: 'Quick Synopsis',
+                  payload: 'get_synopsis'
+                },
+                {
+                  type: 'postback',
+                  title: 'Read Now',
+                  payload: 'get_summary'
+                }
+              ]
+            }
+          ]
+        }
       }
     }
-  };
+  ];
 };
+
+async function getUserInfo(PSID) {
+  const url = `https://graph.facebook.com/${PSID}?fields=first_name&access_token=${
+    process.env.PAGE_ACCESS_TOKEN
+  }`;
+  const request = await axios.get(url);
+  return request.data;
+}
