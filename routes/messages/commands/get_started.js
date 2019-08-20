@@ -7,7 +7,7 @@ const Users = require('../../../models/db/users.js');
 // Long term: Suggest books / categories for user to select
 
 module.exports = async event => {
-  let user = await Users.retrieveOrCreate({ facebook_id: event.sender.id });
+  const user = await Users.retrieveOrCreate({ facebook_id: event.sender.id });
 
   /* HARD CODED */
   const book_id = 1;
@@ -17,6 +17,11 @@ module.exports = async event => {
     { user_id: user.id, book_id },
     { current_summary_id: 1 }
   );
+  /* INCOMPLETE - API CALL TO GET USER INFO */
+  let user_info;
+  const book_intro = user_info
+    ? `Hi, ${user_info.first_name}! ${book.intro}`
+    : book.intro;
 
   return {
     attachment: {
@@ -25,11 +30,10 @@ module.exports = async event => {
         template_type: 'generic',
         elements: [
           {
-            // title: book.title,
-            title: 'Hi, I\'m Phil Knight and I\'m the founding CEO of Nike, wanted to share with you a quick preview of my book Shoe Dog',
+            title: book.intro ? book_intro : book.title,
             image_url:
               'https://cdn1.imggmi.com/uploads/2019/8/19/31e08cd0fb2b8cef8a946c7ea4a28a0e-full.png',
-            subtitle: `by ${book.author}`,
+            subtitle: `${book.intro ? book.title + ' ' : ''}by ${book.author}`,
             buttons: [
               {
                 type: 'postback',

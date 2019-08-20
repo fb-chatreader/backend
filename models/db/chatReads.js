@@ -16,9 +16,9 @@ function retrieve(filter) {
   return db('chat_reads');
 }
 
-function retrieveByID(chatReadid) {
+function retrieveByID(id) {
   return db('chat_reads')
-    .where({ id: chatReadid })
+    .where({ id })
     .first();
 }
 
@@ -34,9 +34,9 @@ function edit(filter, summary) {
     .where(filter);
 }
 
-function remove(chatReadid) {
+function remove(id) {
   return db('chat_reads')
-    .where({ id: chatReadid })
+    .where({ id })
     .del();
 }
 
