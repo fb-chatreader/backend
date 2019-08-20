@@ -22,26 +22,8 @@ module.exports = async event => {
     { user_id: user.id, book_id },
     { current_summary_id: 1 }
   );
-  /* INCOMPLETE - API CALL TO GET USER INFO */
-
-  let PSID = user.facebook_id;
-    
-  async function getUserInfo(PSID) {
-    const url = `https://graph.facebook.com/${PSID}?fields=first_name,last_name,profile_pic&access_token=${
-      process.env.PAGE_ACCESS_TOKEN
-    }`;
-    const request = await axios.get(url);
-    return request.data;
-  }
-  // let userInfo = await getUserInfo(event.sender.id);
-  // const book_intro = userInfo ? `Hi, ${userInfo.first_name}! ${book.intro}` : book_intro;
   
-  let user_info = await getUserInfo(event.sender.id);
-  const book_intro = user_info
-    ? `Hi, ${user_info.first_name}! ${book.intro}`
-    : book.intro;
-
-    
+  
   return {
     attachment: {
       type: 'template',
