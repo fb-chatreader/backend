@@ -15,8 +15,8 @@ function retrieve(filter) {
   return db('books');
 }
 
-function retrieveByID(bkid) {
-  return db('books').where({ id: bkid });
+function retrieveByID(id) {
+  return db('books').where({ id });
 }
 
 function write(book) {
@@ -31,8 +31,8 @@ function edit(bkid, book) {
     .update(book);
 }
 
-function remove(bkid) {
+function remove(id) {
   return db('books')
-    .where({ id: bkid })
+    .where({ id })
     .del();
 }
