@@ -1,4 +1,3 @@
-const Command = require('../classes/Command.js');
 const Books = require('../../../models/db/books.js');
 
 module.exports = async event => {
@@ -17,7 +16,7 @@ module.exports = async event => {
             default_action: {
               type: 'web_url',
               url: 'https://www.amazon.com/Shoe-Dog-Phil-Knight/dp/1508211809',
-              messenger_extensions: FALSE,
+              messenger_extensions: false,
               webview_height_ration: 'FULL'
             },
             buttons: [
