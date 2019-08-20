@@ -33,6 +33,8 @@ module.exports = class Command {
     const url = `https://graph.facebook.com/v2.6/me/messages?access_token=${
       process.env.PAGE_ACCESS_TOKEN
     }`;
-    axios.post(url, msgObj);
+    axios
+      .post(url, msgObj)
+      .catch(err => console.log('Error sending Response: ', err.toJSON));
   }
 };
