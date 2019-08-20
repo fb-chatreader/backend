@@ -5,7 +5,6 @@ module.exports = class Command {
     this.response = response;
     this.sender = event.sender.id;
   }
-
   sendResponse() {
     this.response.then(res => {
       const request_body = {

@@ -1,6 +1,9 @@
 const ChatReads = require('../../../models/db/chatReads.js');
 const Books = require('../../../models/db/books.js');
 const Users = require('../../../models/db/users.js');
+const request = require('request')
+const PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN
+
 
 // Verify users exists already, if not save their Facebook ID
 // Short term: reset current_summary of the book, fetch book from DB, display get Synopsis option
@@ -8,6 +11,7 @@ const Users = require('../../../models/db/users.js');
 
 module.exports = async event => {
   let user = await Users.retrieveOrCreate({ facebook_id: event.sender.id });
+
 
   /* HARD CODED */
   const book_id = 1;
@@ -18,6 +22,21 @@ module.exports = async event => {
     { current_summary_id: 1 }
   );
 
+
+    let PSID = user.facebook_id;
+    request.get(
+      {
+        uri: `https://graph.facebook.com/${PSID}`,
+        qs: {access_token: process.env.PAGE_ACCESS_TOKEN }, 
+        method: 'GET'
+      },
+      (err, res) => {
+        if(!err && res.statusCode === 200) {
+          let userInfo = JSON.parse(res.body)
+          console.log(userInfo.first_name, 'First Name');
+        } 
+      });
+
   return {
     attachment: {
       type: 'template',
@@ -25,11 +44,10 @@ module.exports = async event => {
         template_type: 'generic',
         elements: [
           {
-            // title: book.title,
-            title: 'Hi, I\'m Phil Knight and I\'m the founding CEO of Nike, wanted to share with you a quick preview of my book Shoe Dog',
+            title: `Hi ${userInfo.first_name},I\'m Phil Knight and I\'m the founding CEO of Nike.`,
+            subtitle: `I wanted to share with you a quick preview of my book Shoe Dog`,
             image_url:
               'https://cdn1.imggmi.com/uploads/2019/8/19/31e08cd0fb2b8cef8a946c7ea4a28a0e-full.png',
-            subtitle: `by ${book.author}`,
             buttons: [
               {
                 type: 'postback',
