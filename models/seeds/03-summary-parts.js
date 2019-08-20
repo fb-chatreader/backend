@@ -5,7 +5,7 @@ exports.seed = function(knex, Promise) {
   return knex('summary_parts')
     .del()
     .then(function() {
-      return knex('summary_parts').insert(getSummaries(5));
+      return knex('summary_parts').insert(getSummaries());
     });
 };
 
@@ -15,6 +15,7 @@ function getSummaries(num) {
   let summaries = [];
   let current = '';
   const sentences = text.split('  ');
+
   for (let i = 0; i < sentences.length; i++) {
     const sentence = sentences[i];
     if ((current + ' ' + sentence).length <= limit) {
