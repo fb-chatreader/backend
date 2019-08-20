@@ -16,6 +16,7 @@ exports.up = function(knex) {
         .onDelete('CASCADE')
         .onUpdate('CASCADE')
         .notNullable();
+      tbl.boolean('isComplete');
       tbl.timestamp('send_at').notNullable();
     })
     .alterTable('books', tbl => {

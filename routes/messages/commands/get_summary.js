@@ -1,6 +1,7 @@
 const Users = require('../../../models/db/users.js');
 const ChatReads = require('../../../models/db/chatReads.js');
 const Summaries = require('../../../models/db/summaryParts.js');
+const timedMessages = require('../../../models/db/timedMessages.js');
 
 // Query database to get current summary location
 // If there isn't one, create it
@@ -31,10 +32,11 @@ module.exports = async event => {
   const nextSummary = await Summaries.retrieve({
     id: current_part + 1
   }).first();
-  
+
   let text, next_part, buttons;
 
   if (!nextSummary || nextSummary.book_id !== book_id) {
+    updateTimedMessages(user_id, book_id, true);
     // We've reached the end of our database or the next summary is a different book
     text =
       'We hope you enjoyed the summary!  Would you like to find another book?';
@@ -48,6 +50,8 @@ module.exports = async event => {
     /* HARD CODED */
     next_part = 1;
   } else {
+    updateTimedMessages(user_id, book_id);
+
     // Grab next entry
     text = nextSummary.summary;
     next_part = current_part + 1;
@@ -76,3 +80,16 @@ module.exports = async event => {
     }
   };
 };
+
+async function updateTimedMessages(user_id, book_id, isComplete = false) {
+  const timedMessage = await timedMessages.retrieve({ user_id }).first();
+  const newMsg = {
+    user_id,
+    book_id,
+    isComplete,
+    send_at: new Date(new Date().getTime() + 24 * 60 * 60 * 1000)
+  };
+  timedMessage
+    ? await timedMessages.update({ user_id }, newMsg)
+    : await timedMessages.write(newMsg);
+}
