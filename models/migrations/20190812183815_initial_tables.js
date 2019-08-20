@@ -57,7 +57,8 @@ exports.up = function(knex) {
 
 exports.down = function(knex) {
   return knex.schema
-    .dropTable('summary_parts')
     .dropTable('chat_reads')
-    .dropTable('book');
+    .dropTable('summary_parts')
+    .dropTable('books');
+
 };
