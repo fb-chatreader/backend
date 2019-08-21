@@ -16,21 +16,19 @@ const formatWebhook = ({ body: { entry } }, res, next) => {
   // Type added in case we need to verify source (do we want users to say "policy violation"
   // and trigger our policy violation command?)
   if (entry && entry[0] && entry[0]['policy-enforcement']) {
-    // console.log('POLICY');
     command = {
       command: 'policy_violation',
       type: 'webhook',
-      ...entry[0]['policy-enforcement']
+      ...entry[0]['policy-enforcement'],
+      page_id: entry[0].recipient.id
     };
   } else if (event && event.postback) {
-    // console.log('POSTBACK');
     command = {
       command: event.postback.payload.toLowerCase(),
       type: 'postback',
       sender: event.sender
     };
   } else if (event && event.message) {
-    // console.log('MESSAGE');
     command = {
       command: event.message.text
         .toLowerCase()
@@ -49,5 +47,4 @@ const formatWebhook = ({ body: { entry } }, res, next) => {
   }
 };
 
-// Leaving room for extra middleware in the future
 module.exports = { verifyWebhook, formatWebhook };
