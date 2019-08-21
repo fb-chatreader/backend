@@ -9,76 +9,74 @@ const timedMessages = require('../../../models/db/timedMessages.js');
 
 module.exports = async event => {
   /* HARD CODED */
-  const user_id = 1; // await Users.retrieve({ facebook_id: event.sender.id }).first(); // then get the ID
+  const user = await Users.retrieve({ facebook_id: event.sender.id }).first(); // then get the ID
+  const user_id = user.id;
   /* HARD CODED */
   const book_id = 1;
+
   const chatread = await ChatReads.retrieve({ user_id, book_id }).first();
-  /**
-   console.log(chatread, '<<<<<<<<<<<<<<<<<')
-   { id: 1,
-  user_id: 1,
-  book_id: 1,
-  current_summary_id: 3,
-  created_at: 2019-08-15T20:10:51.406Z,
-  updated_at: null } '<<<<<<<<<<<<<<<<<'
-   */
-  let current_part = chatread ? chatread.current_summary_id : null;
 
-  if (!current_part) {
-    /* INCOMPLETE */
-    // Create a new chat read in the database (only one right now so no need to code it)
-    current_part = 1;
-  }
-  const nextSummary = await Summaries.retrieve({
-    id: current_part + 1
-  }).first();
+  /* HARD CODED */
+  let current_summary_id = chatread ? chatread.current_summary_id : 1;
 
-  let text, next_part, buttons;
-
-  if (!nextSummary || nextSummary.book_id !== book_id) {
-    updateTimedMessages(user_id, book_id, true);
-    // We've reached the end of our database or the next summary is a different book
-    text =
-      'We hope you enjoyed the summary!  Would you like to find another book?';
-    buttons = [
-      {
-        type: 'postback',
-        title: 'Synopsis',
-        payload: 'get_synopsis'
-      }
-    ];
-    /* HARD CODED */
-    next_part = 1;
-  } else {
-    updateTimedMessages(user_id, book_id);
-
-    // Grab next entry
-    text = nextSummary.summary;
-    next_part = current_part + 1;
-    buttons = [
-      {
-        type: 'postback',
-        title: 'Continue',
-        payload: 'get_summary'
-      }
-    ];
-  }
-
-  await ChatReads.edit(
-    { user_id: 1, book_id: 1 },
-    { current_summary_id: next_part }
+  const summaries = await Summaries.retrieveBlock(
+    { book_id },
+    current_summary_id
   );
 
-  return {
-    attachment: {
-      type: 'template',
-      payload: {
-        template_type: 'button',
-        text: text,
-        buttons
-      }
+  const next_summary_id = current_summary_id + summaries.block.length;
+  await ChatReads.edit(
+    { user_id, book_id },
+    {
+      current_summary_id: summaries.final
+        ? next_summary_id - 1
+        : next_summary_id
     }
-  };
+  );
+
+  return summaries.block.map((s, i) => {
+    if (i < summaries.block.length - 1) {
+      return {
+        text: s.summary
+      };
+    } else {
+      // summaries.final will be true if the block contains the final summary
+      // Thus, send a different button
+      return summaries.final
+        ? {
+            attachment: {
+              type: 'template',
+              payload: {
+                template_type: 'button',
+                text: s.summary,
+                buttons: [
+                  {
+                    type: 'postback',
+                    title: 'Finish',
+                    payload: 'amazon_link'
+                  }
+                ]
+              }
+            }
+          }
+        : {
+            attachment: {
+              type: 'template',
+              payload: {
+                template_type: 'button',
+                text: s.summary,
+                buttons: [
+                  {
+                    type: 'postback',
+                    title: 'Continue',
+                    payload: 'get_summary'
+                  }
+                ]
+              }
+            }
+          };
+    }
+  });
 };
 
 async function updateTimedMessages(user_id, book_id, isComplete = false) {
@@ -93,3 +91,32 @@ async function updateTimedMessages(user_id, book_id, isComplete = false) {
     ? await timedMessages.update({ user_id }, newMsg)
     : await timedMessages.write(newMsg);
 }
+
+/*
+text =
+      'We hope you enjoyed the summary!  Would you like to find another book?';
+    buttons = [
+      {
+        type: 'postback',
+        title: 'Synopsis',
+        payload: 'get_synopsis'
+      }
+    ];
+
+    text = next_summary.summary;
+    next_part = current_summary_id + 1;
+    buttons = [
+      {
+        type: 'postback',
+        title: 'Continue',
+        payload: 'get_summary'
+      }
+    ];
+
+    await ChatReads.edit(
+    { user_id: 1, book_id: 1 },
+    { current_summary_id: next_part }
+  );
+
+   return ;
+    */
