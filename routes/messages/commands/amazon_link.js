@@ -1,9 +1,25 @@
+const axios = require('axios');
 const Books = require('../../../models/db/books.js');
+const Users = require('../../../models/db/users.js');
+const getUserInfo = require('../util/asycFunctions');
 
 module.exports = async event => {
   const id = 1; //need a dynamic way to pull ids
   const book = await Books.retrieve({ id }).first();
-  return {
+  // const user = await Users.retrieveOrCreate({ facebook_id: event.sender.id });
+
+  // await ChatReads.editOrCreate(
+  //   { user_id: user.id, book_id },
+  //   { current_summary_id: 1 }
+  // );
+
+  const user_info = await getUserInfo(event.sender.id);
+
+  return [
+    {
+      text: `${user_info.first_name}, thank you for reading a quick summary of ${book.title}, I hope you liked it! You can buy a copy of the book here:`
+    },
+    {
     attachment: {
       type: 'template',
       payload: {
@@ -12,7 +28,6 @@ module.exports = async event => {
           {
             title: book.title,
             image_url: book.cover_img,
-            subtitle: 'Purchase on Amazon!',
             default_action: {
               type: 'web_url',
               url:
@@ -31,5 +46,5 @@ module.exports = async event => {
         ]
       }
     }
-  };
+  }];
 };
