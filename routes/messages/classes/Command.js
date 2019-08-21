@@ -20,7 +20,6 @@ module.exports = class Command {
       // Otherwise just continue the loop
       this._processMessage();
     }
-    console.log('Message sent!');
   }
 
   _processMessage() {
@@ -31,10 +30,13 @@ module.exports = class Command {
         // AFTER sending the first
         if (this.responses.length) {
           this.sendResponses();
+        } else {
+          console.log('Message sent!');
         }
       });
     } else {
       this._send(messages);
+      console.log('Message sent!');
     }
   }
 
