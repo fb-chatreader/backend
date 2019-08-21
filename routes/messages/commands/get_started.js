@@ -2,6 +2,7 @@ const axios = require('axios');
 const ChatReads = require('../../../models/db/chatReads.js');
 const Books = require('../../../models/db/books.js');
 const Users = require('../../../models/db/users.js');
+const getUserInfo = require('../util/asycFunctions');
 
 // Verify users exists already, if not save their Facebook ID
 // Short term: reset current_summary of the book, fetch book from DB, display get Synopsis option
@@ -57,11 +58,3 @@ module.exports = async event => {
     }
   ];
 };
-
-async function getUserInfo(PSID) {
-  const url = `https://graph.facebook.com/${PSID}?fields=first_name&access_token=${
-    process.env.PAGE_ACCESS_TOKEN
-  }`;
-  const request = await axios.get(url);
-  return request.data;
-}
