@@ -10,7 +10,9 @@ module.exports = class CommandList {
     // If the command exists, execute it
     if (this.commands[event.command]) {
       const executed = new Command(this.commands[event.command](event), event);
-      executed.sendResponses();
+      if (executed.responses) {
+        executed.sendResponses();
+      }
       return true;
     }
     // Could write an 'else' statement here that runs a 'help' command

@@ -27,7 +27,7 @@ async function retrieveBlock(filter, firstID) {
     .where(filter)
     .whereBetween('id', [firstID, lastID]);
   return {
-    final: last_summary >= firstID && last_summary <= lastID,
+    isFinal: last_summary >= firstID && last_summary <= lastID,
     block
   };
 }
