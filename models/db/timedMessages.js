@@ -15,6 +15,9 @@ function retrieve(filter) {
 }
 
 function write(timedMessage) {
+  // Hard coding send_at values to 24 hours to ensure policy adherence
+  timedMessage.send_at = new Date(new Date().getTime() + 24 * 60 * 60 * 1000);
+
   return db('timed_messages')
     .insert(timedMessage, ['*'])
     .then(tm => retrieve({ id: tm[0].id }).first());

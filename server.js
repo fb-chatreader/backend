@@ -2,6 +2,9 @@
 const express = require('express');
 const cors = require('cors');
 
+// Jobs
+require('./jobs/timedMessages.js');
+
 // route declarations
 const messageRouter = require('./routes/messages/messageRoutes');
 const bookRouter = require('./routes/bookRoutes');
