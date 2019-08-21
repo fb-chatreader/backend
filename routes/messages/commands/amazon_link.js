@@ -1,30 +1,38 @@
-const Command = require('../classes/Command.js');
 const Books = require('../../../models/db/books.js');
+const Users = require('../../../models/db/users.js');
 
 module.exports = async event => {
-  const id = 1; //need a dynamic way to pull ids
+  // we have facebook id, 
+  // from facebook id , we can get the userid,
+  // can dynamically pass user id 
+  // const user = await Users.retrieveOrCreate({ facebook_id: event.sender.id });
+  //console.log(user.id, 'user');
+  //console.log(event.sender.id, 'sender id');
+  //const id = user.id;
+  //will dynamically pass id 
+  const id = 1;
   const book = await Books.retrieve({ id }).first();
   return {
-    attachments: {
+    attachment: {
       type: 'template',
       payload: {
         template_type: 'generic',
         elements: [
           {
             title: book.title,
-            image_url: book.image_url,
-            subtitle: 'Purchase on Amazon',
+            image_url: book.cover_img,
+            subtitle: 'Purchase on Amazon!',
             default_action: {
               type: 'web_url',
-              url: 'https://www.amazon.com/Shoe-Dog-Phil-Knight/dp/1508211809',
-              messenger_extensions: FALSE,
-              webview_height_ration: 'FULL'
+              url:
+                'https://www.amazon.com/Shoe-Dog-Memoir-Creator-Nike/dp/1501135929',
+              webview_height_ratio: 'FULL'
             },
             buttons: [
               {
                 type: 'web_url',
                 url:
-                  'https://www.amazon.com/Shoe-Dog-Phil-Knight/dp/1508211809',
+                  'https://www.amazon.com/Shoe-Dog-Memoir-Creator-Nike/dp/1501135929',
                 title: 'Buy on Amazon'
               }
             ]
