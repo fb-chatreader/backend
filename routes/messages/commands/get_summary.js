@@ -17,7 +17,7 @@ module.exports = async event => {
   const chatread = await ChatReads.retrieve({ user_id, book_id }).first();
 
   /* HARD CODED */
-  let current_summary_id = chatread ? chatread.current_summary_id : 1;
+  const current_summary_id = chatread ? chatread.current_summary_id : 1;
 
   const summaries = await Summaries.retrieveBlock(
     { book_id },
@@ -28,11 +28,12 @@ module.exports = async event => {
   await ChatReads.edit(
     { user_id, book_id },
     {
-      current_summary_id: summaries.final
+      current_summary_id: summaries.isFinal
         ? next_summary_id - 1
         : next_summary_id
     }
   );
+  updateTimedMessages(user_id, book_id, summaries.isFinal);
 
   return summaries.block.map((s, i) => {
     if (i < summaries.block.length - 1) {
@@ -40,9 +41,9 @@ module.exports = async event => {
         text: s.summary
       };
     } else {
-      // summaries.final will be true if the block contains the final summary
+      // summaries.isFinal will be true if the block contains the final summary
       // Thus, send a different button
-      return summaries.final
+      return summaries.isFinal
         ? {
             attachment: {
               type: 'template',
@@ -84,39 +85,9 @@ async function updateTimedMessages(user_id, book_id, isComplete = false) {
   const newMsg = {
     user_id,
     book_id,
-    isComplete,
-    send_at: new Date(new Date().getTime() + 24 * 60 * 60 * 1000)
+    isComplete
   };
   timedMessage
     ? await timedMessages.update({ user_id }, newMsg)
     : await timedMessages.write(newMsg);
 }
-
-/*
-text =
-      'We hope you enjoyed the summary!  Would you like to find another book?';
-    buttons = [
-      {
-        type: 'postback',
-        title: 'Synopsis',
-        payload: 'get_synopsis'
-      }
-    ];
-
-    text = next_summary.summary;
-    next_part = current_summary_id + 1;
-    buttons = [
-      {
-        type: 'postback',
-        title: 'Continue',
-        payload: 'get_summary'
-      }
-    ];
-
-    await ChatReads.edit(
-    { user_id: 1, book_id: 1 },
-    { current_summary_id: next_part }
-  );
-
-   return ;
-    */
