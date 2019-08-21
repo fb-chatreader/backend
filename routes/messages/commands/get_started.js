@@ -18,7 +18,6 @@ module.exports = async event => {
     { user_id: user.id, book_id },
     { current_summary_id: 1 }
   );
-  /* INCOMPLETE - API CALL TO GET USER INFO */
   const user_info = await getUserInfo(event.sender.id);
   const book_intro = user_info
     ? `Hi, ${user_info.first_name}! ${book.intro}`
