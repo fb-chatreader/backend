@@ -8,22 +8,39 @@ module.exports = class Command {
 
   sendResponses() {
     // If the command returns a single object, we'll send just it.  Otherwise, we'll
-    // loop over the array and send one at a time
+    // loop over the array and send one at a time (recursively)
 
-    // Promise.all will collect all the promises returned by the commands and then when they
-    // ALL resolve (or one fails), try send the messages in order
-    this.responses.then(messages => {
-      Array.isArray(messages)
-        ? messages.forEach((message, i) => {
-            setTimeout(this._send.bind(this, message), 200 * i);
-          })
-        : this._send(messages);
-    });
-
-    console.log('Message sent!');
+    if (this.responses.then) {
+      // If responses is a promise, resolve it first
+      this.responses.then(messages => {
+        this.responses = messages;
+        this._processMessage();
+      });
+    } else {
+      // Otherwise just continue the loop
+      this._processMessage();
+    }
   }
 
-  _send(message) {
+  _processMessage() {
+    if (Array.isArray(this.responses)) {
+      // If array, continue loop
+      this._send(this.responses.shift()).then(_ => {
+        // Remove message from array, loop back around for the next message
+        // AFTER sending the first
+        if (this.responses.length) {
+          this.sendResponses();
+        } else {
+          console.log('Message sent!');
+        }
+      });
+    } else {
+      this._send(messages);
+      console.log('Message sent!');
+    }
+  }
+
+  async _send(message) {
     const msgObj = {
       recipient: {
         id: this.sender
@@ -33,7 +50,7 @@ module.exports = class Command {
     const url = `https://graph.facebook.com/v2.6/me/messages?access_token=${
       process.env.PAGE_ACCESS_TOKEN
     }`;
-    axios
+    await axios
       .post(url, msgObj)
       .catch(err => console.log('Error sending Response: ', err.toJSON));
   }
