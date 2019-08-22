@@ -4,6 +4,12 @@ const reqDir = require('require-dir');
 module.exports = class CommandList {
   constructor() {
     this.commands = reqDir('../commands/');
+    console.log(this.commands)
+  }
+
+  executePersistentMenu(event) {
+    const executed = new Command(this.commands[this.command.persistent_menu](event), event)
+    executed.sendResponses();
   }
 
   execute(event) {
