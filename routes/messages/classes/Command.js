@@ -4,12 +4,21 @@ module.exports = class Command {
   constructor(responses, event) {
     this.responses = responses;
     this.sender = event.sender.id;
+    // console.log("responses",this.responses);
   }
 
   sendResponses() {
     // If the command returns a single object, we'll send just it.  Otherwise, we'll
     // loop over the array and send one at a time (recursively)
-
+    
+    // if (this.responses === 'persistent_menu'){
+    //   this.responses.then(messages => {
+    //     this.responses = messages;
+    //     this._send(this.responses);
+    //     console.log("Message Sent! line 18");
+    //   })
+    // }
+    
     if (this.responses.then) {
       // If responses is a promise, resolve it first
       this.responses.then(messages => {
