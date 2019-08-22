@@ -1,4 +1,3 @@
-const axios = require('axios');
 const ChatReads = require('../../../models/db/chatReads.js');
 const Books = require('../../../models/db/books.js');
 const Users = require('../../../models/db/users.js');
@@ -14,12 +13,16 @@ module.exports = async event => {
   /* HARD CODED */
   const book_id = 1;
   const book = await Books.retrieve({ id: book_id }).first();
-
   await ChatReads.editOrCreate(
     { user_id: user.id, book_id },
     { current_summary_id: 1 }
   );
-  const user_info = await getUserInfo(event.sender.id);
+  let user_info;
+  try {
+    user_info = await getUserInfo(event.sender.id);
+  } catch (err) {
+    if (process.env.DB_ENVIRONMENT !== 'testing') console.log(err);
+  }
   const book_intro = user_info
     ? `Hi, ${user_info.first_name}! ${book.intro}`
     : book.intro;
