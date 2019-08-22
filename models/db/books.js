@@ -21,7 +21,7 @@ function retrieveByID(id) {
 
 function write(book) {
   return db(`books`)
-    .where({ book })
+    .insert(book, ['*'])
     .then(ids => ({ id: ids[0] }));
 }
 
