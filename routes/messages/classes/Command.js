@@ -35,7 +35,7 @@ module.exports = class Command {
         }
       });
     } else {
-      this._send(messages);
+      this._send(this.responses);
       console.log('Message sent!');
     }
   }
