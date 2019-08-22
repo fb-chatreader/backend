@@ -4,7 +4,15 @@ const Users = require('../../../models/db/users.js');
 const getUserInfo = require('../util/asycFunctions');
 
 module.exports = async event => {
-  const id = 1; //need a dynamic way to pull ids
+  // we have facebook id, 
+  // from facebook id , we can get the userid,
+  // can dynamically pass user id 
+  // const user = await Users.retrieveOrCreate({ facebook_id: event.sender.id });
+  //console.log(user.id, 'user');
+  //console.log(event.sender.id, 'sender id');
+  //const id = user.id;
+  //will dynamically pass id 
+  const id = 1;
   const book = await Books.retrieve({ id }).first();
 
   const user_info = await getUserInfo(event.sender.id);
