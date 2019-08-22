@@ -8,7 +8,6 @@ const Commands = new CommandList();
 
 
 router.get('/', (req, res) => {
-    // console.log('booting up')
     res.status
 });
 
