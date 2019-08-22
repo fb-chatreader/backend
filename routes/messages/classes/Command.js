@@ -1,24 +1,15 @@
-const axios = require('axios');
 
 module.exports = class Command {
   constructor(responses, event) {
     this.responses = responses;
+    this.defaultMessage = 'get started'
     this.sender = event.sender.id;
-    // console.log("responses",this.responses);
   }
 
   sendResponses() {
     // If the command returns a single object, we'll send just it.  Otherwise, we'll
     // loop over the array and send one at a time (recursively)
-    
-    // if (this.responses === 'persistent_menu'){
-    //   this.responses.then(messages => {
-    //     this.responses = messages;
-    //     this._send(this.responses);
-    //     console.log("Message Sent! line 18");
-    //   })
-    // }
-    
+
     if (this.responses.then) {
       // If responses is a promise, resolve it first
       this.responses.then(messages => {
@@ -32,6 +23,10 @@ module.exports = class Command {
   }
 
   _processMessage() {
+    if(this.responses) {
+      this._send('get started');
+      console.log('default message')
+    }
     if (Array.isArray(this.responses)) {
       // If array, continue loop
       this._send(this.responses.shift()).then(_ => {
