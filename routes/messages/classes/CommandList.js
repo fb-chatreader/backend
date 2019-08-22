@@ -20,6 +20,11 @@ module.exports = class CommandList {
         executed.sendResponses();
       }
       return true;
+    } else {
+      // Otherwise default to get_started
+      const executed = new Command(this.comamnds.get_started(event), event);
+      executed.sendResponses();
+      return true;
     }
   }
 };

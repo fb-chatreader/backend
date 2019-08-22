@@ -34,8 +34,8 @@ async function retrieveBlock(filter, firstID) {
 
 function write(summary) {
   return db(`summary_parts`)
-    .where({ summary })
-    .then(ids => ({ id: ids[0] }));
+    .insert(summary, ['*'])
+    .then(s => retrieve({ id: s[0].id }).first());
 }
 
 function edit(summaryid, summary) {
