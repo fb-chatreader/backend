@@ -8,19 +8,18 @@ module.exports = class CommandList {
 
   execute(event) {
     // If the command exists, execute it
-    // if (!this.commands[event.command]) {
-    //   const executed = new Command(this.commands['get_started'](event), event);
-    //   executed.sendResponses();
-    // } else {
-      if (this.commands[event.command]) {
+    if (!this.commands[event.command]) {
+      const executed = new Command(this.commands.get_started(event), event);
+      if (executed.responses) {
+        executed.sendResponses();
+      }
+      return true;
+    } else if (this.commands[event.command]) {
       const executed = new Command(this.commands[event.command](event), event);
       if (executed.responses) {
         executed.sendResponses();
       }
       return true;
     }
-
-    // Could write an 'else' statement here that runs a 'help' command
-    // for any unrecognized commands
   }
 };
