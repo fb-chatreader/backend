@@ -2,9 +2,7 @@ const axios = require('axios');
 const ChatReads = require('../../../models/db/chatReads.js');
 const Books = require('../../../models/db/books.js');
 const Users = require('../../../models/db/users.js');
-const request = require('request');
-const PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN;
-
+const getUserInfo = require('../util/asycFunctions');
 
 // Verify users exists already, if not save their Facebook ID
 // Short term: reset current_summary of the book, fetch book from DB, display get Synopsis option
@@ -22,7 +20,6 @@ module.exports = async event => {
     { user_id: user.id, book_id },
     { current_summary_id: 1 }
   );
-  /* INCOMPLETE - API CALL TO GET USER INFO */
   const user_info = await getUserInfo(event.sender.id);
   const book_intro = user_info
     ? `Hi, ${user_info.first_name}! ${book.intro}`
@@ -40,11 +37,11 @@ module.exports = async event => {
           elements: [
             {
               title: book.title,
-              image_url: 'https://cdn1.imggmi.com/uploads/2019/8/21/2c0affaac0c6e06d632615cf3938bacc-full.jpg',
+              image_url: 'https://cdn1.imggmi.com/uploads/2019/8/22/a3cd260d27f5d97ff5b1380f283e6cc2-full.jpg',
               subtitle: `by ${book.author}`,
               default_action: {
                 type: "web_url",
-                url: "https://cdn1.imggmi.com/uploads/2019/8/21/2c0affaac0c6e06d632615cf3938bacc-full.jpg",
+                url: "https://cdn1.imggmi.com/uploads/2019/8/22/76c10c3d1b579bf0a66cb7f1cfe74843-full.jpg",
                 webview_height_ratio: "tall",
               },
               buttons: [
@@ -66,11 +63,3 @@ module.exports = async event => {
     }
   ];
 };
-
-async function getUserInfo(PSID) {
-  const url = `https://graph.facebook.com/${PSID}?fields=first_name&access_token=${
-    process.env.PAGE_ACCESS_TOKEN
-  }`;
-  const request = await axios.get(url);
-  return request.data;
-}
