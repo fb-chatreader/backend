@@ -40,8 +40,13 @@ module.exports = async event => {
           elements: [
             {
               title: book.title,
-              image_url: book.cover_img,
+              image_url: 'https://cdn1.imggmi.com/uploads/2019/8/21/2c0affaac0c6e06d632615cf3938bacc-full.jpg',
               subtitle: `by ${book.author}`,
+              default_action: {
+                type: "web_url",
+                url: "https://cdn1.imggmi.com/uploads/2019/8/21/2c0affaac0c6e06d632615cf3938bacc-full.jpg",
+                webview_height_ratio: "tall",
+              },
               buttons: [
                 {
                   type: 'postback',

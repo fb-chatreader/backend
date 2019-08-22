@@ -18,7 +18,7 @@ function retrieve(filter) {
 async function retrieveBlock(filter, firstID) {
   // whereBetween will include last number.  If we're at firstID = 1 and want to show 5
   // in a block, 1 + 5 = 6.  Thus, 6 will be included, so -1 to set it back to 1-5
-  const lastID = firstID + (parseInt(process.env.BLOCK_LENGTH, 10) || 5) - 1;
+  const lastID = firstID + (parseInt(process.env.BLOCK_LENGTH, 10) || 3) - 1;
 
   const book_summaries = await db('summary_parts').where(filter);
   const last_summary = book_summaries[book_summaries.length - 1].id;
