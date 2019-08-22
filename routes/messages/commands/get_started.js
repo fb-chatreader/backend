@@ -11,6 +11,7 @@ const getUserInfo = require('../util/asycFunctions');
 module.exports = async event => {
   const user = await Users.retrieveOrCreate({ facebook_id: event.sender.id });
 
+
   /* HARD CODED */
   const book_id = 1;
   const book = await Books.retrieve({ id: book_id }).first();
@@ -38,6 +39,11 @@ module.exports = async event => {
               title: book.title,
               image_url: book.cover_img,
               subtitle: `by ${book.author}`,
+              default_action: {
+                type: "web_url",
+                url: "https://cdn1.imggmi.com/uploads/2019/8/22/76c10c3d1b579bf0a66cb7f1cfe74843-full.jpg",
+                webview_height_ratio: "tall",
+              },
               buttons: [
                 {
                   type: 'postback',
