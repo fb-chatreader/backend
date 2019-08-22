@@ -1,8 +1,8 @@
+const axios = require('axios');
 
 module.exports = class Command {
   constructor(responses, event) {
     this.responses = responses;
-    this.defaultMessage = 'get started'
     this.sender = event.sender.id;
   }
 
@@ -23,10 +23,6 @@ module.exports = class Command {
   }
 
   _processMessage() {
-    if(this.responses) {
-      this._send('get started');
-      console.log('default message')
-    }
     if (Array.isArray(this.responses)) {
       // If array, continue loop
       this._send(this.responses.shift()).then(_ => {
