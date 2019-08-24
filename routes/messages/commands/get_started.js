@@ -10,60 +10,54 @@ const getUserInfo = require('../util/asycFunctions');
 module.exports = async event => {
   const user = await Users.retrieveOrCreate({ facebook_id: event.sender.id });
 
-
   /* HARD CODED */
-  const book_id = 1;
-  const book = await Books.retrieve({ id: book_id }).first();
-  await ChatReads.editOrCreate(
-    { user_id: user.id, book_id },
-    { current_summary_id: 1 }
-  );
-  let user_info;
-  try {
-    user_info = await getUserInfo(event.sender.id);
-  } catch (err) {
-    if (process.env.DB_ENVIRONMENT !== 'testing') console.log(err);
-  }
-  const book_intro = user_info
-    ? `Hi, ${user_info.first_name}! ${book.intro}`
-    : book.intro;
+  // const book_id = 1;
+  const books = await Books.retrieve();
+  // await ChatReads.editOrCreate(
+  //   { user_id: user.id, book_id },
+  //   { current_summary_id: 1 }
+  // );
+  // let user_info;
+  // try {
+  //   user_info = await getUserInfo(event.sender.id);
+  // } catch (err) {
+  //   if (process.env.DB_ENVIRONMENT !== 'testing') console.log(err);
+  // // }
+  // const book_intro = user_info
+  //   ? `Hi, ${user_info.first_name}! ${book.intro}`
+  //   : book.intro;
 
-  return [
-    {
-      text: book_intro
-    },
-    {
-      attachment: {
-        type: 'template',
-        payload: {
-          template_type: 'generic',
-          elements: [
-            {
-              title: book.title,
-              image_url: book.cover_img,
-              subtitle: `by ${book.author}`,
-              default_action: {
-                type: "web_url",
-                url: "https://cdn1.imggmi.com/uploads/2019/8/22/76c10c3d1b579bf0a66cb7f1cfe74843-full.jpg",
-                webview_height_ratio: "tall",
+  return {
+    attachment: {
+      type: 'template',
+      payload: {
+        template_type: 'generic',
+        elements: books.map(b => {
+          return {
+            title: b.title,
+            image_url: b.cover_img,
+            subtitle: `by ${b.author}`,
+            buttons: [
+              {
+                type: 'postback',
+                title: 'Get Synopsis',
+                payload: JSON.stringify({
+                  command: 'get_synopsis',
+                  book_id: b.id
+                })
               },
-              buttons: [
-                {
-                  type: 'postback',
-                  title: 'Quick Synopsis',
-                  payload: 'get_synopsis'
-                },
-                {
-                  type: 'postback',
-                  title: 'Read Now',
-                  payload: 'get_summary'
-                }
-              ]
-            }
-          ]
-        }
+              {
+                type: 'postback',
+                title: 'Start Summary',
+                payload: JSON.stringify({
+                  command: 'get_synopsis',
+                  book_id: b.id
+                })
+              }
+            ]
+          };
+        })
       }
     }
-  ];
+  };
 };
-

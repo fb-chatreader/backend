@@ -8,22 +8,29 @@ const timedMessages = require('../../../models/db/timedMessages.js');
 // Otherwise, increment and get next summary (check for end of book)
 
 module.exports = async event => {
-  /* HARD CODED */
-  const user = await Users.retrieve({ facebook_id: event.sender.id }).first(); // then get the ID
+  // Collect needed data from DB
+  const book_id = event.book_id;
+  const user = await Users.retrieve({ facebook_id: event.sender.id }).first();
   const user_id = user.id;
-  /* HARD CODED */
-  const book_id = 1;
-
   const chatread = await ChatReads.retrieve({ user_id, book_id }).first();
 
-  /* HARD CODED */
-  const current_summary_id = chatread ? chatread.current_summary_id : 1;
+  // Get the user's current chat read summary_id or if they don't have one,
+  // Set to the current book's first summary_id
+  let current_summary_id;
+  if (chatread) {
+    current_summary_id = chatread.current_summary_id;
+  } else {
+    const firstSummary = await Summaries.retrieve({ book_id }).first();
+    current_summary_id = firstSummary.id;
+  }
 
   const summaries = await Summaries.retrieveBlock(
     { book_id },
     current_summary_id
   );
 
+  // For the next round, update to the next summary_id (which will just be
+  // the last id in the series if there are no more for the current book)
   const next_summary_id = current_summary_id + summaries.block.length;
   await ChatReads.edit(
     { user_id, book_id },
@@ -33,6 +40,8 @@ module.exports = async event => {
         : next_summary_id
     }
   );
+
+  // Update 24 hour timer to send a follow up message
   updateTimedMessages(user_id, book_id, summaries.isFinal);
 
   return summaries.block.map((s, i) => {
@@ -54,7 +63,10 @@ module.exports = async event => {
                   {
                     type: 'postback',
                     title: 'Finish',
-                    payload: 'amazon_link'
+                    payload: JSON.stringify({
+                      command: 'amazon_link',
+                      book_id
+                    })
                   }
                 ]
               }
@@ -70,7 +82,10 @@ module.exports = async event => {
                   {
                     type: 'postback',
                     title: 'Continue',
-                    payload: 'get_summary'
+                    payload: JSON.stringify({
+                      command: 'get_summary',
+                      book_id
+                    })
                   }
                 ]
               }

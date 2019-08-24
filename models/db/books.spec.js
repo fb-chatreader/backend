@@ -1,16 +1,7 @@
 const db = require('../dbConfig.js');
 const Books = require('./books.js');
-const knex = require('knex');
 
-const tables = [
-  'violations',
-  'timed_messages',
-  'chat_reads',
-  'summary_parts',
-  'books',
-  'users'
-];
-describe('books model', () => {
+describe('Testing queries in the books.js file', () => {
   beforeEach(async () => {
     await db.seed.run();
   });
