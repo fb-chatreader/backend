@@ -1,4 +1,24 @@
-// import ShoeDog from '../../ShoeDog';
+const books = require('./ipsumBookData/');
+
+exports.seed = function(knex, Promise) {
+  // delete all entries
+  return knex('books')
+    .del()
+    .then(function() {
+      return knex('books').insert(
+        books.map(b => {
+          const { summary, ...rest } = b;
+          rest.created_at = new Date();
+          rest.publish_date = new Date(rest.publish_date);
+          return rest;
+        })
+      );
+    });
+};
+
+/*
+
+Static Shoe Dog Data:
 
 exports.seed = function(knex, Promise) {
   // delete all entries
@@ -21,3 +41,5 @@ exports.seed = function(knex, Promise) {
       ]);
     });
 };
+
+*/
