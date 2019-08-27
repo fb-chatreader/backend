@@ -1,7 +1,7 @@
 const axios = require('axios');
 const Books = require('../../../models/db/books.js');
 const Users = require('../../../models/db/users.js');
-const getUserInfo = require('../util/asycFunctions');
+const getUserInfo = require('../util/asyncFunctions');
 
 module.exports = async event => {
   const id = event.book_id;
@@ -11,11 +11,7 @@ module.exports = async event => {
 
   return [
     {
-      text: `${
-        user_info.first_name
-      }, thank you for reading a quick summary of ${
-        book.title
-      }, I hope you liked it! You can buy a copy of the book here:`
+      text: `${user_info.first_name}, thank you for reading a quick summary of ${book.title}, I hope you liked it! You can buy a copy of the book here:`
     },
     {
       attachment: {

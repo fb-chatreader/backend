@@ -1,3 +1,5 @@
+// 10 books Ipsum data
+
 const books = require('./ipsumBookData/');
 
 exports.seed = function(knex, Promise) {
@@ -45,45 +47,42 @@ function getSummaries(num) {
   return summaries;
 }
 
-/*
+// Static Shoe Dog Content:
 
-Static Shoe Dog Content:
-const text = require('./bookSummary/').join('  ');
+// const text = require('./bookSummary/').join('  ');
 
-exports.seed = function(knex, Promise) {
-  // del entries
-  return knex('summary_parts')
-    .del()
-    .then(function() {
-      return knex('summary_parts').insert(getSummaries());
-    });
-};
+// exports.seed = function(knex, Promise) {
+//   // del entries
+//   return knex('summary_parts')
+//     .del()
+//     .then(function() {
+//       return knex('summary_parts').insert(getSummaries());
+//     });
+// };
 
-function getSummaries(num) {
-  const limit = 320;
-  const getID = (id => () => ++id)(0);
-  let summaries = [];
-  let current = '';
-  const sentences = text.split('  ');
+// function getSummaries(num) {
+//   const limit = 320;
+//   const getID = (id => () => ++id)(0);
+//   let summaries = [];
+//   let current = '';
+//   const sentences = text.split('  ');
 
-  for (let i = 0; i < sentences.length; i++) {
-    const sentence = sentences[i];
-    if ((current + ' ' + sentence).length <= limit) {
-      current += ' ' + sentence;
-    } else {
-      summaries.push({
-        id: getID(),
-        book_id: 1,
-        summary: current,
-        created_at: new Date()
-      });
-      if (num && summaries.length >= num) {
-        return summaries;
-      }
-      current = '';
-    }
-  }
-  return summaries;
-}
-
-*/
+//   for (let i = 0; i < sentences.length; i++) {
+//     const sentence = sentences[i];
+//     if ((current + ' ' + sentence).length <= limit) {
+//       current += ' ' + sentence;
+//     } else {
+//       summaries.push({
+//         id: getID(),
+//         book_id: 1,
+//         summary: current,
+//         created_at: new Date()
+//       });
+//       if (num && summaries.length >= num) {
+//         return summaries;
+//       }
+//       current = '';
+//     }
+//   }
+//   return summaries;
+// }
