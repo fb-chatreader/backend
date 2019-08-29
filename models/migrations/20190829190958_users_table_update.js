@@ -1,19 +1,5 @@
-
 exports.up = function(knex) {
-  
-};
-
-exports.down = function(knex) {
-  
-};
-
-
-
-
-exports.up = function(knex) {
-    return knex.schema.createTable('users', tbl => {
-      tbl.increments();
-      tbl.text('facebook_id');
+    return knex.schema.alterTable('users', tbl => {
       tbl.text('email');
       tbl
         .foreign('users_categories_id')
@@ -30,8 +16,6 @@ exports.up = function(knex) {
         .onDelete('CASCADE')
         .onUpdate('CASCADE')
         .notNullable();
-  
-      tbl.timestamp('created_at', { useTz: true });
     });
   };
   
