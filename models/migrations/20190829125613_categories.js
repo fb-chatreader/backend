@@ -1,9 +1,9 @@
 exports.up = function(knex) {
   return knex.schema.createTable('categories', tbl => {
     tbl.increments();
-    tbl.text('architecture');
-    tbl.text('art');
-    tbl.text('biography');
+    tbl.text('leadership');
+    tbl.text('entrepreneurship');
+    tbl.text('money');
     tbl.text('other');
     tbl.timestamp('created_at', { useTz: true });
   });
