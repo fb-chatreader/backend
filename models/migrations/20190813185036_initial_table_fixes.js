@@ -9,3 +9,5 @@ exports.down = function(knex) {
     tbl.dropColumn('created_at');
   });
 };
+
+// need to update the books table with new information

@@ -14,6 +14,14 @@ exports.up = function(knex) {
       tbl.text('synopsis');
       tbl.text('cover_img');
       tbl.date('publish_date');
+      tbl
+        .foreign('books_to_categories')
+        .references('categories_id')
+        .inTable('categories')
+        .onDelete('CASCADE')
+        .onUpdate('CASCADE')
+        .notNullable();
+
       tbl.timestamp('created_at');
     })
     .createTable('summary_parts', tbl => {
@@ -60,5 +68,4 @@ exports.down = function(knex) {
     .dropTable('chat_reads')
     .dropTable('summary_parts')
     .dropTable('books');
-
 };
