@@ -4,8 +4,8 @@ exports.up = function(knex) {
     tbl.text('facebook_id');
     tbl.text('email');
     tbl.text('users_categories-id');
-    tbl.text('users_library-id');
-    
+    tbl.foreign('library').references('users-libraryId').inTable('userLibrary');
+
     tbl.timestamp('created_at', { useTz: true });
   });
 };
