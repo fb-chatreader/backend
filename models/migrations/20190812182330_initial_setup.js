@@ -6,11 +6,18 @@ exports.up = function(knex) {
     tbl
       .foreign('users_categories_id')
       .references('categories_id')
-      .inTable('user_categories');
+      .inTable('user_categories')
+      .onDelete('CASCADE')
+      .onUpdate('CASCADE')
+      .notNullable();
+
     tbl
-      .foreign('library')
-      .references('users-libraryId')
-      .inTable('userLibrary');
+      .foreign('users_to_library')
+      .references('users_library_id')
+      .inTable('users_library')
+      .onDelete('CASCADE')
+      .onUpdate('CASCADE')
+      .notNullable();
 
     tbl.timestamp('created_at', { useTz: true });
   });
