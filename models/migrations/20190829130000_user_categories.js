@@ -14,5 +14,5 @@ exports.up = function(knex) {
 };
 
 exports.down = function(knex) {
-    return knex.schema.dropTable('users_categories');
+  return knex.schema.dropTable('users_categories');
 };
