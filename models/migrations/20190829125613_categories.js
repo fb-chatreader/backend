@@ -4,9 +4,7 @@ exports.up = function(knex) {
     tbl.text('architecture');
     tbl.text('art');
     tbl.text('biography');
-    tbl.text('body_mind_Spirit');
-    tbl.text('computers');
-    tbl.text('cooking');
+    tbl.text('other');
     tbl.timestamp('created_at', { useTz: true });
   });
 };
