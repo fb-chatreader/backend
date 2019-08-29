@@ -5,7 +5,7 @@ exports.up = function(knex) {
     tbl.text('email');
     tbl.text('users_categories-id');
     tbl.foreign('library').references('users-libraryId').inTable('userLibrary');
-
+    
     tbl.timestamp('created_at', { useTz: true });
   });
 };
