@@ -38,7 +38,7 @@ function write(summary) {
     .then(s => retrieve({ id: s[0].id }).first());
 }
 
-function edit(summaryid, summary) {
+// function edit(summaryid, summary) {
   return db('summary_parts')
     .where({ id: summaryid })
     .update(summary);
@@ -49,3 +49,4 @@ function remove(summaryid) {
     .where({ id: summaryid })
     .del();
 }
+
