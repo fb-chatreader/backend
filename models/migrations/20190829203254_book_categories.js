@@ -19,5 +19,5 @@ exports.up = function(knex) {
 };
 
 exports.down = function(knex) {
-  return knex.schema.dropTable('user_libraries');
+  return knex.schema.dropTable('book_categories');
 };
