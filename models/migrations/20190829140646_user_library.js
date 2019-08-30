@@ -2,14 +2,14 @@ exports.up = function(knex) {
   return knex.schema.alterTable('books', tbl => {
     tbl.increments();
     tbl
-      .int('users_to_library')
+      .integer('users_to_library')
       .reference('user_id')
       .inTable('users')
       .onDelete('CASCADE')
       .onUpdate('CASCADE')
       .notNullable();
     tbl
-      .int('library_to_books')
+      .integer('library_to_books')
       .reference('books_id')
       .inTable('books')
       .onDelete('CASCADE')
