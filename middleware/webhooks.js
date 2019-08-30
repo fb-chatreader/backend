@@ -4,6 +4,18 @@ const verifyWebhook = ({ body }, res, next) => {
   }
 };
 
+function isValidEmail(email) {
+  // Test for email format.  Tests in order:
+  // one @, dot after @
+  // first character is a number or letter
+  // last character is a letter
+  return (
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) &&
+    /[a-z0-9]/.test(email[0]) &&
+    /[a-z]/.test(email[email.length - 1])
+  );
+}
+
 const formatWebhook = ({ body: { entry } }, res, next) => {
   // We receive data for our commands from a variety of places.
   // This middleware is meant to organize that data into a single place to
@@ -28,15 +40,29 @@ const formatWebhook = ({ body: { entry } }, res, next) => {
       type: 'postback',
       sender: event.sender
     };
+    // edge case- user type wrong email
+    // v
   } else if (event && event.message) {
+  const validEmail = event.message.text;
+  if(isValidEmail(validEmail)) {
+    command = {
+      command: `get_email`,
+      type: 'input',
+      sender: event.sender,
+      validEmail: validEmail,
+    };
+  } else {
     command = {
       command: event.message.text
         .toLowerCase()
         .split(' ')
         .join('_'),
-      type: 'command',
+      type: 'input',
       sender: event.sender
     };
+  }
+  // if validemail.isValid then command getValid email will be executed
+  // get started or whatever command the user types
   }
 
   if (entry && entry[0] && command) {
