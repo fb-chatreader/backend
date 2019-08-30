@@ -27,10 +27,10 @@ server.use('/api/books', bookRouter);
 // server.use('/api/chatReads', chatReadRouter);
 
 server.get('/', (req, res) => {
-  res.status(200).json({ message: 'Welcome to ChatReader server!' });
+  res.sendStatus(200).json({ message: 'Welcome to ChatReader server!' });
 });
 
 //async error handling middleware MUST come after routes or else will just throw Type error
-server.use(errorHandler);
+// server.use(errorHandler);
 
 module.exports = server;
