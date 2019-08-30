@@ -15,5 +15,5 @@ function retrieve(filter) {
 function write(category) {
   return db('categories')
     .insert(category, ['*'])
-    .then(cat => retrieve({ id: cat[0].id }).first());
+    // .then(cat => retrieve({ id: cat[0].id }).first());
 }

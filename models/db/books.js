@@ -22,7 +22,7 @@ function retrieveByID(id) {
 function write(book) {
   return db(`books`)
     .insert(book, ['*'])
-    .then(ids => ({ id: ids[0] }));
+    // .then(ids => ({ id: ids[0] }));
 }
 
 function edit(bkid, book) {
