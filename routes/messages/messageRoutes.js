@@ -26,7 +26,7 @@ router.get('/webhook', (req, res) => {
   if (mode && token) {
     if (mode === 'subscribe' && token === VERIFY_TOKEN) {
       console.log('Webhook verified');
-      res.status(200).send(challenge);
+      res.sendStatus(200).send(challenge);
     } else {
       res.sendStatus(403);
     }
@@ -36,6 +36,6 @@ router.get('/webhook', (req, res) => {
 });
 
 router.get('/', (req, res) => {
-  res.status(200).send('API RUNNING!!!');
+  res.sendStatus(200).send('API RUNNING!!!');
 });
 module.exports = router;
