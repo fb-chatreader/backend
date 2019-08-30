@@ -2,7 +2,7 @@ exports.up = function(knex) {
   return knex.schema.alterTable('books', tbl => {
     tbl
       .integer('books_to_categories')
-      .references('categories_id')
+      .references('id')
       .inTable('categories')
       .onDelete('CASCADE')
       .onUpdate('CASCADE')
