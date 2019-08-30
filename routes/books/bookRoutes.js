@@ -5,26 +5,33 @@ const Book_Categories = require('../../models/db/bookCategories');
 const Summary_Parts = require('../../models/db/summaryParts');
 
 router.post('/add', async (req, res) => {
+  console.log("hitting the api");
   const books = req.body; //rec content
   for (let i = 0; i < books.length; i++) {
+    console.log("in for loop");
     const publish_date = new Date();
     const created_at = new Date();
     const { summary, category, ...book } = books[i];
     book.publish_date = publish_date;
     book.created_at = created_at;
-
-    const newBook = await Books.write(book);
-    // categories[category]
-    // cat id
-    const { id } = Categories.retrieve({ [category]: 1 }).first();
-    await Categories.write(id);
     
-    const bookCategory = { book_id: newBook.id, category_id: id };
-    await Book_Categories.write(bookCategory);
-
+    console.log("in for category", category.toLowerCase());
+    const newBook = await Books.write(book);
+    
+    const { id } = await Categories.retrieve({ [category.toLowerCase()]: 1 }).first();
+    // console.log()
+    console.log("id", id);
+    
+    const testCat = await Categories.write(id);
+    console.log("testCat", testCat);
+    const bookCategory = { book_id: newBook[0].id, category_id: id };
+    const bookCatTest = await Book_Categories.write(bookCategory);
+    console.log("testCat", bookCatTest);
+    
     const summaryArray = getSummaryParts(summary)
     for (let i = 0; i < summaryArray.length; i++) {
-       const summaryObj = {book_id: newBook.id, summary: summaryArray[i], created_at: new Date()}; 
+      console.log("newBook.id", newBook.id);
+       const summaryObj = {book_id: newBook[0].id, summary: summaryArray[i], created_at: new Date()}; 
        await Summary_Parts.write(summaryObj);
     }
   }
