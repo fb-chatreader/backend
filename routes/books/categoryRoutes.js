@@ -3,7 +3,7 @@ const Categories = require('../../models/db/categories');
 // const Book_Categories = require('../../models/db/bookCategories');
 
 // need to insert categories into the db and assign the id of 1 to each category
-router.post('/category', async (req, res) => {
+router.post('/add', async (req, res) => {
   //   const categories = req.body;
   const categories = [
     { leadership: 1 },
@@ -15,4 +15,6 @@ router.post('/category', async (req, res) => {
     const category = categories[i];
     Categories.write(category);
   }
+  return res.sendStatus(200);
 });
+module.exports = router;
