@@ -3,11 +3,11 @@ exports.up = function(knex) {
     tbl.increments();
     tbl
       .integer('to_categories')
-      .references('categories_id')
+      .references('id')
       .inTable('categories');
     tbl
       .integer('to_users')
-      .references('users_id')
+      .references('id')
       .inTable('users');
     tbl.timestamp('created_at', { useTz: true });
   });
