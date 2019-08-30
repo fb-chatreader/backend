@@ -28,6 +28,7 @@ router.post('/add', async (req, res) => {
        await Summary_Parts.write(summaryObj);
     }
   }
+  return res.sendStatus(200);
 });
 
 
