@@ -8,6 +8,7 @@ require('./jobs/timedMessages.js');
 // route declarations
 const messageRouter = require('./routes/messages/messageRoutes');
 const bookRouter = require('./routes/books/bookRoutes');
+const categoryRouter = require('./routes/books/categoryRoutes');
 // const userRouter = require('./routes/userRoute');
 // const summaryRouter = require('./routes/summaryPartRoute');
 // const chatReadRouter = require('./routes/chatReadRoute');
@@ -22,6 +23,7 @@ server.use(express.json());
 // routes
 server.use('/api/messenger', messageRouter);
 server.use('/api/books', bookRouter);
+server.use('/api/category', categoryRouter);
 // server.use('/api/users', userRouter);
 // server.use('/api/summaries', summaryRouter);
 // server.use('/api/chatReads', chatReadRouter);
