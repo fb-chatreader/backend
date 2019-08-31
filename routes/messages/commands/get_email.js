@@ -1,5 +1,5 @@
 const Users = require('../../../models/db/users.js');
-const getUserInfo = require('../util/asycFunctions.js');
+const getUserInfo = require('../util/asyncFunctions.js');
 
 module.exports = async event => {
     /**

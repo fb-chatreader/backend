@@ -1,29 +1,17 @@
 const axios = require('axios');
 const Books = require('../../../models/db/books.js');
 const Users = require('../../../models/db/users.js');
-const getUserInfo = require('../util/asycFunctions');
+const getUserInfo = require('../util/asyncFunctions');
 
 module.exports = async event => {
-  // we have facebook id, 
-  // from facebook id , we can get the userid,
-  // can dynamically pass user id 
-  // const user = await Users.retrieveOrCreate({ facebook_id: event.sender.id });
-  //console.log(user.id, 'user');
-  //console.log(event.sender.id, 'sender id');
-  //const id = user.id;
-  //will dynamically pass id 
-  const id = 1;
+  const id = event.book_id;
   const book = await Books.retrieve({ id }).first();
 
   const user_info = await getUserInfo(event.sender.id);
 
   return [
     {
-      text: `${
-        user_info.first_name
-      }, thank you for reading a quick summary of ${
-        book.title
-      }, I hope you liked it! You can buy a copy of the book here:`
+      text: `${user_info.first_name}, thank you for reading a quick summary of ${book.title}, I hope you liked it! You can buy a copy of the book here:`
     },
     {
       attachment: {

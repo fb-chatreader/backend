@@ -1,11 +1,7 @@
 const Command = require('../classes/Command.js');
 const Books = require('../../../models/db/books.js');
 module.exports = async event => {
-  // When this code is finalized, the id should be in the 'event' but for right now
-  // We're hard coding until that UI is built out.
-
-  /* HARD CODED */
-  const id = 1;
+  const id = event.book_id;
   const book = await Books.retrieve({ id }).first();
   return {
     attachment: {
@@ -17,7 +13,10 @@ module.exports = async event => {
           {
             type: 'postback',
             title: 'Start Summary',
-            payload: 'get_summary'
+            payload: JSON.stringify({
+              command: 'get_summary',
+              book_id: id
+            })
           }
         ]
       }

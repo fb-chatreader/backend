@@ -22,14 +22,14 @@ server.use(express.json());
 
 // routes
 server.use('/api/messenger', messageRouter);
-server.use('/api/books', bookRouter);
+// server.use('/api/books', bookRouter);
 server.use('/api/category', categoryRouter);
 // server.use('/api/users', userRouter);
 // server.use('/api/summaries', summaryRouter);
 // server.use('/api/chatReads', chatReadRouter);
 
 server.get('/', (req, res) => {
-  res.sendStatus(200).json({ message: 'Welcome to ChatReader server!' });
+  return res.send(200).json({ message: 'Welcome to ChatReader server!' });
 });
 
 //async error handling middleware MUST come after routes or else will just throw Type error
