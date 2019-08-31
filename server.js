@@ -22,7 +22,7 @@ server.use(express.json());
 
 // routes
 server.use('/api/messenger', messageRouter);
-// server.use('/api/books', bookRouter);
+server.use('/api/books', bookRouter);
 server.use('/api/category', categoryRouter);
 // server.use('/api/users', userRouter);
 // server.use('/api/summaries', summaryRouter);
@@ -36,4 +36,3 @@ server.get('/', (req, res) => {
 // server.use(errorHandler);
 
 module.exports = server;
-
