@@ -14,10 +14,11 @@ const Commands = new CommandList();
 router.post('/webhook', verifyWebhook, formatWebhook, (req, res) => {
   const event = req.body.entry[0].input;
   const sent = Commands.execute(event);
-  return sent ? res.sendStatus(200) : res.sendStatus(404);
+  sent ? res.sendStatus(200) : res.sendStatus(404);
 });
 
 router.get('/webhook', (req, res) => {
+  console.log('QUERY: ', req.query, req.body);
   let VERIFY_TOKEN = process.env.VERIFY_TOKEN;
   let mode = req.query['hub.mode'];
   let token = req.query['hub.verify_token'];
@@ -26,16 +27,16 @@ router.get('/webhook', (req, res) => {
   if (mode && token) {
     if (mode === 'subscribe' && token === VERIFY_TOKEN) {
       console.log('Webhook verified');
-      return res.status(200).send(challenge);
+      res.status(200).send(challenge);
     } else {
-      return res.sendStatus(403);
+      res.sendStatus(403);
     }
   } else {
-    return res.sendStatus(404);
+    res.sendStatus(404);
   }
 });
 
 router.get('/', (req, res) => {
-  return res.status(200).send('API RUNNING!!!');
+  res.status(200).send('API RUNNING!!!');
 });
 module.exports = router;
