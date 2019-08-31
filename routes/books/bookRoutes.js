@@ -32,6 +32,7 @@ router.post('/add', async (req, res) => {
     for (let i = 0; i < summaryArray.length; i++) {
       console.log("newBook.id", newBook.id);
        const summaryObj = {book_id: newBook[0].id, summary: summaryArray[i], created_at: new Date()}; 
+       console.log("summaryid", summaryArray[i])
        await Summary_Parts.write(summaryObj);
     }
   }
