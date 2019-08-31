@@ -8,6 +8,3 @@ if the message type is a postback the router get will trigger
 
 
 
-Messenger Features
-welcome message 
-select categories
