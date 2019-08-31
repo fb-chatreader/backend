@@ -10,5 +10,5 @@ module.exports = (err, req, res) => {
   if (env === 'production') {
     error = 'An error occurred while processing your request.';
   }
-  res.status(statusCode).json({ error });
+  return res.status(statusCode).json({ error });
 };
