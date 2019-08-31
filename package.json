@@ -32,12 +32,12 @@
     "request": "^2.88.0",
     "require-dir": "^1.2.0",
     "sqlite": "^3.0.3",
-    "sqlite3": "^4.0.9"
+    "sqlite3": "^4.0.9",
+    "knex-cleaner": "^1.3.0"
   },
   "devDependencies": {
     "cross-env": "^5.2.0",
     "jest": "^24.9.0",
-    "knex-cleaner": "^1.3.0",
     "nodemon": "^1.19.1",
     "supertest": "^4.0.2"
   }
