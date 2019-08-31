@@ -18,6 +18,7 @@ module.exports = async event => {
     { user_id: user.id, book_id },
     { current_summary_id: 1 }
   );
+
   let user_info;
   try {
     user_info = await getUserInfo(event.sender.id);
