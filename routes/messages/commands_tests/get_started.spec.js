@@ -31,3 +31,5 @@ describe('get_started command tests', () => {
     expect(Array.isArray(response)).toBe(true);
   });
 });
+
+

@@ -49,3 +49,4 @@ function remove(summaryid) {
     .where({ id: summaryid })
     .del();
 }
+

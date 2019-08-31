@@ -42,6 +42,12 @@ describe('Testing queries in the books.js file', () => {
       const books = await Books.retrieve();
       expect(books).toHaveLength(3);
     });
+    
+    test('should be the right datatype', async () => {
+      const book = await Books.retrieve();
+      expect(typeof 'book.author').toBe('string')
+      expect(typeof book.author).toBe(string)
+    })
 
     // it('should insert the provided hobbit', async () => {
     //   let hobbit = await Hobbits.insert({ name: 'gaffer' });

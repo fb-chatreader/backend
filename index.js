@@ -1,5 +1,5 @@
 // const bodyPaser = require('body-parser');
-require('express-async-errors');
+// require('express-async-errors');
 const server = require('./server.js');
 
 const port = process.env.PORT || 8000;
