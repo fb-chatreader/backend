@@ -1,5 +1,5 @@
 const Users = require('../../../models/db/users.js');
-const getUserInfo = require('../util/asycFunctions');
+const getUserInfo = require('../util/asyncFunctions');
 
 module.exports = async event => {
   const user_info = await getUserInfo(event.sender.id);
@@ -59,7 +59,7 @@ module.exports = async event => {
                 type: 'postback',
                 title: 'Finish',
                 payload: 'amazon_link'
-              },
+              }
             ]
           }
         }

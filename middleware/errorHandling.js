@@ -1,4 +1,4 @@
-module.exports =  (req, res, err) => {
+module.exports = (err, req, res) => {
   const statusCode = err.statusCode || 500;
   const env = process.env.DB_ENVIRONMENT || 'development';
   let error;
@@ -10,5 +10,5 @@ module.exports =  (req, res, err) => {
   if (env === 'production') {
     error = 'An error occurred while processing your request.';
   }
-  res.sendStatus(statusCode).json({ error });
+  return res.status(statusCode).json({ error });
 };
