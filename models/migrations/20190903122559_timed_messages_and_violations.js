@@ -16,18 +16,28 @@ exports.up = function(knex) {
         .onDelete('CASCADE')
         .onUpdate('CASCADE')
         .notNullable();
-      tbl.boolean('isComplete');
+      tbl
+        .boolean('isComplete')
+        .notNullable()
+        .defaultTo(false);
       tbl.timestamp('send_at').notNullable();
+      tbl
+        .timestamp('created_at')
+        .notNullable()
+        .defaultTo(knex.fn.now());
     })
-    .alterTable('books', tbl => {
-      tbl.text('intro');
+    .createTable('violations', tbl => {
+      tbl.increments();
+      tbl.text('page_id').notNullable();
+      tbl.text('action').notNullable();
+      tbl.text('reason').notNullable();
+      tbl
+        .timestamp('created_at')
+        .notNullable()
+        .defaultTo(knex.fn.now());
     });
 };
 
 exports.down = function(knex) {
-  return knex.schema
-    .alterTable('books', tbl => {
-      tbl.dropColumn('intro');
-    })
-    .dropTable('timed_messages');
+  return knex.schema.dropTable('violations').dropTable('timed_messages');
 };
