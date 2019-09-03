@@ -11,7 +11,7 @@ const Commands = new CommandList();
 router.post('/webhook', verifyWebhook, formatWebhook, (req, res) => {
   const event = req.body.entry[0].input;
   const sent = Commands.execute(event);
-  sent ? res.sendStatus(200) : res.sendStatus(404);
+  return sent ? res.sendStatus(200) : res.sendStatus(404);
 });
 
 router.get('/webhook', (req, res) => {
@@ -23,12 +23,12 @@ router.get('/webhook', (req, res) => {
   if (mode && token) {
     if (mode === 'subscribe' && token === VERIFY_TOKEN) {
       console.log('Webhook verified');
-      res.status(200).send(challenge);
+      return res.status(200).send(challenge);
     } else {
-      res.sendStatus(403);
+      return res.sendStatus(403);
     }
   } else {
-    res.sendStatus(404);
+    return res.sendStatus(404);
   }
 });
 
