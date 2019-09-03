@@ -64,7 +64,7 @@ module.exports = async event => {
                     type: 'postback',
                     title: 'Finish',
                     payload: JSON.stringify({
-                      command: 'amazon_link',
+                      command: 'buy_book',
                       book_id
                     })
                   }
