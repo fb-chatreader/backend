@@ -27,6 +27,7 @@ server.get('/', (req, res) => {
   return res.send(200).json({ message: 'Welcome to ChatReader server!' });
 });
 
+// Default 404 route
 server.get('*', function(req, res) {
   res.status(404).send('Sorry, that is not a valid route');
 });
