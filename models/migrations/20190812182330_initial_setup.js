@@ -11,7 +11,10 @@ exports.up = function(knex) {
     })
     .createTable('books', tbl => {
       tbl.increments();
-      tbl.text('title').notNullable();
+      tbl
+        .text('title')
+        .notNullable()
+        .unique();
       tbl.text('author').notNullable();
       tbl.text('synopsis');
       tbl.text('intro');
