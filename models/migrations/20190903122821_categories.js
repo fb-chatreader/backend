@@ -11,7 +11,7 @@ exports.up = function(knex) {
         .notNullable()
         .defaultTo(knex.fn.now());
     })
-    .createTable('users_categories', tbl => {
+    .createTable('user_categories', tbl => {
       tbl.increments();
       tbl
         .integer('category_id')
