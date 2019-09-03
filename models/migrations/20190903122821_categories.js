@@ -2,10 +2,10 @@ exports.up = function(knex) {
   return knex.schema
     .createTable('categories', tbl => {
       tbl.increments();
-      tbl.text('leadership');
-      tbl.text('entrepreneurship');
-      tbl.text('money');
-      tbl.text('other');
+      tbl.integer('leadership');
+      tbl.integer('entrepreneurship');
+      tbl.integer('money');
+      tbl.integer('other');
       tbl
         .timestamp('created_at')
         .notNullable()
