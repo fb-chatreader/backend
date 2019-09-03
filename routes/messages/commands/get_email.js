@@ -1,30 +1,17 @@
 const Users = require('../../../models/db/users.js');
-const getUserInfo = require('../util/asyncFunctions.js');
+const getUserInfo = require('../helpers/getUserInfo.js');
 
 module.exports = async event => {
-    /**
-     * collects email from users and stores in in the user table
-     * return response edge case, invalid email
-     * good email => save
-     * 3 carasoal include the options they selected
-     *  get started => welcome => pick category 
-     * => email address => save email => 3 carasol
-     * => reading
-     * 
-     * edge case:
-     * check user category and return the valid category
-     * 
-     * bad email 
-     */
-  const user = await Users.retrieveOrCreate({facebook_id: event.sender.id });
-  const userEmail = await Users.edit(user.id, email = event.validEmail);
+  // Currently just saves an email when presented with one.
+  // Future work:
+  // Return a series (3) of carousels based on the user's preferred categories, if they exist.
+  const user = await Users.retrieveOrCreate({ facebook_id: event.sender.id });
+  await Users.edit(user.id, (email = event.validEmail));
   const user_info = await getUserInfo(event.sender.id);
 
   return [
-      {
-        text: `${
-            user_info.first_name
-        }, thank you for entering your email!`
-      }
-  ]
-}
+    {
+      text: `${user_info.first_name}, thank you for entering your email!`
+    }
+  ];
+};

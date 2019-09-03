@@ -1,5 +1,5 @@
-const Users = require('../../../models/db/users.js');
-const getUserInfo = require('../util/asyncFunctions');
+const Users = require('models/db/users.js');
+const getUserInfo = require('../helpers/getUserInfo.js');
 
 module.exports = async event => {
   const user_info = await getUserInfo(event.sender.id);

@@ -5,12 +5,12 @@ const router = require('express')
 
 const { verifyWebhook, formatWebhook } = require('middleware/webhooks.js');
 
-const CommandList = require('./classes/CommandList.js');
-const Commands = new CommandList();
+const CommandListClass = require('classes/CommandList.js');
+const CommandList = new CommandListClass();
 
 router.post('/webhook', verifyWebhook, formatWebhook, (req, res) => {
-  const event = req.body.entry[0].input;
-  const sent = Commands.execute(event);
+  const input = req.body.entry[0].input;
+  const sent = CommandList.execute(input);
   return sent ? res.sendStatus(200) : res.sendStatus(404);
 });
 
