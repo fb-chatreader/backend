@@ -60,7 +60,6 @@ const formatWebhook = ({ body: { entry } }, res, next) => {
         sender: event.sender,
         catagories: event.message.text
       }
-      console.log(parsed_data, 'parsed data...');
     } else {
       parsed_data = {
         command: event.message.text

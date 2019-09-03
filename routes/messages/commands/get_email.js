@@ -17,7 +17,7 @@ module.exports = async event => {
      * bad email 
      */
   const user = await Users.retrieveOrCreate({facebook_id: event.sender.id });
-  const userEmail = await Users.edit(user.id, email = event.validEmail);
+  const userEmail = await Users.edit(user.id, {email: event.validEmail });
   const user_info = await getUserInfo(event.sender.id);
 
   return [
