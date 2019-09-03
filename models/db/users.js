@@ -2,25 +2,17 @@ const db = require('../dbConfig.js');
 
 module.exports = {
   retrieve,
-  retrieveByID,
-  write,
+  add,
   edit,
   remove,
   retrieveOrCreate
 };
 
 function retrieve(filter) {
-  if (filter) {
-    return db('users').where(filter);
-  }
-  return db('users');
+  return filter ? db('users').where(filter) : db('users');
 }
 
-function retrieveByID(id) {
-  return db('users').where({ id });
-}
-
-function write(user) {
+function add(user) {
   return db(`users`)
     .insert(user, ['*'])
     .then(u => retrieve({ id: u[0].id }).first());
@@ -29,7 +21,8 @@ function write(user) {
 function edit(id, user) {
   return db('users')
     .where({ id })
-    .update(user);
+    .update(user)
+    .then(u => retrieve({ id: u[0].id }).first());
 }
 
 function remove(id) {
