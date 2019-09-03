@@ -7,6 +7,10 @@ exports.up = function(knex) {
       tbl.integer('money');
       tbl.integer('other');
       tbl
+        .text('image_url')
+        .notNullable()
+        .defaultTo('https://i.imgur.com/69eGwya.png');
+      tbl
         .timestamp('created_at')
         .notNullable()
         .defaultTo(knex.fn.now());
