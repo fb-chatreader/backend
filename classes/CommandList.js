@@ -3,7 +3,7 @@ const reqDir = require('require-dir');
 
 module.exports = class CommandList {
   constructor() {
-    this.commands = reqDir('../commands/');
+    this.commands = reqDir('../routes/messages/commands/');
   }
 
   execute(input) {
