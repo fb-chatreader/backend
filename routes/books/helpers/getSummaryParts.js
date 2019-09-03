@@ -1,5 +1,8 @@
 module.exports = summary => {
+  // Replace double spaces with a single for a standard format
+  // Replace all punctuation with an extra space
   const extraSpace = summary
+    .replace(/\s\s+/g, ' ')
     .replace(/[.]/gi, '. ')
     .replace(/[!]/gi, '! ')
     .replace(/[?]/gi, '? ');
