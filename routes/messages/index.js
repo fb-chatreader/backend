@@ -3,10 +3,7 @@ const router = require('express')
   .Router()
   .use(bodyParser.json());
 
-const {
-  verifyWebhook,
-  formatWebhook
-} = require('../../middleware/webhooks.js');
+const { verifyWebhook, formatWebhook } = require('middleware/webhooks.js');
 
 const CommandList = require('./classes/CommandList.js');
 const Commands = new CommandList();
@@ -18,7 +15,6 @@ router.post('/webhook', verifyWebhook, formatWebhook, (req, res) => {
 });
 
 router.get('/webhook', (req, res) => {
-  console.log('QUERY: ', req.query, req.body);
   let VERIFY_TOKEN = process.env.VERIFY_TOKEN;
   let mode = req.query['hub.mode'];
   let token = req.query['hub.verify_token'];
