@@ -8,18 +8,18 @@ module.exports = {
 
 function retrieve(filter) {
   if (filter) {
-    return db('book_categories').where(filter);
+    return db('usersCategories').where(filter);
   }
-  return db('book_categories');
+  return db('usersCategories');
 }
 
 function write(category) {
-  return db('book_categories')
+  return db('usersCategories')
     .insert(category, ['*'])
     .then(cat => retrieve({ id: cat[0].id }).first());
 }
 function edit(id, category) {
-  return db('book_categories')
+  return db('usersCategories')
     .where({ id })
     .update(category);
 }
