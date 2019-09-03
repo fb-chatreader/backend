@@ -14,14 +14,14 @@ function retrieve(filter) {
 function add(book) {
   return db(`books`)
     .insert(book, ['*'])
-    .then(b => ({ id: b[0].id }.first()));
+    .then(b => retrieve({ id: b[0].id }).first());
 }
 
 function edit(filter, changes) {
   return db('books')
     .where(filter)
     .update(changes)
-    .then(b => ({ id: b[0].id }.first()));
+    .then(b => retrieve({ id: b[0].id }).first());
 }
 
 function remove(id) {
