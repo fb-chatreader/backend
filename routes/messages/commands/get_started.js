@@ -50,7 +50,7 @@ async function getResponseObject(size, books, input) {
             elements: [
               {
                 title: books[0].title,
-                image_url: books[0].cover_img,
+                image_url: books[0].image_url,
                 subtitle: `by ${books[0].author}`,
                 buttons: [
                   {
@@ -88,7 +88,7 @@ async function getResponseObject(size, books, input) {
             elements: books.map(b => {
               return {
                 title: b.title,
-                image_url: b.cover_img,
+                image_url: b.image_url,
                 subtitle: `by ${b.author}`,
                 buttons: [
                   {
