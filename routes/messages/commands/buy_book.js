@@ -21,7 +21,7 @@ module.exports = async input => {
           elements: [
             {
               title: book.title,
-              image_url: book.cover_img,
+              image_url: book.image_url,
               default_action: {
                 type: 'web_url',
                 url:
