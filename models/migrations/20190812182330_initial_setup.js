@@ -18,7 +18,7 @@ exports.up = function(knex) {
       tbl.text('author').notNullable();
       tbl.text('synopsis');
       tbl.text('intro');
-      tbl.text('cover_img').notNullable();
+      tbl.text('image_url').notNullable();
       tbl
         .timestamp('created_at')
         .notNullable()
