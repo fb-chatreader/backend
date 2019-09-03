@@ -1,6 +1,5 @@
 // const ChatReads = require('../../../models/db/chatReads.js');
 const Books = require('models/db/books.js');
-const Users = require('models/db/users.js');
 const getUserInfo = require('../helpers/getUserInfo.js');
 
 // Verify users exists already, if not save their Facebook ID
@@ -8,7 +7,6 @@ const getUserInfo = require('../helpers/getUserInfo.js');
 // Long term: Suggest books / categories for user to select
 
 module.exports = async input => {
-  await Users.retrieveOrCreate({ facebook_id: input.sender.id });
   const books = await Books.retrieve();
 
   if (!books.length) return;
