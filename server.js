@@ -29,7 +29,7 @@ server.get('/', (req, res) => {
 
 // Default 404 route
 server.get('*', function(req, res) {
-  res.status(404).send('Sorry, that is not a valid route');
+  return res.status(404).send('Sorry, that is not a valid route');
 });
 
 //async error handling middleware MUST come after routes or else will just throw Type error
