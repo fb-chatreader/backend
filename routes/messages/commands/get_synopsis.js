@@ -1,5 +1,5 @@
-const Command = require('../classes/Command.js');
-const Books = require('../../../models/db/books.js');
+const Books = require('models/db/books.js');
+
 module.exports = async event => {
   const id = event.book_id;
   const book = await Books.retrieve({ id }).first();

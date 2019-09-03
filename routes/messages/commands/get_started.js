@@ -1,7 +1,7 @@
 // const ChatReads = require('../../../models/db/chatReads.js');
-const Books = require('../../../models/db/books.js');
-const Users = require('../../../models/db/users.js');
-const getUserInfo = require('../util/asyncFunctions.js');
+const Books = require('models/db/books.js');
+const Users = require('models/db/users.js');
+const getUserInfo = require('../helpers/getUserInfo.js');
 
 // Verify users exists already, if not save their Facebook ID
 // Short term: reset current_summary of the book, fetch book from DB, display get Synopsis option
@@ -13,7 +13,7 @@ module.exports = async event => {
 
   if (!books.length) return;
   // No "large" scale UI yet so last value is only "mid"
-    console.log(books.length);
+  console.log(books.length);
   return getResponseObject(
     books.length === 1 ? 'single' : books.length < 15 ? 'mid' : 'mid',
     books,
