@@ -12,7 +12,7 @@ module.exports = async bookObj => {
     !book ||
     !book.title ||
     !book.author ||
-    !book.cover_img
+    !book.image_url
   ) {
     // If we're missing any part of a book, skip over it
     return false;
