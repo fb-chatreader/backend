@@ -18,7 +18,7 @@ const formatWebhook = ({ body: { entry } }, res, next) => {
   if (entry && entry[0] && entry[0]['policy-enforcement']) {
     parsed_data = {
       command: 'policy_violation',
-      type: 'webhook',
+      type: 'policy_violation',
       ...entry[0]['policy-enforcement'],
       page_id: entry[0].recipient.id
     };
