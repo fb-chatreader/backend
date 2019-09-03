@@ -4,20 +4,7 @@ const verifyWebhook = ({ body }, res, next) => {
   }
 };
 
-function isValidEmail(email) {
-  // Test for email format.  Tests in order:
-  // one @, dot after @
-  // first character is a number or letter
-  // last character is a letter
-  return (
-    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) &&
-    /[a-z0-9]/.test(email[0]) &&
-    /[a-z]/.test(email[email.length - 1])
-  );
-}
-
 const formatWebhook = ({ body: { entry } }, res, next) => {
-  console.log("WEBHOOK MIDDLEWARE");
   // We receive data for our commands from a variety of places.
   // This middleware is meant to organize that data into a single place to
   // simplify the rest of our code
@@ -41,8 +28,6 @@ const formatWebhook = ({ body: { entry } }, res, next) => {
       type: 'postback',
       sender: event.sender
     };
-    // edge case- user type wrong email
-    // v
   } else if (event && event.message) {
     parsed_data = {
       command: event.message.text
