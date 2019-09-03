@@ -1,5 +1,5 @@
-const db = require('../dbConfig.js');
-const Books = require('./books.js');
+const db = require('../../dbConfig.js.js');
+const Books = require('../books.jss');
 
 describe('Testing queries in the books.js file', () => {
   beforeEach(async () => {
@@ -42,12 +42,12 @@ describe('Testing queries in the books.js file', () => {
       const books = await Books.retrieve();
       expect(books).toHaveLength(3);
     });
-    
+
     test('should be the right datatype', async () => {
       const book = await Books.retrieve();
-      expect(typeof 'book.author').toBe('string')
-      expect(typeof book.author).toBe(string)
-    })
+      expect(typeof 'book.author').toBe('string');
+      expect(typeof book.author).toBe(string);
+    });
 
     // it('should insert the provided hobbit', async () => {
     //   let hobbit = await Hobbits.insert({ name: 'gaffer' });
