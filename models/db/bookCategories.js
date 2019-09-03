@@ -6,14 +6,11 @@ module.exports = {
 };
 
 function retrieve(filter) {
-  if (filter) {
-    return db('book_categories').where(filter);
-  }
-  return db('book_categories');
+  return filter ? db('book_categories').where(filter) : db('book_categories');
 }
 
 function write(category) {
   return db('book_categories')
     .insert(category, ['*'])
-    .then(cat => retrieve({ id: cat[0].id }).first());
+    .then(c => retrieve({ id: c[0].id }).first());
 }
