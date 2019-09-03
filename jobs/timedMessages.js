@@ -1,7 +1,7 @@
 const TimedMessages = require('../models/db/timedMessages.js');
 const Books = require('../models/db/books.js');
 const Users = require('../models/db/users.js');
-const Command = require('../routes/messages/classes/Command.js');
+const Command = require('classes/Message.js');
 
 module.exports = setInterval(cycleMessages, 1000 * 60 * 30);
 
