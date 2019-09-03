@@ -44,14 +44,33 @@ const formatWebhook = ({ body: { entry } }, res, next) => {
     // edge case- user type wrong email
     // v
   } else if (event && event.message) {
-    parsed_data = {
-      command: event.message.text
-        .toLowerCase()
-        .split(' ')
-        .join('_'),
-      type: 'input',
-      sender: event.sender
-    };
+    let validEmail = event.message.text
+    if (isValidEmail(validEmail)) {
+      parsed_data = {
+        command:'get_email',
+        type: 'input',
+        sender: event.sender,
+        validEmail: event.message.text
+      }
+    } else if (event.message.text === 'leadership' || event.message.text === 'entrepreneurship' || event.message.text === 'money' || event.message.text === 'other') {
+      let catagories;
+      parsed_data = {
+        command: 'get_catagories',
+        type:'input',
+        sender: event.sender,
+        catagories: event.message.text
+      }
+      console.log(parsed_data, 'parsed data...');
+    } else {
+      parsed_data = {
+        command: event.message.text
+          .toLowerCase()
+          .split(' ')
+          .join('_'),
+        type: 'input',
+        sender: event.sender
+      };
+    }
   }
   if (entry && entry[0] && parsed_data) {
     entry[0].input = parsed_data;
