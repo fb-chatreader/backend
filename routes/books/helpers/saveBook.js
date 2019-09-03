@@ -1,7 +1,8 @@
-const Books = require('models/db/books');
-const Categories = require('models/db/categories');
-const Book_Categories = require('models/db/bookCategories');
-const Summary_Parts = require('models/db/summaryParts');
+const Books = require('models/db/books.js');
+const Categories = require('models/db/categories.js');
+const BookCategories = require('models/db/bookCategories.js');
+const SummaryParts = require('models/db/summaryParts');
+const getSummaryParts = require('./getSummaryParts.js');
 
 module.exports = async bookObj => {
   const { summary, category, ...book } = bookObj;
@@ -14,13 +15,13 @@ module.exports = async bookObj => {
     !book.cover_img
   ) {
     // If we're missing any part of a book, skip over it
-    return;
+    return false;
   }
   const newBook = await Books.add(book);
   const book_category = await Categories.retrieve({
     [category.toLowerCase()]: 1
   }).first();
-  await Book_Categories.add({
+  await BookCategories.add({
     book_id: newBook.id,
     category_id: book_category.id
   });
@@ -31,7 +32,7 @@ module.exports = async bookObj => {
       book_id: newBook.id,
       summary: summaryArray[i]
     };
-    await Summary_Parts.add(summaryObj);
+    await SummaryParts.add(summaryObj);
   }
-  return;
+  return true;
 };
