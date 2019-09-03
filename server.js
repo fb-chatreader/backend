@@ -2,16 +2,13 @@
 const express = require('express');
 const cors = require('cors');
 
-// Jobs
+// Jobs -- Tasks running on a schedule
 require('./jobs/timedMessages.js');
 
-// route declarations
-const messageRouter = require('./routes/messages/messageRoutes');
-const bookRouter = require('./routes/books/bookRoutes');
-const categoryRouter = require('./routes/books/categoryRoutes');
-// const userRouter = require('./routes/userRoute');
-// const summaryRouter = require('./routes/summaryPartRoute');
-// const chatReadRouter = require('./routes/chatReadRoute');
+// routes
+const messageRouter = require('./routes/messages/');
+const bookRouter = require('./routes/books/');
+const categoryRouter = require('./routes/categories/');
 
 // Error handling
 const errorHandler = require('./middleware/errorHandling');
