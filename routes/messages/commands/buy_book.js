@@ -3,11 +3,11 @@ const Books = require('models/db/books.js');
 const Users = require('models/db/users.js');
 const getUserInfo = require('../helpers/getUserInfo.js');
 
-module.exports = async event => {
-  const id = event.book_id;
+module.exports = async input => {
+  const id = input.book_id;
   const book = await Books.retrieve({ id }).first();
 
-  const user_info = await getUserInfo(event.sender.id);
+  const user_info = await getUserInfo(input.sender.id);
 
   return [
     {

@@ -7,10 +7,10 @@ const timedMessages = require('models/db/timedMessages.js');
 // If there isn't one, create it
 // Otherwise, increment and get next summary (check for end of book)
 
-module.exports = async event => {
+module.exports = async input => {
   // Collect needed data from DB
-  const book_id = event.book_id;
-  const user = await Users.retrieve({ facebook_id: event.sender.id }).first();
+  const book_id = input.book_id;
+  const user = await Users.retrieve({ facebook_id: input.sender.id }).first();
   const user_id = user.id;
   const chatread = await ChatReads.retrieve({ user_id, book_id }).first();
 
@@ -41,8 +41,8 @@ module.exports = async event => {
     }
   );
 
-  // Update 24 hour timer to send a follow up message
-  updateTimedMessages(user_id, book_id, summaries.isFinal);
+  // Add 24 hour timer to send a follow up message
+  addTimedMessages(user_id, book_id, summaries.isFinal);
 
   return summaries.block.map((s, i) => {
     if (i < summaries.block.length - 1) {
@@ -95,14 +95,16 @@ module.exports = async event => {
   });
 };
 
-async function updateTimedMessages(user_id, book_id, isComplete = false) {
+async function addTimedMessages(user_id, book_id, isComplete = false) {
+  // To better catch a user at the start of their free time,
+  // only update timed messages if one doesn't already exists
   const timedMessage = await timedMessages.retrieve({ user_id }).first();
   const newMsg = {
     user_id,
     book_id,
     isComplete
   };
-  timedMessage
-    ? await timedMessages.update({ user_id }, newMsg)
-    : await timedMessages.write(newMsg);
+  if (!timedMessage) {
+    await timedMessages.add(newMsg);
+  }
 }

@@ -7,26 +7,25 @@ const getUserInfo = require('../helpers/getUserInfo.js');
 // Short term: reset current_summary of the book, fetch book from DB, display get Synopsis option
 // Long term: Suggest books / categories for user to select
 
-module.exports = async event => {
-  const user = await Users.retrieveOrCreate({ facebook_id: event.sender.id });
+module.exports = async input => {
+  await Users.retrieveOrCreate({ facebook_id: input.sender.id });
   const books = await Books.retrieve();
 
   if (!books.length) return;
   // No "large" scale UI yet so last value is only "mid"
-  console.log(books.length);
   return getResponseObject(
     books.length === 1 ? 'single' : books.length < 15 ? 'mid' : 'mid',
     books,
-    event
+    input
   );
 };
 
-async function getResponseObject(size, books, event) {
+async function getResponseObject(size, books, input) {
   let user_info;
   try {
     // This try/catch is necessary until we find a work-around for the PSID.
     // It's unique to the page (page-specific ID), which our testing environment doesn't have
-    user_info = await getUserInfo(event.sender.id);
+    user_info = await getUserInfo(input.sender.id);
   } catch (err) {
     if (process.env.DB_ENVIRONMENT !== 'testing') console.log(err);
   }
