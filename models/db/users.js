@@ -4,8 +4,7 @@ module.exports = {
   retrieve,
   add,
   edit,
-  remove,
-  retrieveOrCreate
+  remove
 };
 
 function retrieve(filter) {
@@ -29,14 +28,4 @@ function remove(id) {
   return db('users')
     .where({ id })
     .del();
-}
-
-async function retrieveOrCreate(query) {
-  const user = await retrieve(query).first();
-  if (!user) {
-    const { id, ...noID } = query;
-    noID.created_at = new Date();
-    return write(noID);
-  }
-  return user;
 }
