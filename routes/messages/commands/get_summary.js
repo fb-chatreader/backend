@@ -13,13 +13,10 @@ module.exports = async input => {
   const user = await Users.retrieve({ facebook_id: input.sender.id }).first();
   const user_id = user.id;
   const chatread = await ChatReads.retrieve({ user_id, book_id }).first();
-
   // Get the user's current chat read summary_id or if they don't have one,
   // Set to the current book's first summary_id
-  let current_summary_id;
-  if (chatread) {
-    current_summary_id = chatread.current_summary_id;
-  } else {
+  let current_summary_id = chatread ? chatread.current_summary_id : null;
+  if (!chatread) {
     const firstSummary = await Summaries.retrieve({ book_id }).first();
     current_summary_id = firstSummary.id;
   }
@@ -32,7 +29,7 @@ module.exports = async input => {
   // For the next round, update to the next summary_id (which will just be
   // the last id in the series if there are no more for the current book)
   const next_summary_id = current_summary_id + summaries.block.length;
-  await ChatReads.edit(
+  await ChatReads.editOrCreate(
     { user_id, book_id },
     {
       current_summary_id: summaries.isFinal
