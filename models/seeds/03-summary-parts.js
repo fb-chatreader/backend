@@ -51,18 +51,12 @@
 
 const text = require('./bookSummary/').join('  ');
 
-exports.seed = function(knex, Promise) {
-  // del entries
-  return knex('summary_parts')
-    .del()
-    .then(function() {
-      return knex('summary_parts').insert(getSummaries());
-    });
+exports.seed = function(knex) {
+  return knex('summary_parts').insert(getSummaries());
 };
 
 function getSummaries(num) {
   const limit = 320;
-  // const getID = (id => () => ++id)(0);
   let summaries = [];
   let current = '';
   const sentences = text.split('  ');
@@ -73,7 +67,6 @@ function getSummaries(num) {
       current += ' ' + sentence;
     } else {
       summaries.push({
-        // id: getID(),
         book_id: 1,
         summary: current,
         created_at: new Date()
