@@ -37,6 +37,6 @@ async function editOrCreate(filter, summary_id) {
     return edit(filter, summary_id);
   } else {
     const { id, ...noID } = filter;
-    return write({ ...noID, ...summary_id });
+    return add({ ...noID, ...summary_id });
   }
 }
