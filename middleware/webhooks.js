@@ -15,7 +15,9 @@ const formatWebhook = async ({ body: { entry } }, res, next) => {
     entry && entry[0] && entry[0].messaging ? entry[0].messaging[0] : null;
   if (event) {
     // Save sender ID in DB if it doesn't already exist
-    const exists = await Users.retrieve({ facebook_id: event.sender.id });
+    const exists = await Users.retrieve({
+      facebook_id: event.sender.id
+    }).first();
     if (!exists) {
       await Users.add({ facebook_id: event.sender.id });
     }
