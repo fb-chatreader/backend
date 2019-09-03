@@ -1,4 +1,5 @@
 const Books = require('models/db/books.js');
+const Categories = require('models/db/categories.js');
 const getUserInfo = require('../helpers/getUserInfo.js');
 
 module.exports = async input => {
@@ -14,7 +15,41 @@ module.exports = async input => {
     : getSingleBook(input, books);
 };
 
-function getMultipleBooks() {}
+async function getMultipleBooks() {
+  // For now, the bot assumes if there are multiple books, it's on ChatReader
+  const text =
+    "Hi, welcome to Chat Reader!  I can summarize a wide variety of books from several genres to you with just a few clicks!  To get started, why don't you tell me a little about some genres that you like to read.  First things first, of these, which is your favorite?";
+
+  const allCategories = await Categories.retrieve();
+  const validCategories = allCategories.filter(c => c.other !== 1);
+
+  return {
+    attachment: {
+      type: 'template',
+      payload: {
+        template_type: 'button',
+        text,
+        buttons: validCategories.map(c => {
+          // Everything except the category name must be destructured
+          // for this to work
+          const { id, image_url, flavor_text, ...categories } = c;
+
+          const title = Object.keys(categories).filter(
+            name => categories[name]
+          )[0];
+          return {
+            type: 'postback',
+            title: title[0].toUpperCase() + title.substring(1),
+            payload: JSON.stringify({
+              command: 'pick_category',
+              category_id: id
+            })
+          };
+        })
+      }
+    }
+  };
+}
 
 async function getSingleBook(input, booksPromise) {
   const books = await booksPromise;
@@ -64,3 +99,43 @@ async function getSingleBook(input, booksPromise) {
     }
   ];
 }
+
+/*
+
+Working second response object for a carousel of categories:
+
+{
+      attachment: {
+        type: 'template',
+        payload: {
+          template_type: 'generic',
+          elements: allCategories
+            .filter(c => c.other !== 1)
+            .map(c => {
+              // Everything except the category name must be destructured
+              // for this to work
+              const { id, image_url, flavor_text, ...categories } = c;
+
+              const title = Object.keys(categories).filter(
+                name => categories[name]
+              )[0];
+              return {
+                title: title[0].toUpperCase() + title.substring(1),
+                image_url: image_url,
+                subtitle: flavor_text ? flavor_text : null,
+                buttons: [
+                  {
+                    type: 'postback',
+                    title,
+                    payload: JSON.stringify({
+                      command: 'save_favorite',
+                      category_id: id
+                    })
+                  }
+                ]
+              };
+            })
+        }
+      }
+    }
+    */
