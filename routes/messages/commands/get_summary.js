@@ -1,7 +1,7 @@
-const Users = require('../../../models/db/users.js');
-const ChatReads = require('../../../models/db/chatReads.js');
-const Summaries = require('../../../models/db/summaryParts.js');
-const timedMessages = require('../../../models/db/timedMessages.js');
+const Users = require('models/db/users.js');
+const ChatReads = require('models/db/chatReads.js');
+const Summaries = require('models/db/summaryParts.js');
+const timedMessages = require('models/db/timedMessages.js');
 
 // Query database to get current summary location
 // If there isn't one, create it

@@ -1,7 +1,7 @@
 const axios = require('axios');
-const Books = require('../../../models/db/books.js');
-const Users = require('../../../models/db/users.js');
-const getUserInfo = require('../util/asyncFunctions');
+const Books = require('models/db/books.js');
+const Users = require('models/db/users.js');
+const getUserInfo = require('../helpers/getUserInfo.js');
 
 module.exports = async event => {
   const id = event.book_id;
