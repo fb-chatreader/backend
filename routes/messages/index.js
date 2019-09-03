@@ -33,6 +33,6 @@ router.get('/webhook', (req, res) => {
 });
 
 router.get('/', (req, res) => {
-  res.status(200).send('API RUNNING!!!');
+  return res.status(200).send('API RUNNING!!!');
 });
 module.exports = router;
