@@ -2,27 +2,17 @@ const db = require('../dbConfig.js');
 
 module.exports = {
   retrieve,
-  retrieveByID,
-  write,
+  add,
   edit,
   remove,
   editOrCreate
 };
 
 function retrieve(filter) {
-  if (filter) {
-    return db('chat_reads').where(filter);
-  }
-  return db('chat_reads');
+  return filter ? db('chat_reads').where(filter) : db('chat_reads');
 }
 
-function retrieveByID(id) {
-  return db('chat_reads')
-    .where({ id })
-    .first();
-}
-
-function write(chatRead) {
+function add(chatRead) {
   return db(`chat_reads`)
     .insert(chatRead, ['*'])
     .then(cr => retrieve({ id: cr[0].id }).first());
@@ -30,8 +20,9 @@ function write(chatRead) {
 
 function edit(filter, summary) {
   return db(`chat_reads`)
+    .where(filter)
     .update(summary, ['*'])
-    .where(filter);
+    .then(cr => retrieve({ id: cr[0].id }).first());
 }
 
 function remove(id) {
@@ -46,6 +37,6 @@ async function editOrCreate(filter, summary_id) {
     return edit(filter, summary_id);
   } else {
     const { id, ...noID } = filter;
-    return write({ ...noID, ...summary_id, created_at: new Date() });
+    return write({ ...noID, ...summary_id });
   }
 }
