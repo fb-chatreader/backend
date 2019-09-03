@@ -1,27 +1,38 @@
 exports.up = function(knex) {
   return knex.schema
-    .createTable('users', tbl => {
+    .createTable('categories', tbl => {
       tbl.increments();
-      tbl.text('facebook_id');
-      tbl.text('email');
+      tbl.text('leadership');
+      tbl.text('entrepreneurship');
+      tbl.text('money');
+      tbl.text('other');
       tbl
         .timestamp('created_at')
         .notNullable()
         .defaultTo(knex.fn.now());
     })
-    .createTable('books', tbl => {
+    .createTable('users_categories', tbl => {
       tbl.increments();
-      tbl.text('title').notNullable();
-      tbl.text('author').notNullable();
-      tbl.text('synopsis');
-      tbl.text('intro');
-      tbl.text('cover_img').notNullable();
+      tbl
+        .integer('category_id')
+        .references('id')
+        .inTable('categories')
+        .onDelete('CASCADE')
+        .onUpdate('CASCADE')
+        .notNullable();
+      tbl
+        .integer('user_id')
+        .references('id')
+        .inTable('users')
+        .onDelete('CASCADE')
+        .onUpdate('CASCADE')
+        .notNullable();
       tbl
         .timestamp('created_at')
         .notNullable()
         .defaultTo(knex.fn.now());
     })
-    .createTable('summary_parts', tbl => {
+    .createTable('book_categories', tbl => {
       tbl.increments();
       tbl
         .integer('book_id')
@@ -30,13 +41,19 @@ exports.up = function(knex) {
         .onDelete('CASCADE')
         .onUpdate('CASCADE')
         .notNullable();
-      tbl.text('summary').notNullable();
+      tbl
+        .integer('category_id')
+        .references('id')
+        .inTable('categories')
+        .onDelete('CASCADE')
+        .onUpdate('CASCADE')
+        .notNullable();
       tbl
         .timestamp('created_at')
         .notNullable()
         .defaultTo(knex.fn.now());
     })
-    .createTable('chat_reads', tbl => {
+    .createTable('user_libraries', tbl => {
       tbl.increments();
       tbl
         .integer('user_id')
@@ -53,13 +70,6 @@ exports.up = function(knex) {
         .onUpdate('CASCADE')
         .notNullable();
       tbl
-        .integer('current_summary_id')
-        .references('id')
-        .inTable('summary_parts')
-        .onDelete('CASCADE')
-        .onUpdate('CASCADE')
-        .notNullable();
-      tbl
         .timestamp('created_at')
         .notNullable()
         .defaultTo(knex.fn.now());
@@ -68,8 +78,8 @@ exports.up = function(knex) {
 
 exports.down = function(knex) {
   return knex.schema
-    .dropTable('chat_reads')
-    .dropTable('summary_parts')
-    .dropTable('books')
-    .dropTable('users');
+    .dropTable('user_libraries')
+    .dropTable('book_categories')
+    .dropTable('users_categories')
+    .dropTable('categories');
 };
