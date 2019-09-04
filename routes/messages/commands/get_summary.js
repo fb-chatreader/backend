@@ -1,4 +1,3 @@
-const Users = require('models/db/users.js');
 const ChatReads = require('models/db/chatReads.js');
 const Summaries = require('models/db/summaryParts.js');
 const timedMessages = require('models/db/timedMessages.js');
@@ -8,10 +7,10 @@ const timedMessages = require('models/db/timedMessages.js');
 // Otherwise, increment and get next summary (check for end of book)
 
 module.exports = async input => {
+  if (input.type !== 'postback') return;
   // Collect needed data from DB
   const book_id = input.book_id;
-  const user = await Users.retrieve({ facebook_id: input.sender.id }).first();
-  const user_id = user.id;
+  const { user_id } = input;
   const chatread = await ChatReads.retrieve({ user_id, book_id }).first();
   // Get the user's current chat read summary_id or if they don't have one,
   // Set to the current book's first summary_id
