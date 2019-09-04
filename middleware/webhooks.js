@@ -55,7 +55,7 @@ const formatWebhook = ({ body: { entry } }, res, next) => {
     } else if (event.message.text === 'leadership' || event.message.text === 'entrepreneurship' || event.message.text === 'money' || event.message.text === 'other') {
       let catagories;
       parsed_data = {
-        command: 'get_catagories',
+        command: 'get_categories',
         type:'input',
         sender: event.sender,
         catagories: event.message.text
