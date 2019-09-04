@@ -9,8 +9,7 @@ const timedMessages = require('models/db/timedMessages.js');
 module.exports = async input => {
   if (input.type !== 'postback') return;
   // Collect needed data from DB
-  const book_id = input.book_id;
-  const { user_id } = input;
+  const { user_id, book_id } = input;
   const chatread = await ChatReads.retrieve({ user_id, book_id }).first();
   // Get the user's current chat read summary_id or if they don't have one,
   // Set to the current book's first summary_id
