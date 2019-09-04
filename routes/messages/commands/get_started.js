@@ -93,7 +93,7 @@ async function getResponseObject(size, books, input) {
                 buttons: [
                   {
                     type: 'postback',
-                    title: 'Get Synopsis',
+                    title: 'Read Synopsis',
                     payload: JSON.stringify({
                       command: 'get_synopsis',
                       book_id: b.id
