@@ -3,7 +3,7 @@ const Categories = require('models/db/categories.js');
 const getUserInfo = require('../helpers/getUserInfo.js');
 
 module.exports = async input => {
-  const books = await Books.retrieve();
+  const books = await Books.retrieve({ client_id: input.client_id });
   if (!books.length) {
     return {
       text:
