@@ -4,6 +4,7 @@ module.exports = class Message {
   constructor(responses, event) {
     this.responses = responses;
     this.sender = event.sender.id;
+    this.access_token = event.access_token;
   }
 
   send() {
@@ -59,12 +60,8 @@ module.exports = class Message {
 
   async _apiCall(message) {
     // Send a single message object to the Facebook API
-
-    if (message && message.attachment && message.attachment.payload) {
-      console.log('SENDING: ', message.attachment.payload.elements);
-    } else {
-      console.log('OTHER SENDING: ', message);
-    }
+    console.log(this.access_token);
+    console.log('Sending: ', message);
     if (message) {
       const msgObj = {
         recipient: {
@@ -72,7 +69,7 @@ module.exports = class Message {
         },
         message
       };
-      const url = `https://graph.facebook.com/v2.6/me/messages?access_token=${process.env.PAGE_ACCESS_TOKEN}`;
+      const url = `https://graph.facebook.com/v2.6/me/messages?access_token=${this.access_token}`;
       await axios
         .post(url, msgObj)
         .catch(err => console.log('Error sending Response: ', err.toJSON));
