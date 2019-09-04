@@ -18,7 +18,7 @@ module.exports = async input => {
 async function getMultipleBooks() {
   // For now, the bot assumes if there are multiple books, it's on ChatReader
   const text =
-    "Hi, welcome to Chat Reader!  I can summarize a wide variety of books from several genres to you with just a few clicks!  To get started, why don't you tell me a little about some genres that you like to read.  First things first, of these, which is your favorite?";
+    "Hi, welcome to Chat Reader!  I can read a summary of a wide variety of books to you with just a few clicks!  To get started, why don't you tell me a little about some genres that you like to read.  First things first which is your favorite genre from the below list?";
 
   const allCategories = await Categories.retrieve();
   const validCategories = allCategories.filter(c => c.other !== 1);
@@ -37,6 +37,7 @@ async function getMultipleBooks() {
           const title = Object.keys(categories).filter(
             name => categories[name]
           )[0];
+
           return {
             type: 'postback',
             title: title[0].toUpperCase() + title.substring(1),
