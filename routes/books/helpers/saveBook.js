@@ -4,8 +4,9 @@ const BookCategories = require('models/db/bookCategories.js');
 const SummaryParts = require('models/db/summaryParts');
 const getSummaryParts = require('./getSummaryParts.js');
 
-module.exports = async bookObj => {
+module.exports = async (bookObj, client_id) => {
   const { summary, category, ...book } = bookObj;
+  book.client_id = client_id;
   if (
     !summary ||
     !category ||
