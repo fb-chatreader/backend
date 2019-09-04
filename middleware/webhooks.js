@@ -3,6 +3,8 @@ const verifyWebhook = ({ body }, res, next) => {
     next();
   }
 };
+// a global array of categoreis
+const categories = ['money', 'others','entrepreneurship', 'leadership'];
 
 function isValidEmail(email) {
   // Test for email format.  Tests in order:
@@ -52,7 +54,7 @@ const formatWebhook = ({ body: { entry } }, res, next) => {
         sender: event.sender,
         validEmail: event.message.text
       }
-    } else if (event.message.text === 'leadership' || event.message.text === 'entrepreneurship' || event.message.text === 'money' || event.message.text === 'other') {
+    } else if (categories.includes(event.message.text)) {
       let catagories;
       parsed_data = {
         command: 'get_categories',

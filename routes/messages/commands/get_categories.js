@@ -11,8 +11,8 @@ module.exports = async event => {
   // write to the catagory table with values users passed. if money, in the categories table
   // set money = 1. At this point the table is empty.
   let catPick = event.catagories;
-  console.log(catPick, 'catPick');
-  const category = await Categories.write({[catPick]: '1'});
+
+  const category = await Categories.write({[catPick]: 1});
   // the categories table is updated with what the user passes, money, leadership...
   
   // get the category id so that it can be passed to the userCategories table.
