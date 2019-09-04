@@ -1,4 +1,5 @@
 const Users = require('models/db/users.js');
+const Client = require('models/db/clients.js');
 
 const verifyWebhook = ({ body }, res, next) => {
   if (body.object === 'page') {
@@ -6,13 +7,17 @@ const verifyWebhook = ({ body }, res, next) => {
   }
 };
 
-const formatWebhook = async ({ body: { entry } }, res, next) => {
+const formatWebhook = async ({ body: { entry }, params }, res, next) => {
   // We receive data for our commands from a variety of places.
   // This middleware is meant to organize that data into a single place to
   // simplify the rest of our code
-
+  const { client_id } = params;
+  const client = await Client.retrieve({ id: client_id }).first();
+  entry.client_id = client_id;
+  entry.access_token = client.access_token;
   const event =
     entry && entry[0] && entry[0].messaging ? entry[0].messaging[0] : null;
+
   if (event) {
     // Save sender ID in DB if it doesn't already exist
     const exists = await Users.retrieve({
@@ -44,7 +49,8 @@ async function formatEventObject(entry, event) {
     event.postback = {
       payload: JSON.stringify({
         command: 'pick_category',
-        email: event.message.text
+        email: event.message.text,
+        client_id: entry.client_id
       })
     };
   }
@@ -62,7 +68,9 @@ async function formatEventObject(entry, event) {
       ...JSON.parse(event.postback.payload),
       type: 'postback',
       sender: event.sender,
-      user_id: user.id
+      user_id: user.id,
+      client_id: entry.client_id,
+      access_token: entry.access_token
     };
   } else if (event && event.message) {
     parsed_data = {
@@ -72,7 +80,9 @@ async function formatEventObject(entry, event) {
         .join('_'),
       type: 'input',
       sender: event.sender,
-      user_id: user.id
+      user_id: user.id,
+      client_id: entry.client_id,
+      access_token: entry.access_token
     };
   }
   return parsed_data;

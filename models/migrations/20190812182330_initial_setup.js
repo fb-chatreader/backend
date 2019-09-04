@@ -1,5 +1,22 @@
 exports.up = function(knex) {
   return knex.schema
+    .createTable('clients', tbl => {
+      // Note: bigIntegers are returned as strings
+      tbl
+        .bigInteger('id')
+        .unique()
+        .notNullable();
+      tbl.text('name').notNullable();
+      tbl
+        .text('access_token')
+        .notNullable()
+        .unique();
+      tbl.text('verification_token').notNullable();
+      tbl
+        .timestamp('created_at')
+        .notNullable()
+        .defaultTo(knex.fn.now());
+    })
     .createTable('users', tbl => {
       tbl.increments();
       tbl.text('facebook_id');
@@ -15,6 +32,13 @@ exports.up = function(knex) {
         .text('title')
         .notNullable()
         .unique();
+      tbl
+        .integer('client_id')
+        .references('id')
+        .inTable('clients')
+        .onUpdate('CASCADE')
+        .onDelete('CASCADE')
+        .notNullable();
       tbl.text('author').notNullable();
       tbl.text('synopsis');
       tbl.text('intro');
@@ -74,5 +98,6 @@ exports.down = function(knex) {
     .dropTable('chat_reads')
     .dropTable('summary_parts')
     .dropTable('books')
-    .dropTable('users');
+    .dropTable('users')
+    .dropTable('clients');
 };
