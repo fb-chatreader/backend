@@ -24,7 +24,7 @@ const formatWebhook = async ({ body: { entry } }, res, next) => {
   }
 
   if (isValidMessengerRequest(entry, event)) {
-    entry[0].input = formatEventObject(entry, event);
+    entry[0].input = await formatEventObject(entry, event);
     next();
   } else {
     return res.sendStatus(400);
@@ -33,10 +33,22 @@ const formatWebhook = async ({ body: { entry } }, res, next) => {
 
 module.exports = { verifyWebhook, formatWebhook };
 
-function formatEventObject(entry, event) {
+async function formatEventObject(entry, event) {
   // Order of importance for webhooks --> Policy violations > Postback > Commands
   // Type added in case we need to verify source (do we want users to say "policy violation"
   // and trigger our policy violation command?)
+  const user = await Users.retrieve({ facebook_id: event.sender.id }).first();
+
+  if (event && event.message && isValidEmail(event.message.text)) {
+    await Users.edit({ id: user.id }, { email: event.message.text });
+    event.postback = {
+      payload: JSON.stringify({
+        command: 'pick_category',
+        email: event.message.text
+      })
+    };
+  }
+
   let parsed_data;
   if (entry[0]['policy-enforcement']) {
     parsed_data = {
@@ -49,7 +61,8 @@ function formatEventObject(entry, event) {
     parsed_data = {
       ...JSON.parse(event.postback.payload),
       type: 'postback',
-      sender: event.sender
+      sender: event.sender,
+      user_id: user.id
     };
   } else if (event && event.message) {
     parsed_data = {
@@ -58,7 +71,8 @@ function formatEventObject(entry, event) {
         .split(' ')
         .join('_'),
       type: 'input',
-      sender: event.sender
+      sender: event.sender,
+      user_id: user.id
     };
   }
   return parsed_data;
@@ -66,4 +80,16 @@ function formatEventObject(entry, event) {
 
 function isValidMessengerRequest(entry, event) {
   return event || (entry && entry[0]);
+}
+
+function isValidEmail(email) {
+  // Test for email format.  Tests in order:
+  // one @, dot after @
+  // first character is a number or letter
+  // last character is a letter
+  return (
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) &&
+    /[a-z0-9]/.test(email[0]) &&
+    /[a-z]/.test(email[email.length - 1])
+  );
 }
