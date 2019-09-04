@@ -7,9 +7,10 @@ const getUserInfo = require('../helpers/getUserInfo.js');
 // Long term: Suggest books / categories for user to select
 
 module.exports = async input => {
-  const books = await Books.retrieve();
+  const books = await Books.retrieve({ client_id: input.client_id });
 
-  if (!books.length) return;
+  if (!books.length)
+    return { text: 'Sorry, this page is still being setup.  Come back soon!' };
   // No "large" scale UI yet so last value is only "mid"
   return getResponseObject(
     books.length === 1 ? 'single' : books.length < 15 ? 'mid' : 'mid',
