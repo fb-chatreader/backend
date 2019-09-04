@@ -15,7 +15,8 @@ module.exports = summary => {
   for (let i = 0; i < sentences.length; i++) {
     const sentence = sentences[i];
     if ((current + ' ' + sentence).length <= limit) {
-      current += ' ' + sentence;
+      current = current.length ? current + ' ' : current;
+      current += sentence;
     } else {
       parts.push(current);
       current = '';
