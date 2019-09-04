@@ -13,7 +13,6 @@ module.exports = async event => {
 
   if (!books.length) return;
   // No "large" scale UI yet so last value is only "mid"
-    console.log(books.length, 'book length');
   return getResponseObject(
     books.length === 1 ? 'single' : books.length < 15 ? 'mid' : 'mid',
     books,
