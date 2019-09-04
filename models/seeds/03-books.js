@@ -1,30 +1,9 @@
-// // 10 Books Ipsum Data
-
-// const books = require('./ipsumBookData/');
-
-// exports.seed = function(knex) {
-//   // delete all entries
-//   return knex('books')
-//     .del()
-//     .then(function() {
-//       return knex('books').insert(
-//         books.map(b => {
-//           const { summary, ...rest } = b;
-//           rest.created_at = new Date();
-//           rest.publish_date = new Date(rest.publish_date);
-//           return rest;
-//         })
-//       );
-//     });
-// };
-
-// Static Shoe Dog Data:
-
 exports.seed = function(knex) {
   // delete all entries
   return knex('books').insert({
     title: 'Shoe Dog',
     author: 'Phil Knight',
+    client_id: 123456789,
     synopsis:
       'Shoe Dog (2016) tells the story of the man behind the famous footwear company Nike. These blinks offer a peek into the mind of genius entrepreneur Phil Knight and detail the rollercoaster ride he went to through to build up his company.',
     image_url:
