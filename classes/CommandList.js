@@ -13,10 +13,7 @@ module.exports = class CommandList {
       : this.commands[defaultCommand](input);
 
     const message = new Message(responseObject, input);
-
-    if (message.responses) {
-      message.send();
-    }
+    message.send();
     return true;
   }
 };
