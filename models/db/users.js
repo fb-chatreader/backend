@@ -17,10 +17,10 @@ function add(user) {
     .then(u => retrieve({ id: u[0].id }).first());
 }
 
-function edit(id, user) {
+function edit(filter, changes) {
   return db('users')
-    .where({ id })
-    .update(user)
+    .where(filter)
+    .update(changes, ['*'])
     .then(u => retrieve({ id: u[0].id }).first());
 }
 
