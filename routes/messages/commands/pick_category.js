@@ -116,6 +116,15 @@ async function finishCategories(userCategoryIDs, { user_id, email }) {
                         })
                       });
 
+                      buttons.push({
+                        type: 'postback',
+                        title: 'Save to Library',
+                        payload: JSON.stringify({
+                          command: 'save_to_library',
+                          book_id: b.id
+                        })
+                      });
+
                       return {
                         title: b.title,
                         image_url: b.image_url,
@@ -130,8 +139,6 @@ async function finishCategories(userCategoryIDs, { user_id, email }) {
           })
         )
       : null;
-
-  console.log('CAR: ', await carousels);
 
   return [{ text }, await carousels];
 }
