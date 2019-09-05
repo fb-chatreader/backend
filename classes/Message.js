@@ -60,8 +60,6 @@ module.exports = class Message {
 
   async _apiCall(message) {
     // Send a single message object to the Facebook API
-    console.log(this.access_token);
-    console.log('Sending: ', message);
     if (message) {
       const msgObj = {
         recipient: {
