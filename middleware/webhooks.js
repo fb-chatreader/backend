@@ -3,6 +3,8 @@ const verifyWebhook = ({ body }, res, next) => {
     next();
   }
 };
+// a global array of categoreis
+const categories = ['money', 'others','entrepreneurship', 'leadership'];
 
 function isValidEmail(email) {
   // Test for email format.  Tests in order:
@@ -44,14 +46,32 @@ const formatWebhook = ({ body: { entry } }, res, next) => {
     // edge case- user type wrong email
     // v
   } else if (event && event.message) {
-    parsed_data = {
-      command: event.message.text
-        .toLowerCase()
-        .split(' ')
-        .join('_'),
-      type: 'input',
-      sender: event.sender
-    };
+    let validEmail = event.message.text
+    if (isValidEmail(validEmail)) {
+      parsed_data = {
+        command:'get_email',
+        type: 'input',
+        sender: event.sender,
+        validEmail: event.message.text
+      }
+    } else if (categories.includes(event.message.text)) {
+      let catagories;
+      parsed_data = {
+        command: 'get_categories',
+        type:'input',
+        sender: event.sender,
+        catagories: event.message.text
+      }
+    } else {
+      parsed_data = {
+        command: event.message.text
+          .toLowerCase()
+          .split(' ')
+          .join('_'),
+        type: 'input',
+        sender: event.sender
+      };
+    }
   }
   if (entry && entry[0] && parsed_data) {
     entry[0].input = parsed_data;
