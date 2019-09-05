@@ -14,3 +14,8 @@ function add(category) {
     .insert(category, ['*'])
     .then(c => retrieve({ id: c[0].id }).first());
 }
+function edit(id, category) {
+  return db('book_categories')
+    .where({ id })
+    .update(category);
+}

@@ -6,6 +6,8 @@ const verifyWebhook = ({ body }, res, next) => {
     next();
   }
 };
+// a global array of categoreis
+const categories = ['money', 'others', 'entrepreneurship', 'leadership'];
 
 const formatWebhook = async ({ body: { entry }, params }, res, next) => {
   // We receive data for our commands from a variety of places.
