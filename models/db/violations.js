@@ -1,17 +1,15 @@
 const db = require('../dbConfig.js');
 
 module.exports = {
-  write
+  retrieve,
+  edit
 };
 
 function retrieve(filter) {
-  if (filter) {
-    return db('violations').where(filter);
-  }
-  return db('violations');
+  return filter ? db('violations').where(filter) : db('violations');
 }
 
-function write(violation) {
+function edit(violation) {
   return db('violations')
     .insert(violation, ['*'])
     .then(v => retrieve({ id: v[0].id }));

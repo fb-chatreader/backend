@@ -1,31 +1,30 @@
 // const ChatReads = require('../../../models/db/chatReads.js');
-const Books = require('../../../models/db/books.js');
-const Users = require('../../../models/db/users.js');
-const getUserInfo = require('../util/asyncFunctions.js');
+const Books = require('models/db/books.js');
+const getUserInfo = require('../helpers/getUserInfo.js');
 
 // Verify users exists already, if not save their Facebook ID
 // Short term: reset current_summary of the book, fetch book from DB, display get Synopsis option
 // Long term: Suggest books / categories for user to select
 
-module.exports = async event => {
-  const user = await Users.retrieveOrCreate({ facebook_id: event.sender.id });
-  const books = await Books.retrieve();
+module.exports = async input => {
+  const books = await Books.retrieve({ client_id: input.client_id });
 
-  if (!books.length) return;
+  if (!books.length)
+    return { text: 'Sorry, this page is still being setup.  Come back soon!' };
   // No "large" scale UI yet so last value is only "mid"
   return getResponseObject(
     books.length === 1 ? 'single' : books.length < 15 ? 'mid' : 'mid',
     books,
-    event
+    input
   );
 };
 
-async function getResponseObject(size, books, event) {
+async function getResponseObject(size, books, input) {
   let user_info;
   try {
     // This try/catch is necessary until we find a work-around for the PSID.
     // It's unique to the page (page-specific ID), which our testing environment doesn't have
-    user_info = await getUserInfo(event.sender.id);
+    user_info = await getUserInfo(input.sender.id);
   } catch (err) {
     if (process.env.DB_ENVIRONMENT !== 'testing') console.log(err);
   }
@@ -52,7 +51,7 @@ async function getResponseObject(size, books, event) {
             elements: [
               {
                 title: books[0].title,
-                image_url: books[0].cover_img,
+                image_url: books[0].image_url,
                 subtitle: `by ${books[0].author}`,
                 buttons: [
                   {
@@ -90,12 +89,12 @@ async function getResponseObject(size, books, event) {
             elements: books.map(b => {
               return {
                 title: b.title,
-                image_url: b.cover_img,
+                image_url: b.image_url,
                 subtitle: `by ${b.author}`,
                 buttons: [
                   {
                     type: 'postback',
-                    title: 'Get Synopsis',
+                    title: 'Read Synopsis',
                     payload: JSON.stringify({
                       command: 'get_synopsis',
                       book_id: b.id

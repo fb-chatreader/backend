@@ -2,18 +2,15 @@ const db = require('../dbConfig.js');
 
 module.exports = {
   retrieve,
-  write
+  add
 };
 
 function retrieve(filter) {
-  if (filter) {
-    return db('categories').where(filter);
-  }
-  return db('categories');
+  return filter ? db('categories').where(filter) : db('categories');
 }
 
-function write(category) {
+function add(category) {
   return db('categories')
     .insert(category, ['*'])
-    // .then(cat => retrieve({ id: cat[0].id }).first());
+    .then(c => retrieve({ id: c[0].id }).first());
 }
