@@ -2,17 +2,33 @@ const db = require('../dbConfig.js');
 
 module.exports = {
   retrieve,
-  retrieveBlock,
-  write,
+  add,
   edit,
-  remove
+  remove,
+  retrieveBlock
 };
 
 function retrieve(filter) {
-  if (filter) {
-    return db('summary_parts').where(filter);
-  }
-  return db('summary_parts');
+  return filter ? db('summary_parts').where(filter) : db('summary_parts');
+}
+
+function add(summary) {
+  return db(`summary_parts`)
+    .insert(summary, ['*'])
+    .then(s => retrieve({ id: s[0].id }).first());
+}
+
+function edit(filter, summary) {
+  return db('summary_parts')
+    .where(filter)
+    .update(summary)
+    .then(sp => retrieve({ id: sp[0].id }).first());
+}
+
+function remove(id) {
+  return db('summary_parts')
+    .where({ id })
+    .del();
 }
 
 async function retrieveBlock(filter, firstID) {
@@ -31,22 +47,3 @@ async function retrieveBlock(filter, firstID) {
     block
   };
 }
-
-function write(summary) {
-  return db(`summary_parts`)
-    .insert(summary, ['*'])
-    .then(s => retrieve({ id: s[0].id }).first());
-}
-
-function edit(summaryid, summary) {
-  return db('summary_parts')
-    .where({ id: summaryid })
-    .update(summary);
-}
-
-function remove(summaryid) {
-  return db('users')
-    .where({ id: summaryid })
-    .del();
-}
-

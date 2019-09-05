@@ -2,19 +2,16 @@ const db = require('../dbConfig.js');
 
 module.exports = {
   retrieve,
-  update,
-  write,
+  add,
+  edit,
   remove
 };
 
 function retrieve(filter) {
-  if (filter) {
-    return db('timed_messages').where(filter);
-  }
-  return db('timed_messages');
+  return filter ? db('timed_messages').where(filter) : db('timed_messages');
 }
 
-function write(timedMessage) {
+function add(timedMessage) {
   // Hard coding send_at values to 24 hours to ensure policy adherence
   timedMessage.send_at = new Date(new Date().getTime() + 24 * 60 * 60 * 1000);
 
@@ -23,10 +20,11 @@ function write(timedMessage) {
     .then(tm => retrieve({ id: tm[0].id }).first());
 }
 
-function update(filter, timedMessage) {
+function edit(filter, timedMessage) {
   return db('timed_messages')
     .where(filter)
-    .update(timedMessage, ['*']);
+    .update(timedMessage, ['*'])
+    .then(tm => retrieve({ id: tm[0].id }).first());
 }
 
 function remove(id) {
