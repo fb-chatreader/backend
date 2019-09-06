@@ -1,13 +1,12 @@
 const Users = require('models/db/users.js');
 const Books = require('models/db/books.js');
-const Categories = require('models/db/categories.js');
 const BookCategories = require('models/db/bookCategories.js');
 const UserCategories = require('models/db/userCategories.js');
 
-const cleanCategories = require('../helpers/cleanCategories.js');
+const { getNewCategoriesForUser } = require('../helpers/categories.js');
 
 module.exports = async input => {
-  if (input.type !== 'postback') return;
+  if (input.type !== 'postback' && input.command !== 'welcome') return;
   const { user_id, category_id } = input;
 
   const userCategoryObjects = await UserCategories.retrieve({ user_id });
@@ -25,16 +24,12 @@ module.exports = async input => {
   if (!userCategoryIDs.length) return;
 
   return userCategoryIDs.length > 0 && userCategoryIDs.length < 3
-    ? getNextFavorite(userCategoryIDs)
+    ? getNextFavorite(user_id)
     : finishCategories(userCategoryIDs, input);
 };
 
-async function getNextFavorite(userCategoryIDs) {
-  const allCategories = await Categories.retrieve();
-  const remainingCategories = allCategories.filter(
-    c => userCategoryIDs.indexOf(c.id) === -1 && c.other !== 1
-  );
-  cleanCategories(remainingCategories);
+async function getNextFavorite(user_id) {
+  const remainingCategories = await getNewCategoriesForUser(user_id);
 
   const text =
     userCategoryIDs.length === 1
@@ -73,7 +68,7 @@ async function finishCategories(userCategoryIDs, { user_id, email }) {
   const text =
     user.email || email
       ? 'So based on your preferences, here are some books you might like!'
-      : "Thanks, I'm ready to make some book suggestions but first I'd like to make an account for you so I can remember them.  What's your email address?";
+      : "Great, I have what I need to make some suggestions!  Though first, I'd like to make an account for you so I can remember them across platforms.  What email address can I attach to your account?";
 
   // Convert IDs into names
   //   const rawCategories = await Promise.all(
