@@ -7,7 +7,7 @@ module.exports = async input => {
   const id = input.book_id;
   const book = await Books.retrieve({ id }).first();
 
-  const user_info = await getUserInfo(input.sender.id);
+  const user_info = await getUserInfo(input.user_id, input.access_token);
 
   return [
     {
