@@ -1,131 +1,142 @@
-// const ChatReads = require('../../../models/db/chatReads.js');
 const Books = require('models/db/books.js');
+const Categories = require('models/db/categories.js');
 const getUserInfo = require('../helpers/getUserInfo.js');
-
-// Verify users exists already, if not save their Facebook ID
-// Short term: reset current_summary of the book, fetch book from DB, display get Synopsis option
-// Long term: Suggest books / categories for user to select
 
 module.exports = async input => {
   const books = await Books.retrieve({ client_id: input.client_id });
-
-  if (!books.length)
-    return { text: 'Sorry, this page is still being setup.  Come back soon!' };
-  // No "large" scale UI yet so last value is only "mid"
-  return getResponseObject(
-    books.length === 1 ? 'single' : books.length < 15 ? 'mid' : 'mid',
-    books,
-    input
-  );
+  if (!books.length) {
+    return {
+      text:
+        'Sorry, this bot is still being created, please visit us again soon!'
+    };
+  }
+  return books.length > 1
+    ? getMultipleBooks(input)
+    : getSingleBook(input, books);
 };
 
-async function getResponseObject(size, books, input) {
-  let user_info;
-  try {
-    // This try/catch is necessary until we find a work-around for the PSID.
-    // It's unique to the page (page-specific ID), which our testing environment doesn't have
-    user_info = await getUserInfo(input.sender.id);
-  } catch (err) {
-    if (process.env.DB_ENVIRONMENT !== 'testing') console.log(err);
+async function getMultipleBooks() {
+  // For now, the bot assumes if there are multiple books, it's on ChatReader
+  const text =
+    "Hi, welcome to Chat Reader!  I can read a summary of a wide variety of books to you with just a few clicks!  To get started, why don't you tell me a little about some genres that you like to read.  First things first which is your favorite genre from the below list?";
+
+  const allCategories = await Categories.retrieve();
+  const validCategories = allCategories.filter(c => c.other !== 1);
+
+  return {
+    attachment: {
+      type: 'template',
+      payload: {
+        template_type: 'button',
+        text,
+        buttons: validCategories.map(c => {
+          // Everything except the category name must be destructured
+          // for this to work
+          const { id, image_url, flavor_text, ...categories } = c;
+
+          const title = Object.keys(categories).filter(
+            name => categories[name]
+          )[0];
+
+          return {
+            type: 'postback',
+            title: title[0].toUpperCase() + title.substring(1),
+            payload: JSON.stringify({
+              command: 'pick_category',
+              category_id: id
+            })
+          };
+        })
+      }
+    }
+  };
+}
+
+async function getSingleBook(input, booksPromise) {
+  const books = await booksPromise;
+  const userInfo = await getUserInfo(input.sender.id);
+  const { id: book_id, title, author, synopsis, intro, image_url } = books[0];
+
+  const text = `Hi, ${userInfo.first_name}! ${intro}`;
+
+  const buttons = [];
+  if (synopsis) {
+    buttons.push({
+      type: 'postback',
+      title: 'Quick Synopsis',
+      payload: JSON.stringify({
+        command: 'get_synopsis',
+        book_id
+      })
+    });
   }
 
-  const intro_text =
-    books.length > 1
-      ? 'Please select a book from the list below to begin reading its summary!'
-      : books[0].intro;
+  buttons.push({
+    type: 'postback',
+    title: 'Read Now',
+    payload: JSON.stringify({
+      command: 'get_summary',
+      book_id
+    })
+  });
 
-  const book_intro = user_info
-    ? `Hi, ${user_info.first_name}! ${intro_text}`
-    : intro_text;
-
-  const responses = {
-    single: [
-      {
-        text: book_intro
-      },
-      {
-        attachment: {
-          type: 'template',
-          payload: {
-            template_type: 'generic',
-            elements: [
-              {
-                title: books[0].title,
-                image_url: books[0].image_url,
-                subtitle: `by ${books[0].author}`,
-                buttons: [
-                  {
-                    type: 'postback',
-                    title: 'Quick Synopsis',
-                    payload: JSON.stringify({
-                      command: 'get_synopsis',
-                      book_id: books[0].id
-                    })
-                  },
-                  {
-                    type: 'postback',
-                    title: 'Read Now',
-                    payload: JSON.stringify({
-                      command: 'get_summary',
-                      book_id: books[0].id
-                    })
-                  }
-                ]
-              }
-            ]
-          }
+  return [
+    { text },
+    {
+      attachment: {
+        type: 'template',
+        payload: {
+          template_type: 'generic',
+          elements: [
+            {
+              title,
+              image_url,
+              subtitle: `by ${author}`,
+              buttons
+            }
+          ]
         }
       }
-    ],
-    mid: [
-      {
-        text: book_intro
-      },
-      {
-        attachment: {
-          type: 'template',
-          payload: {
-            template_type: 'generic',
-            elements: books.map(b => {
+    }
+  ];
+}
+
+/*
+
+Working second response object for a carousel of categories:
+
+{
+      attachment: {
+        type: 'template',
+        payload: {
+          template_type: 'generic',
+          elements: allCategories
+            .filter(c => c.other !== 1)
+            .map(c => {
+              // Everything except the category name must be destructured
+              // for this to work
+              const { id, image_url, flavor_text, ...categories } = c;
+
+              const title = Object.keys(categories).filter(
+                name => categories[name]
+              )[0];
               return {
-                title: b.title,
-                image_url: b.image_url,
-                subtitle: `by ${b.author}`,
+                title: title[0].toUpperCase() + title.substring(1),
+                image_url: image_url,
+                subtitle: flavor_text ? flavor_text : null,
                 buttons: [
                   {
                     type: 'postback',
-                    title: 'Read Synopsis',
+                    title,
                     payload: JSON.stringify({
-                      command: 'get_synopsis',
-                      book_id: b.id
-                    })
-                  },
-                  {
-                    type: 'postback',
-                    title: 'Start Summary',
-                    payload: JSON.stringify({
-                      command: 'get_summary',
-                      book_id: b.id
+                      command: 'save_favorite',
+                      category_id: id
                     })
                   }
                 ]
               };
             })
-          }
         }
       }
-    ]
-  };
-
-  return responses[size];
-}
-
-/*
-Removed hard coded book address:
-                default_action: {
-                  type: 'web_url',
-                  url:
-                    'https://cdn1.imggmi.com/uploads/2019/8/22/76c10c3d1b579bf0a66cb7f1cfe74843-full.jpg',
-                  webview_height_ratio: 'tall'
-                },
-                */
+    }
+    */
