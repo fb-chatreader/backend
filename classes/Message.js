@@ -59,7 +59,6 @@ module.exports = class Message {
   }
 
   async _messengerAPICall(message) {
-    console.log('SENDING USER: ', this.sender);
     // Send a single message object to the Facebook API
     if (message) {
       const msgObj = {
