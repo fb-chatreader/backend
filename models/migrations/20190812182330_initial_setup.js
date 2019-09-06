@@ -28,10 +28,7 @@ exports.up = function(knex) {
     })
     .createTable('books', tbl => {
       tbl.increments();
-      tbl
-        .text('title')
-        .notNullable()
-        .unique();
+      tbl.text('title').notNullable();
       tbl
         .integer('client_id')
         .references('id')
