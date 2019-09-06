@@ -1,6 +1,9 @@
 const Books = require('models/db/books.js');
-const Categories = require('models/db/categories.js');
 const getUserInfo = require('../helpers/getUserInfo.js');
+const UserCategories = require('models/db/userCategories.js');
+const pick_category = require('./pick_category.js');
+
+const { getNewCategoriesForUser } = require('../helpers/categories.js');
 
 module.exports = async input => {
   const books = await Books.retrieve({ client_id: input.client_id });
@@ -15,13 +18,20 @@ module.exports = async input => {
     : getSingleBook(input, books);
 };
 
-async function getMultipleBooks() {
+async function getMultipleBooks(input) {
+  const { user_id } = input;
   // For now, the bot assumes if there are multiple books, it's on ChatReader
-  const text =
-    "Hi, welcome to Chat Reader!  I can read a summary of a wide variety of books to you with just a few clicks!  To get started, why don't you tell me a little about some genres that you like to read.  First things first which is your favorite genre from the below list?";
 
-  const allCategories = await Categories.retrieve();
-  const validCategories = allCategories.filter(c => c.other !== 1);
+  const usersCategories = await UserCategories.retrieve({ user_id });
+  if (usersCategories.length >= 3) return pick_category(input);
+  const categoriesForUser = await getNewCategoriesForUser(input.user_id);
+  const validCategories = usersCategories.length < 3 ? categoriesForUser : null;
+
+  const text = !usersCategories.length
+    ? "Hi, welcome to Chat Reader!  I can read a summary of a wide variety of books to you with just a few clicks!  To get started, why don't you tell me a little about some genres that you like to read.  First things first which is your favorite genre from the below list?"
+    : usersCategories.length < 3
+    ? "Before I suggest some books for you, let's pick another favorite genre for you!"
+    : null;
 
   return {
     attachment: {

@@ -15,6 +15,8 @@ const formatWebhook = async ({ body: { entry }, params }, res, next) => {
   // simplify the rest of our code
   const { client_id } = params;
   const client = await Client.retrieve({ id: client_id }).first();
+  if (!client) return res.sendStatus(404);
+
   entry.client_id = client_id;
   entry.access_token = client.access_token;
   const event =
@@ -44,6 +46,7 @@ async function formatEventObject(entry, event) {
   // Order of importance for webhooks --> Policy violations > Postback > Commands
   // Type added in case we need to verify source (do we want users to say "policy violation"
   // and trigger our policy violation command?)
+  console.log('RECEIVING USER: ', event.sender.id);
   const user = await Users.retrieve({ facebook_id: event.sender.id }).first();
 
   if (event && event.message && isValidEmail(event.message.text)) {

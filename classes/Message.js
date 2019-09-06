@@ -13,7 +13,7 @@ module.exports = class Message {
 
     // .send() figures out if it's a promise or not.
     // ._processMessage will determine if it's an array or single object
-    // ._apiCall will take an individual response object and send it to the Messenger API
+    // .messengerAPICall will take an individual response object and send it to the Messenger API
     if (this.responses[0] && Array.isArray(this.responses[0])) {
       this.responses = [...this.responses[0], ...this.responses.slice(1)];
     }
@@ -43,7 +43,7 @@ module.exports = class Message {
   async _processMessage() {
     if (Array.isArray(this.responses)) {
       // If array, continue loop
-      this._apiCall(this.responses.shift()).then(_ => {
+      this._messengerAPICall(this.responses.shift()).then(_ => {
         // Remove message from array, loop back around for the next message
         // AFTER sending the first
         if (this.responses.length) {
@@ -53,12 +53,13 @@ module.exports = class Message {
         }
       });
     } else {
-      this._apiCall(this.responses);
+      this._messengerAPICall(this.responses);
       console.log('Message sent!');
     }
   }
 
-  async _apiCall(message) {
+  async _messengerAPICall(message) {
+    console.log('SENDING USER: ', this.sender);
     // Send a single message object to the Facebook API
     if (message) {
       const msgObj = {
@@ -70,7 +71,9 @@ module.exports = class Message {
       const url = `https://graph.facebook.com/v2.6/me/messages?access_token=${this.access_token}`;
       await axios
         .post(url, msgObj)
-        .catch(err => console.log('Error sending Response: ', err.toJSON));
+        .catch(err =>
+          console.log('Error sending Response: ', err.response.data)
+        );
     } else return;
   }
 };
