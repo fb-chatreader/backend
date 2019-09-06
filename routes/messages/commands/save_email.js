@@ -7,7 +7,7 @@ module.exports = async input => {
   // Return a series (3) of carousels based on the user's preferred categories, if they exist.
   const user = await Users.retrieveOrCreate({ facebook_id: input.sender.id });
   await Users.edit(user.id, (email = input.email));
-  const user_info = await getUserInfo(input.sender.id);
+  const user_info = await getUserInfo(input.user_id, input.access_token);
 
   return [
     {

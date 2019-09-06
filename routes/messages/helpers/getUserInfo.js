@@ -1,7 +1,7 @@
 const axios = require('axios');
 
-module.exports = async PSID => {
-  const url = `https://graph.facebook.com/${PSID}?fields=first_name&access_token=${process.env.PAGE_ACCESS_TOKEN}`;
+module.exports = async (PSID, access_token) => {
+  const url = `https://graph.facebook.com/${PSID}?fields=first_name&access_token=${access_token}`;
   try {
     const request = await axios.get(url);
     return request.data;
