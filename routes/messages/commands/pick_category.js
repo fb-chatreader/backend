@@ -63,7 +63,7 @@ async function getNextFavorite(user_id) {
 }
 
 async function finishCategories(userCategoryIDs, { user_id, email }) {
-  const user = Users.retrieve({ id: user_id }).first();
+  const user = await Users.retrieve({ id: user_id }).first();
 
   const text =
     user.email || email
