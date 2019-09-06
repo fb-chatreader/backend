@@ -54,7 +54,8 @@ async function getMultipleBooks() {
 
 async function getSingleBook(input, booksPromise) {
   const books = await booksPromise;
-  const userInfo = await getUserInfo(input.user_id, input.access_token);
+  const userInfo = await getUserInfo(input.sender.id, input.access_token);
+
   const { id: book_id, title, author, synopsis, intro, image_url } = books[0];
 
   const text = `Hi, ${userInfo.first_name}! ${intro}`;
