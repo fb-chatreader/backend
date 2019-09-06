@@ -15,6 +15,7 @@ const formatWebhook = async ({ body: { entry }, params }, res, next) => {
   // simplify the rest of our code
   const { client_id } = params;
   const client = await Client.retrieve({ id: client_id }).first();
+  console.log('FOUND CLIENT: ', client);
   if (!client) return res.sendStatus(404);
 
   entry.client_id = client_id;
