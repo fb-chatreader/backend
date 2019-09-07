@@ -5,16 +5,27 @@ const router = require('express')
 
 const Client = require('models/db/clients.js');
 
-const { verifyWebhook, formatWebhook } = require('middleware/webhooks.js');
+const {
+  validateWebhook,
+  getClientInfo,
+  parseWebhook
+} = require('middleware/webhooks.js');
 
 const CommandListClass = require('classes/CommandList.js');
 const CommandList = new CommandListClass();
 
-router.post('/:client_id', verifyWebhook, formatWebhook, (req, res) => {
-  const input = req.body.entry[0].input;
-  const sent = CommandList.execute(input);
-  return sent ? res.sendStatus(200) : res.sendStatus(404);
-});
+router.post(
+  '/:client_id',
+  validateWebhook,
+  getClientInfo,
+  parseWebhook,
+  async (req, res) => {
+    const { event } = req.body.entry[0];
+
+    await CommandList.execute(event);
+    return res.sendStatus(200);
+  }
+);
 
 router.get('/:client_id', async (req, res) => {
   const { client_id } = req.params;

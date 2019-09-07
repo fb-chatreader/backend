@@ -6,10 +6,10 @@ const timedMessages = require('models/db/timedMessages.js');
 // If there isn't one, create it
 // Otherwise, increment and get next summary (check for end of book)
 
-module.exports = async input => {
-  if (input.type !== 'postback') return;
+module.exports = async event => {
+  if (event.type !== 'postback') return;
   // Collect needed data from DB
-  const { user_id, book_id } = input;
+  const { user_id, book_id } = event;
   const chatread = await ChatReads.retrieve({ user_id, book_id }).first();
   // Get the user's current chat read summary_id or if they don't have one,
   // Set to the current book's first summary_id

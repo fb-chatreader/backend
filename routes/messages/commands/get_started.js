@@ -1,9 +1,12 @@
 const Books = require('models/db/books.js');
 const Categories = require('models/db/categories.js');
 const getUserInfo = require('../helpers/getUserInfo.js');
+const UserCategories = require('models/db/userCategories.js');
 
-module.exports = async input => {
-  const books = await Books.retrieve({ client_id: input.client_id });
+const pickCategory = require('./pick_category.js');
+
+module.exports = async event => {
+  const books = await Books.retrieve({ client_id: event.client.id });
   if (!books.length) {
     return {
       text:
@@ -11,50 +14,55 @@ module.exports = async input => {
     };
   }
   return books.length > 1
-    ? getMultipleBooks(input)
-    : getSingleBook(input, books);
+    ? getMultipleBooks(event)
+    : getSingleBook(event, books);
 };
 
-async function getMultipleBooks() {
+async function getMultipleBooks(event) {
   // For now, the bot assumes if there are multiple books, it's on ChatReader
+  const { user_id } = event;
+  const userCategories = await UserCategories.retrieve({ user_id });
+  if (userCategories.length) return pickCategory(event);
   const text =
     "Hi, welcome to Chat Reader!  I can read a summary of a wide variety of books to you with just a few clicks!  To get started, why don't you tell me a little about some genres that you like to read.  First things first which is your favorite genre from the below list?";
 
   const allCategories = await Categories.retrieve();
   const validCategories = allCategories.filter(c => c.other !== 1);
 
-  return {
-    attachment: {
-      type: 'template',
-      payload: {
-        template_type: 'button',
-        text,
-        buttons: validCategories.map(c => {
-          // Everything except the category name must be destructured
-          // for this to work
-          const { id, image_url, flavor_text, ...categories } = c;
+  return [
+    {
+      attachment: {
+        type: 'template',
+        payload: {
+          template_type: 'button',
+          text,
+          buttons: validCategories.map(c => {
+            // Everything except the category name must be destructured
+            // for this to work
+            const { id, image_url, flavor_text, ...categories } = c;
 
-          const title = Object.keys(categories).filter(
-            name => categories[name]
-          )[0];
+            const title = Object.keys(categories).filter(
+              name => categories[name]
+            )[0];
 
-          return {
-            type: 'postback',
-            title: title[0].toUpperCase() + title.substring(1),
-            payload: JSON.stringify({
-              command: 'pick_category',
-              category_id: id
-            })
-          };
-        })
+            return {
+              type: 'postback',
+              title: title[0].toUpperCase() + title.substring(1),
+              payload: JSON.stringify({
+                command: 'pick_category',
+                category_id: id
+              })
+            };
+          })
+        }
       }
     }
-  };
+  ];
 }
 
-async function getSingleBook(input, booksPromise) {
-  const books = await booksPromise;
-  const userInfo = await getUserInfo(input.sender.id, input.access_token);
+async function getSingleBook(event, promise) {
+  const books = await promise;
+  const userInfo = await getUserInfo(event.sender, event.client.access_token);
 
   const { id: book_id, title, author, synopsis, intro, image_url } = books[0];
 
