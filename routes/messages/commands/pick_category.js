@@ -5,9 +5,9 @@ const UserCategories = require('models/db/userCategories.js');
 
 const { getNewCategoriesForUser } = require('../helpers/categories.js');
 
-module.exports = async input => {
-  if (input.type !== 'postback' && input.command !== 'welcome') return;
-  const { user_id, category_id } = input;
+module.exports = async event => {
+  if (event.type !== 'postback' && event.command !== 'get_started') return;
+  const { user_id, category_id } = event;
 
   const userCategoryObjects = await UserCategories.retrieve({ user_id });
   const userCategoryIDs = userCategoryObjects.map(c => c.category_id);
@@ -24,11 +24,11 @@ module.exports = async input => {
   if (!userCategoryIDs.length) return;
 
   return userCategoryIDs.length > 0 && userCategoryIDs.length < 3
-    ? getNextFavorite(user_id)
-    : finishCategories(userCategoryIDs, input);
+    ? getNextFavorite(userCategoryIDs, user_id)
+    : finishCategories(userCategoryIDs, event);
 };
 
-async function getNextFavorite(user_id) {
+async function getNextFavorite(userCategoryIDs, user_id) {
   const remainingCategories = await getNewCategoriesForUser(user_id);
 
   const text =
@@ -36,30 +36,32 @@ async function getNextFavorite(user_id) {
       ? 'Thanks, now pick a second favorite:'
       : 'Great!  Okay, last one:';
 
-  return {
-    attachment: {
-      type: 'template',
-      payload: {
-        template_type: 'button',
-        text,
-        buttons: remainingCategories.map(c => {
-          // Everything except the category name must be destructured
-          // for this to work
-          const { id, image_url, flavor_text, ...category } = c;
-          const title = Object.keys(category)[0];
+  return [
+    {
+      attachment: {
+        type: 'template',
+        payload: {
+          template_type: 'button',
+          text,
+          buttons: remainingCategories.map(c => {
+            // Everything except the category name must be destructured
+            // for this to work
+            const { id, image_url, flavor_text, ...category } = c;
+            const title = Object.keys(category)[0];
 
-          return {
-            type: 'postback',
-            title: title[0].toUpperCase() + title.substring(1),
-            payload: JSON.stringify({
-              command: 'pick_category',
-              category_id: id
-            })
-          };
-        })
+            return {
+              type: 'postback',
+              title: title[0].toUpperCase() + title.substring(1),
+              payload: JSON.stringify({
+                command: 'pick_category',
+                category_id: id
+              })
+            };
+          })
+        }
       }
     }
-  };
+  ];
 }
 
 async function finishCategories(userCategoryIDs, { user_id, email }) {
