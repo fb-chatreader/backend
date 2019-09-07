@@ -1,13 +1,13 @@
 const Users = require('../../../models/db/users.js');
 const getUserInfo = require('../helpers/getUserInfo.js');
 
-module.exports = async input => {
+module.exports = async event => {
   // Currently just saves an email when presented with one.
   // Future work:
   // Return a series (3) of carousels based on the user's preferred categories, if they exist.
-  const user = await Users.retrieveOrCreate({ facebook_id: input.sender.id });
-  await Users.edit(user.id, (email = input.email));
-  const user_info = await getUserInfo(input.sender.id, input.access_token);
+  const { user } = event;
+  await Users.edit(user.id, (email = event.email));
+  const user_info = await getUserInfo(event.sender, event.client.access_token);
 
   return [
     {
