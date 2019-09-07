@@ -1,110 +1,99 @@
 const Users = require('models/db/users.js');
 const Client = require('models/db/clients.js');
 
-const verifyWebhook = ({ body }, res, next) => {
+module.exports = { validateWebhook, getClientInfo, parseWebhook };
+
+function validateWebhook({ body }, res, next) {
   if (body.object === 'page') {
     next();
   }
-};
-// a global array of categoreis
-const categories = ['money', 'others', 'entrepreneurship', 'leadership'];
+}
 
-const formatWebhook = async ({ body: { entry }, params }, res, next) => {
+async function getClientInfo({ body: { entry }, params }, res, next) {
+  // Client tells us which page the webhook was sent from (and thus what books it has access to)
+  const { client_id } = params;
+  const client = await Client.retrieve({ id: client_id }).first();
+  if (!client) return res.sendStatus(404);
+  entry[0].client = client;
+  next();
+}
+
+async function parseWebhook({ body: { entry } }, res, next) {
   // We receive data for our commands from a variety of places.
   // This middleware is meant to organize that data into a single place to
   // simplify the rest of our code
-  const { client_id } = params;
-  const client = await Client.retrieve({ id: client_id }).first();
-  console.log('FOUND CLIENT: ', client);
-  if (!client) return res.sendStatus(404);
-
-  entry.client_id = client_id;
-  entry.access_token = client.access_token;
-  const event =
-    entry && entry[0] && entry[0].messaging ? entry[0].messaging[0] : null;
-
-  if (event) {
-    // Save sender ID in DB if it doesn't already exist
-    const exists = await Users.retrieve({
-      facebook_id: event.sender.id
-    }).first();
-    if (!exists) {
-      await Users.add({ facebook_id: event.sender.id });
-    }
-  }
-
-  if (isValidMessengerRequest(entry, event)) {
-    entry[0].input = await formatEventObject(entry, event);
+  if (isValidMessengerRequest(entry)) {
+    entry[0].event = isPolicyViolation(entry)
+      ? parsePolicyViolation(entry)
+      : await parseUserAction(entry);
     next();
   } else {
     return res.sendStatus(400);
   }
-};
+}
 
-module.exports = { verifyWebhook, formatWebhook };
+function parsePolicyViolation(entry) {
+  return {
+    command: 'policy_violation',
+    type: 'policy_violation',
+    ...entry[0]['policy-enforcement'],
+    page_id: entry[0].recipient.id
+  };
+}
 
-async function formatEventObject(entry, event) {
-  // Order of importance for webhooks --> Policy violations > Postback > Commands
+async function parseUserAction(entry) {
+  // Order of importance for webhooks --> Postback > Commands
   // Type added in case we need to verify source (do we want users to say "policy violation"
   // and trigger our policy violation command?)
-  const user = await Users.retrieve({ facebook_id: event.sender.id }).first();
 
-  if (event && event.message && isValidEmail(event.message.text)) {
-    await Users.edit({ id: user.id }, { email: event.message.text });
-    event.postback = {
-      payload: JSON.stringify({
-        command: 'pick_category',
-        email: event.message.text,
-        client_id: entry.client_id
-      })
-    };
+  // The 'event' exists for postbacks and user messages
+  // It's essentially where the data for those webhooks exists
+  const event =
+    entry && entry[0] && entry[0].messaging ? entry[0].messaging[0] : null;
+
+  // Get user if they exists already in our database
+  let user = event
+    ? await Users.retrieve({ facebook_id: event.sender.id }).first()
+    : null;
+
+  if (event && !user) {
+    // Save sender ID in DB if they're a new user
+    user = await Users.add({ facebook_id: event.sender.id });
   }
 
-  let parsed_data;
-  if (entry[0]['policy-enforcement']) {
+  let parsed_data = {
+    sender: event.sender.id,
+    user,
+    user_id: user.id,
+    client: entry[0].client
+  };
+
+  if (event.postback) {
     parsed_data = {
-      command: 'policy_violation',
-      type: 'policy_violation',
-      ...entry[0]['policy-enforcement'],
-      page_id: entry[0].recipient.id
-    };
-  } else if (event.postback) {
-    parsed_data = {
+      ...parsed_data,
       ...JSON.parse(event.postback.payload),
-      type: 'postback',
-      sender: event.sender,
-      user_id: user.id,
-      client_id: entry.client_id,
-      access_token: entry.access_token
+      type: 'postback'
     };
   } else if (event && event.message) {
     parsed_data = {
+      ...parsed_data,
       command: event.message.text
         .toLowerCase()
         .split(' ')
         .join('_'),
-      type: 'input',
-      sender: event.sender,
-      user_id: user.id,
-      client_id: entry.client_id,
-      access_token: entry.access_token
+      original_message: event.message.text,
+      type: 'message'
     };
   }
   return parsed_data;
 }
 
-function isValidMessengerRequest(entry, event) {
+function isValidMessengerRequest(entry) {
+  const event =
+    entry && entry[0] && entry[0].messaging ? entry[0].messaging[0] : null;
   return event || (entry && entry[0]);
 }
 
-function isValidEmail(email) {
-  // Test for email format.  Tests in order:
-  // one @, dot after @
-  // first character is a number or letter
-  // last character is a letter
-  return (
-    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) &&
-    /[a-z0-9]/.test(email[0]) &&
-    /[a-z]/.test(email[email.length - 1])
-  );
+function isPolicyViolation(entry) {
+  return !!entry[0]['policy-enforcement'];
 }
