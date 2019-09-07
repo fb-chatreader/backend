@@ -1,4 +1,4 @@
-const db = require('../../dbConfig.js.js');
+const db = require('../../index.js.js');
 const Books = require('../books.jss');
 
 describe('Testing queries in the books.js file', () => {
