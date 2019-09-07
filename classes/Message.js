@@ -1,64 +1,51 @@
 const axios = require('axios');
 
 module.exports = class Message {
-  constructor(responses, event) {
-    this.responses = responses;
-    this.sender = event.sender.id;
-    this.access_token = event.access_token;
+  constructor(event) {
+    this.response;
+    this.event = event;
+    this.sender = event.sender;
+    this.access_token = event.client.access_token;
   }
 
-  send() {
-    // This function tackles a few conditions.  `this.responses` could be a promise or not.
-    // The promise could resolve to an array of responses or a single response.
+  async respond() {
+    if (!this.response) return;
+    // The response object must be an array.
+    // However it could:
+    // 1) Be a promise  --> this.response.then is truthy
+    // 2) Not be a promise --> this.response.then is falsey
+    // 3) Contain an array of promises --> this.response.then is falsey but this.response[0].then is truthy
 
-    // .send() figures out if it's a promise or not.
-    // ._processMessage will determine if it's an array or single object
-    // .messengerAPICall will take an individual response object and send it to the Messenger API
-    if (this.responses[0] && Array.isArray(this.responses[0])) {
-      this.responses = [...this.responses[0], ...this.responses.slice(1)];
-    }
-    if (this.responses.then || (this.responses[0] && this.responses[0].then)) {
-      const wasNestedPromise = this.responses.then ? false : true;
-      const promise = this.responses.then
-        ? this.responses
-        : this.responses.shift();
-      promise.then(messages => {
-        // console.log('MESSAGES: ', messages);
-        if (messages) {
-          this.responses = wasNestedPromise
-            ? [messages, ...this.responses]
-            : messages;
-          this._processMessage();
-        } else return;
-      });
-    } else {
-      // console.log('Not a promise: ', this.responses);
-      // Otherwise just continue the loop
-      if (this.responses) {
-        this._processMessage();
-      } else return;
+    if (this.response.then || this.response[0].then) {
+      const resolved = await this._resolvePromises();
+      this._messageQueue(resolved);
     }
   }
 
-  async _processMessage() {
-    if (Array.isArray(this.responses)) {
-      // If array, continue loop
-      this._messengerAPICall(this.responses.shift()).then(_ => {
-        // Remove message from array, loop back around for the next message
-        // AFTER sending the first
-        if (this.responses.length) {
-          this.send();
-        } else {
-          console.log('Message sent!');
-        }
-      });
-    } else {
-      this._messengerAPICall(this.responses);
-      console.log('Message sent!');
-    }
+  _resolvePromises(promise = this.response) {
+    if (promise.then) {
+      return promise.then(res => res);
+    } else if (promise[0] && promise[0].then) {
+      return Promise.all(this.response).then(res => res);
+    } else return promise;
   }
 
-  async _messengerAPICall(message) {
+  async _messageQueue(resolved) {
+    await resolved;
+    if (Array.isArray(resolved[0])) {
+      resolved = [...resolved[0], resolved.slice(1)];
+    }
+    const message = resolved.shift();
+    console.log('MESSAGE: ', resolved);
+
+    await this._sendToMessengerAPI(message);
+
+    if (resolved.length) {
+      this._messageQueue(resolved);
+    } else console.log('Message Sent');
+  }
+
+  async _sendToMessengerAPI(message) {
     // Send a single message object to the Facebook API
     if (message) {
       const msgObj = {
