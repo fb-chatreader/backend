@@ -1,5 +1,5 @@
 const get_started = require('../commands/get_started.js');
-const db = require('../../../models/dbConfig.js');
+const db = require('../../../models/index.js');
 const Books = require('../../../models/db/books.js');
 const Summaries = require('../../../models/db/summaryParts.js');
 
@@ -31,5 +31,3 @@ describe('get_started command tests', () => {
     expect(Array.isArray(response)).toBe(true);
   });
 });
-
-

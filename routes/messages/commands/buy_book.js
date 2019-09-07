@@ -1,13 +1,11 @@
-const axios = require('axios');
 const Books = require('models/db/books.js');
-const Users = require('models/db/users.js');
 const getUserInfo = require('../helpers/getUserInfo.js');
 
-module.exports = async input => {
-  const id = input.book_id;
+module.exports = async event => {
+  const id = event.book_id;
   const book = await Books.retrieve({ id }).first();
 
-  const user_info = await getUserInfo(input.sender.id, input.access_token);
+  const user_info = await getUserInfo(event.sender, event.client.access_token);
 
   return [
     {
