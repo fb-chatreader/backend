@@ -15,7 +15,7 @@ module.exports = async (bookObj, client_id) => {
     !book.author ||
     !book.image_url
   ) {
-    // If we're missing any part of a book, skip over it
+    console.log('Missing book data: ', book.title, book.author, book.image_url);
     return false;
   }
   const newBook = await Books.add(book);
