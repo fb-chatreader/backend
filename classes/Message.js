@@ -19,6 +19,8 @@ module.exports = class Message {
     if (this.response.then || this.response[0].then) {
       const resolved = await this._resolvePromises();
       this._messageQueue(resolved);
+    } else {
+      this._messageQueue(this.response);
     }
   }
 
