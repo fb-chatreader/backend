@@ -6,7 +6,12 @@ const UserCategories = require('models/db/userCategories.js');
 const { getNewCategoriesForUser } = require('../helpers/categories.js');
 
 module.exports = async event => {
-  if (event.type !== 'postback' && event.command !== 'get_started') return;
+  if (
+    event.type !== 'postback' &&
+    event.command !== 'get_started' &&
+    event.command !== 'save_email'
+  )
+    return;
   const { user_id, category_id } = event;
 
   const userCategoryObjects = await UserCategories.retrieve({ user_id });
@@ -23,7 +28,7 @@ module.exports = async event => {
 
   if (!userCategoryIDs.length) return;
 
-  return userCategoryIDs.length > 0 && userCategoryIDs.length < 3
+  return userCategoryIDs.length < 3
     ? getNextFavorite(userCategoryIDs, user_id)
     : finishCategories(userCategoryIDs, event);
 };
@@ -46,8 +51,7 @@ async function getNextFavorite(userCategoryIDs, user_id) {
           buttons: remainingCategories.map(c => {
             // Everything except the category name must be destructured
             // for this to work
-            const { id, image_url, flavor_text, ...category } = c;
-            const title = Object.keys(category)[0];
+            const { id, name: title } = c;
 
             return {
               type: 'postback',
@@ -64,35 +68,36 @@ async function getNextFavorite(userCategoryIDs, user_id) {
   ];
 }
 
-async function finishCategories(userCategoryIDs, { user_id, email }) {
+async function finishCategories(userCategoryIDs, event) {
+  const {
+    user_id,
+    page: { id: page_id }
+  } = event;
   const user = await Users.retrieve({ id: user_id }).first();
 
-  const text =
-    user.email || email
-      ? 'So based on your preferences, here are some books you might like!'
-      : "Great, I have what I need to make some suggestions!  Though first, I'd like to make an account for you so I can remember them across platforms.  What email address can I attach to your account?";
-
+  const text = user.email
+    ? 'So based on your preferences, here are some books you might like!'
+    : "Great, I have what I need to make some suggestions!  Though first, I'd like to make an account for you so I can remember them across platforms.  What email address can I attach to your account?";
   // Convert IDs into names
   //   const rawCategories = await Promise.all(
   //     userCategoryIDs.map(id => Categories.retrieve({ id }).first())
   //   );
   //   const categories = cleanCategories(rawCategories);
+  const carousels = user.email
+    ? await Promise.all(
+        userCategoryIDs.map(async category_id => {
+          const pageBooks = await BookCategories.retrieve({
+            'bc.category_id': category_id,
+            page_id
+          });
 
-  const carousels =
-    user.email || email
-      ? await Promise.all(
-          userCategoryIDs.map(async category_id => {
-            const books = await BookCategories.retrieve({ category_id });
-            const book_ids = books.map(bc => bc.book_id);
-
-            return {
-              attachment: {
-                type: 'template',
-                payload: {
-                  template_type: 'generic',
-                  elements: await Promise.all(
-                    await book_ids.map(async id => {
-                      const b = await Books.retrieve({ id }).first();
+          return pageBooks.length
+            ? {
+                attachment: {
+                  type: 'template',
+                  payload: {
+                    template_type: 'generic',
+                    elements: pageBooks.map(b => {
                       const buttons = [];
                       if (b.synopsis) {
                         buttons.push({
@@ -129,13 +134,12 @@ async function finishCategories(userCategoryIDs, { user_id, email }) {
                         buttons
                       };
                     })
-                  )
+                  }
                 }
               }
-            };
-          })
-        )
-      : null;
-
-  return [{ text }, await carousels];
+            : null;
+        })
+      )
+    : null;
+  return [{ text }, ...carousels];
 }

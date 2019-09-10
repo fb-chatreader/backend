@@ -6,12 +6,14 @@ const UserCategories = require('models/db/userCategories.js');
 const pickCategory = require('./pick_category.js');
 
 module.exports = async event => {
-  const books = await Books.retrieve({ client_id: event.client.id });
+  const books = await Books.retrieve({ page_id: event.page.id });
   if (!books.length) {
-    return {
-      text:
-        'Sorry, this bot is still being created, please visit us again soon!'
-    };
+    return [
+      {
+        text:
+          'Sorry, this bot is still being created, please visit us again soon!'
+      }
+    ];
   }
   return books.length > 1
     ? getMultipleBooks(event)
@@ -27,7 +29,6 @@ async function getMultipleBooks(event) {
     "Hi, welcome to Chat Reader!  I can read a summary of a wide variety of books to you with just a few clicks!  To get started, why don't you tell me a little about some genres that you like to read.  First things first which is your favorite genre from the below list?";
 
   const allCategories = await Categories.retrieve();
-  const validCategories = allCategories.filter(c => c.other !== 1);
 
   return [
     {
@@ -36,21 +37,17 @@ async function getMultipleBooks(event) {
         payload: {
           template_type: 'button',
           text,
-          buttons: validCategories.map(c => {
+          buttons: allCategories.map(c => {
             // Everything except the category name must be destructured
             // for this to work
-            const { id, image_url, flavor_text, ...categories } = c;
-
-            const title = Object.keys(categories).filter(
-              name => categories[name]
-            )[0];
+            const { name: title, id: category_id } = c;
 
             return {
               type: 'postback',
               title: title[0].toUpperCase() + title.substring(1),
               payload: JSON.stringify({
                 command: 'pick_category',
-                category_id: id
+                category_id
               })
             };
           })
@@ -62,7 +59,7 @@ async function getMultipleBooks(event) {
 
 async function getSingleBook(event, promise) {
   const books = await promise;
-  const userInfo = await getUserInfo(event.sender, event.client.access_token);
+  const userInfo = await getUserInfo(event.sender, event.page.access_token);
 
   const { id: book_id, title, author, synopsis, intro, image_url } = books[0];
 
@@ -82,9 +79,9 @@ async function getSingleBook(event, promise) {
 
   buttons.push({
     type: 'postback',
-    title: 'Read Now',
+    title: 'Get Title',
     payload: JSON.stringify({
-      command: 'get_summary',
+      command: 'get_book_title',
       book_id
     })
   });
