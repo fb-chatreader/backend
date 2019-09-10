@@ -34,11 +34,11 @@ module.exports = class Message {
 
   async _messageQueue(resolved) {
     await resolved;
+    console.log('RESOLVED: ', resolved);
     if (Array.isArray(resolved[0])) {
       resolved = [...resolved[0], resolved.slice(1)];
     }
     const message = resolved.shift();
-    console.log('MESSAGE: ', resolved);
 
     await this._sendToMessengerAPI(message);
 
