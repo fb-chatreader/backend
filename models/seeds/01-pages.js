@@ -2,10 +2,9 @@
 
 exports.seed = function(knex) {
   // delete all existing entries
-  return knex('clients').insert([
+  return knex('pages').insert([
     {
-      id: 123456789,
-      name: 'Todd James',
+      id: process.env.PAGE_ID,
       access_token: process.env.PAGE_ACCESS_TOKEN,
       verification_token: process.env.VERIFICATION_TOKEN
     }

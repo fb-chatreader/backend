@@ -2,10 +2,7 @@ exports.up = function(knex) {
   return knex.schema
     .createTable('categories', tbl => {
       tbl.increments();
-      tbl.integer('leadership');
-      tbl.integer('entrepreneurship');
-      tbl.integer('money');
-      tbl.integer('other');
+      tbl.text('name');
       tbl
         .timestamp('created_at')
         .notNullable()
@@ -80,6 +77,6 @@ exports.down = function(knex) {
   return knex.schema
     .dropTable('user_libraries')
     .dropTable('book_categories')
-    .dropTable('users_categories')
+    .dropTable('user_categories')
     .dropTable('categories');
 };
