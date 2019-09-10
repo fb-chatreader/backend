@@ -5,7 +5,7 @@ module.exports = class Message {
     this.response;
     this.event = event;
     this.sender = event.sender;
-    this.access_token = event.client.access_token;
+    this.access_token = event.page.access_token;
   }
 
   async respond() {
