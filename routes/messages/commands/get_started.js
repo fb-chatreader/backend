@@ -29,7 +29,6 @@ async function getMultipleBooks(event) {
     "Hi, welcome to Chat Reader!  I can read a summary of a wide variety of books to you with just a few clicks!  To get started, why don't you tell me a little about some genres that you like to read.  First things first which is your favorite genre from the below list?";
 
   const allCategories = await Categories.retrieve();
-  const validCategories = allCategories.filter(c => c.other !== 1);
 
   return [
     {
@@ -38,21 +37,17 @@ async function getMultipleBooks(event) {
         payload: {
           template_type: 'button',
           text,
-          buttons: validCategories.map(c => {
+          buttons: allCategories.map(c => {
             // Everything except the category name must be destructured
             // for this to work
-            const { id, image_url, flavor_text, ...categories } = c;
-
-            const title = Object.keys(categories).filter(
-              name => categories[name]
-            )[0];
+            const { name: title, id: category_id } = c;
 
             return {
               type: 'postback',
               title: title[0].toUpperCase() + title.substring(1),
               payload: JSON.stringify({
                 command: 'pick_category',
-                category_id: id
+                category_id
               })
             };
           })
