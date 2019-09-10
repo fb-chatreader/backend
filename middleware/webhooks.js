@@ -1,7 +1,7 @@
 const Users = require('models/db/users.js');
-const Client = require('models/db/clients.js');
+const Pages = require('models/db/pages.js');
 
-module.exports = { validateWebhook, getClientInfo, parseWebhook };
+module.exports = { validateWebhook, getPageID, parseWebhook };
 
 function validateWebhook({ body }, res, next) {
   if (body.object === 'page') {
@@ -9,12 +9,12 @@ function validateWebhook({ body }, res, next) {
   }
 }
 
-async function getClientInfo({ body: { entry }, params }, res, next) {
-  // Client tells us which page the webhook was sent from (and thus what books it has access to)
-  const { client_id } = params;
-  const client = await Client.retrieve({ id: client_id }).first();
-  if (!client) return res.sendStatus(404);
-  entry[0].client = client;
+async function getPageID({ body: { entry }, params }, res, next) {
+  // Page ID tells us which page the webhook was sent from (and thus what books it has access to)
+  const { id } = entry[0];
+  const page = await Pages.retrieve({ id }).first();
+  if (!page) return res.sendStatus(404);
+  entry[0].page = page;
   next();
 }
 
@@ -37,7 +37,7 @@ function parsePolicyViolation(entry) {
     command: 'policy_violation',
     type: 'policy_violation',
     ...entry[0]['policy-enforcement'],
-    page_id: entry[0].recipient.id
+    page_id: entry[0].id
   };
 }
 
@@ -65,7 +65,7 @@ async function parseUserAction(entry) {
     sender: event.sender.id,
     user,
     user_id: user.id,
-    client: entry[0].client
+    page: entry[0].page
   };
 
   if (event.postback) {

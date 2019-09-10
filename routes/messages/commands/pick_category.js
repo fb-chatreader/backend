@@ -23,7 +23,7 @@ module.exports = async event => {
 
   if (!userCategoryIDs.length) return;
 
-  return userCategoryIDs.length > 0 && userCategoryIDs.length < 3
+  return userCategoryIDs.length < 3
     ? getNextFavorite(userCategoryIDs, user_id)
     : finishCategories(userCategoryIDs, event);
 };

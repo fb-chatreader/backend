@@ -6,12 +6,14 @@ const UserCategories = require('models/db/userCategories.js');
 const pickCategory = require('./pick_category.js');
 
 module.exports = async event => {
-  const books = await Books.retrieve({ client_id: event.client.id });
+  const books = await Books.retrieve({ page_id: event.page.id });
   if (!books.length) {
-    return {
-      text:
-        'Sorry, this bot is still being created, please visit us again soon!'
-    };
+    return [
+      {
+        text:
+          'Sorry, this bot is still being created, please visit us again soon!'
+      }
+    ];
   }
   return books.length > 1
     ? getMultipleBooks(event)
@@ -62,7 +64,7 @@ async function getMultipleBooks(event) {
 
 async function getSingleBook(event, promise) {
   const books = await promise;
-  const userInfo = await getUserInfo(event.sender, event.client.access_token);
+  const userInfo = await getUserInfo(event.sender, event.page.access_token);
 
   const { id: book_id, title, author, synopsis, intro, image_url } = books[0];
 
@@ -82,9 +84,9 @@ async function getSingleBook(event, promise) {
 
   buttons.push({
     type: 'postback',
-    title: 'Read Now',
+    title: 'Get Title',
     payload: JSON.stringify({
-      command: 'get_summary',
+      command: 'get_book_title',
       book_id
     })
   });
