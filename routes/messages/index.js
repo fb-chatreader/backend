@@ -7,19 +7,25 @@ const Pages = require('models/db/pages.js');
 
 const {
   validateWebhook,
-  getPageID,
+  getPageData,
   parseWebhook
 } = require('middleware/webhooks.js');
 
 const CommandListClass = require('classes/CommandList.js');
 const CommandList = new CommandListClass();
 
-router.post('/', validateWebhook, getPageID, parseWebhook, async (req, res) => {
-  const { event } = req.body.entry[0];
+router.post(
+  '/',
+  validateWebhook,
+  getPageData,
+  parseWebhook,
+  async (req, res) => {
+    const { event } = req.body.entry[0];
 
-  await CommandList.execute(event);
-  return res.sendStatus(200);
-});
+    await CommandList.execute(event);
+    return res.sendStatus(200);
+  }
+);
 
 router.get('/', async (req, res) => {
   const mode = req.query['hub.mode'];
