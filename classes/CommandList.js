@@ -41,13 +41,13 @@ module.exports = class CommandList {
     return null;
   }
 
-  _containsValidEmail() {
+  _containsValidEmail(event) {
     // Test for email format.  Tests in order:
     // one @, dot after @
     // first character is a number or letter
     // last character is a letter
 
-    const email = this.event.original_message;
+    const email = event.original_message;
     return (
       email &&
       /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) &&
