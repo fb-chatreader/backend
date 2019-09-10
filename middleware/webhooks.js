@@ -1,7 +1,7 @@
 const Users = require('models/db/users.js');
 const Pages = require('models/db/pages.js');
 
-module.exports = { validateWebhook, getPageID, parseWebhook };
+module.exports = { validateWebhook, getPageData, parseWebhook };
 
 function validateWebhook({ body }, res, next) {
   if (body.object === 'page') {
@@ -9,7 +9,7 @@ function validateWebhook({ body }, res, next) {
   }
 }
 
-async function getPageID({ body: { entry }, params }, res, next) {
+async function getPageData({ body: { entry }, params }, res, next) {
   // Page ID tells us which page the webhook was sent from (and thus what books it has access to)
   const { id } = entry[0];
   const page = await Pages.retrieve({ id }).first();
