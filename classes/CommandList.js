@@ -21,7 +21,9 @@ module.exports = class CommandList {
       return this.commands[event.command](event);
     } else if (this._processMessage(event)) {
       // User submitted data, like an email address
-      return this.commands[this._processMessage(event)](event);
+      const command = this._processMessage(event);
+      event.command = command;
+      return this.commands[command](event);
     } else {
       // User sent message or postback the bot doesn't recognize
       const defaultCommand = 'get_started';
