@@ -3,41 +3,33 @@ const router = require('express')
   .Router()
   .use(bodyParser.json());
 
-const Client = require('models/db/clients.js');
+const Pages = require('models/db/pages.js');
 
 const {
   validateWebhook,
-  getClientInfo,
+  getPageID,
   parseWebhook
 } = require('middleware/webhooks.js');
 
 const CommandListClass = require('classes/CommandList.js');
 const CommandList = new CommandListClass();
 
-router.post(
-  '/:client_id',
-  validateWebhook,
-  getClientInfo,
-  parseWebhook,
-  async (req, res) => {
-    const { event } = req.body.entry[0];
+router.post('/', validateWebhook, getPageID, parseWebhook, async (req, res) => {
+  const { event } = req.body.entry[0];
 
-    await CommandList.execute(event);
-    return res.sendStatus(200);
-  }
-);
+  await CommandList.execute(event);
+  return res.sendStatus(200);
+});
 
-router.get('/:client_id', async (req, res) => {
-  const { client_id } = req.params;
-  const client = await Client.retrieve({ id: client_id }).first();
+router.get('/', async (req, res) => {
+  const mode = req.query['hub.mode'];
+  const token = req.query['hub.verify_token'];
+  const challenge = req.query['hub.challenge'];
 
-  if (!client) return res.sendStatus(404);
+  const page = await Pages.retrieve({ verification_token: token }).first();
+  if (!page) return res.sendStatus(404);
 
-  const { verification_token } = client;
-
-  let mode = req.query['hub.mode'];
-  let token = req.query['hub.verify_token'];
-  let challenge = req.query['hub.challenge'];
+  const { verification_token } = page;
 
   if (mode && token) {
     if (mode === 'subscribe' && token === verification_token) {
@@ -51,7 +43,4 @@ router.get('/:client_id', async (req, res) => {
   }
 });
 
-router.get('/', (req, res) => {
-  return res.status(200).send('API RUNNING!!!');
-});
 module.exports = router;
