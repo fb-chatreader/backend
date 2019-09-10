@@ -1,7 +1,7 @@
 const Books = require('models/db/books.js');
 
 module.exports = async event => {
-  const id = event.book_id;
+  const { book_id } = event;
   const book = await Books.retrieve({ id }).first();
   return [
     {
@@ -16,7 +16,7 @@ module.exports = async event => {
               title: 'Start Summary',
               payload: JSON.stringify({
                 command: 'get_summary',
-                book_id: id
+                book_id
               })
             }
           ]

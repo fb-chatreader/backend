@@ -4,9 +4,9 @@ const BookCategories = require('models/db/bookCategories.js');
 const SummaryParts = require('models/db/summaryParts');
 const getSummaryParts = require('./getSummaryParts.js');
 
-module.exports = async (bookObj, client_id) => {
+module.exports = async (bookObj, page_id) => {
   const { summary, category, ...book } = bookObj;
-  book.client_id = client_id;
+  book.page_id = page_id;
   if (
     !summary ||
     !category ||
@@ -15,13 +15,17 @@ module.exports = async (bookObj, client_id) => {
     !book.author ||
     !book.image_url
   ) {
-    console.log('Missing book data: ', book.title, book.author, book.image_url);
+    console.log(
+      'Missing book data: ',
+      book.title,
+      book.author,
+      book.image_url,
+      category
+    );
     return false;
   }
   const newBook = await Books.add(book);
-  const book_category = await Categories.retrieve({
-    [category.toLowerCase()]: 1
-  }).first();
+  const book_category = await Categories.retrieve({ name: category }).first();
   await BookCategories.add({
     book_id: newBook.id,
     category_id: book_category.id
