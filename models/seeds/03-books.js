@@ -3,7 +3,7 @@ exports.seed = function(knex) {
   return knex('books').insert({
     title: 'Shoe Dog',
     author: 'Phil Knight',
-    client_id: 123456789,
+    page_id: process.env.PAGE_ID,
     synopsis:
       'Shoe Dog (2016) tells the story of the man behind the famous footwear company Nike. These blinks offer a peek into the mind of genius entrepreneur Phil Knight and detail the rollercoaster ride he went to through to build up his company.',
     image_url:

@@ -10,14 +10,14 @@ module.exports = {
 };
 
 function retrieve(filter) {
-  return filter ? db('clients').where(filter) : db('clients');
+  return filter ? db('pages').where(filter) : db('pages');
 }
 
-function add(client) {
-  const { access_token, name } = client;
+function add(page) {
+  const { access_token, name } = page;
   return getID(name)
     .then(id =>
-      db(`clients`)
+      db(`pages`)
         .insert(
           {
             id,
@@ -32,18 +32,18 @@ function add(client) {
         )
         .then(c => retrieve({ id: c[0].id }).first())
     )
-    .catch(err => console.log('Something went wrong adding the client: ', err));
+    .catch(err => console.log('Something went wrong adding the page: ', err));
 }
 
 function edit(filter, changes) {
-  return db('clients')
+  return db('pages')
     .where(filter)
     .update(changes)
     .then(c => retrieve({ id: c[0].id }).first());
 }
 
 function remove(id) {
-  return db('clients')
+  return db('pages')
     .where({ id })
     .del();
 }
@@ -57,13 +57,13 @@ async function getID(name) {
   getID(name);
 }
 
-function newVerificationToken(client_id, name) {
-  return db('clients')
-    .where({ id: client_id })
+function newVerificationToken(id) {
+  return db('pages')
+    .where({ id })
     .update(
       {
         verification_token: bcrypt.hashSync(
-          `${name}${new Date()}${process.env.APP_SECRET}`,
+          `${id}${new Date()}${process.env.APP_SECRET}`,
           10
         )
       },

@@ -5,7 +5,7 @@ module.exports = class Message {
     this.response;
     this.event = event;
     this.sender = event.sender;
-    this.access_token = event.client.access_token;
+    this.access_token = event.page.access_token;
   }
 
   async respond() {
@@ -15,7 +15,6 @@ module.exports = class Message {
     // 1) Be a promise  --> this.response.then is truthy
     // 2) Not be a promise --> this.response.then is falsey
     // 3) Contain an array of promises --> this.response.then is falsey but this.response[0].then is truthy
-
     if (this.response.then || this.response[0].then) {
       const resolved = await this._resolvePromises();
       this._messageQueue(resolved);
@@ -38,7 +37,6 @@ module.exports = class Message {
       resolved = [...resolved[0], resolved.slice(1)];
     }
     const message = resolved.shift();
-    console.log('MESSAGE: ', resolved);
 
     await this._sendToMessengerAPI(message);
 
