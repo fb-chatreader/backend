@@ -14,7 +14,9 @@ function retrieve(filter) {
 }
 
 function add(page) {
-  const { access_token, page_id: id } = page;
+  const { access_token, page_id: id, isNewApp } = page;
+  // Because of the unique constraint, we always have to generate a new
+  // verification_token, even when it isn't used
   return db(`pages`)
     .insert(
       {
