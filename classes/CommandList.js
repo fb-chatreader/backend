@@ -17,7 +17,7 @@ module.exports = class CommandList {
     if (this._isValidCommand(message.event.command)) {
       // User submitted valid command or postback
       return this.commands[message.event.command](message.event);
-    } else if (this._processMessage(message.event)) {
+    } else if (this._processMessage(message)) {
       // User submitted data, like an email address
       message.event.command = this._processMessage(message);
       return this.commands[message.event.command](message.event);
@@ -33,6 +33,10 @@ module.exports = class CommandList {
   }
 
   _processMessage(message) {
+    if (!message.event) {
+      console.log('No message sent.  "Event" not found: ', message);
+      return;
+    }
     if (this._containsValidEmail(message.event.original_message)) {
       // User sent a message that is a valid email
       return 'save_email';
