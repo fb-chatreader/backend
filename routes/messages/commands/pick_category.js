@@ -74,10 +74,6 @@ async function finishCategories(userCategoryIDs, event) {
 	//   );
 	//   const categories = cleanCategories(rawCategories);
 
-	function sliceBooks(books, limit) {
-		return books.slice(0, limit);
-	}
-
 	const carousels = user.email
 		? await Promise.all(
 				userCategoryIDs.map(async (category_id) => {
@@ -85,8 +81,8 @@ async function finishCategories(userCategoryIDs, event) {
 						'bc.category_id': category_id,
 						page_id
 					});
+
 					const pageBooksSlice = pageBooks.slice(0, 9);
-					console.log(pageBooksSlice);
 
 					return pageBooksSlice.length
 						? {
@@ -114,7 +110,6 @@ async function finishCategories(userCategoryIDs, event) {
 													book_id: b.id
 												})
 											});
-
 											buttons.push({
 												type: 'postback',
 												title: 'Save to Library',
@@ -138,5 +133,6 @@ async function finishCategories(userCategoryIDs, event) {
 				})
 			)
 		: null;
+
 	return [ { text }, ...carousels ];
 }
