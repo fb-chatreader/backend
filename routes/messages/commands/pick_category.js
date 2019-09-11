@@ -82,7 +82,7 @@ async function finishCategories(userCategoryIDs, event) {
 						page_id
 					});
 
-					const pageBooksSlice = pageBooks.slice(0, 9);
+					const pageBooksSlice = pageBooks.slice(0, 10);
 
 					return pageBooksSlice.length
 						? {
