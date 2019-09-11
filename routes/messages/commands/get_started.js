@@ -77,9 +77,9 @@ async function getSingleBook(event, promise) {
 
 	buttons.push({
 		type: 'postback',
-		title: 'Get Title',
+		title: 'Start Summary',
 		payload: JSON.stringify({
-			command: 'get_book_title',
+			command: 'get_summary',
 			book_id
 		})
 	});
