@@ -15,7 +15,6 @@ module.exports = class Message {
     // 1) Be a promise  --> this.response.then is truthy
     // 2) Not be a promise --> this.response.then is falsey
     // 3) Contain an array of promises --> this.response.then is falsey but this.response[0].then is truthy
-    console.log();
     if (this.response.then || this.response[0].then) {
       const resolved = await this._resolvePromises();
       if (!resolved) {
