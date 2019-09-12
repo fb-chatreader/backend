@@ -14,25 +14,22 @@ function retrieve(filter) {
 }
 
 function add(page) {
-  const { access_token, name } = page;
-  return getID(name)
-    .then(id =>
-      db(`pages`)
-        .insert(
-          {
-            id,
-            access_token,
-            name,
-            verification_token: bcrypt.hashSync(
-              `${name}${new Date()}${process.env.APP_SECRET}`,
-              10
-            )
-          },
-          ['*']
+  const { access_token, page_id: id, isNewApp } = page;
+  // Because of the unique constraint, we always have to generate a new
+  // verification_token, even when it isn't used
+  return db(`pages`)
+    .insert(
+      {
+        id,
+        access_token,
+        verification_token: bcrypt.hashSync(
+          `${id}${new Date()}${process.env.APP_SECRET}`,
+          10
         )
-        .then(c => retrieve({ id: c[0].id }).first())
+      },
+      ['*']
     )
-    .catch(err => console.log('Something went wrong adding the page: ', err));
+    .then(c => retrieve({ id: c[0].id }).first());
 }
 
 function edit(filter, changes) {
@@ -46,15 +43,6 @@ function remove(id) {
   return db('pages')
     .where({ id })
     .del();
-}
-
-async function getID(name) {
-  const id = _hashCode(`${name} ${new Date()}`);
-  const exists = await retrieve({ id }).first();
-  if (!exists) {
-    return id;
-  }
-  getID(name);
 }
 
 function newVerificationToken(id) {
