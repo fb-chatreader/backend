@@ -9,32 +9,5 @@ module.exports = async event => {
     await UserLibrary.add({ user_id, book_id });
   }
 
-  return [
-    {
-      attachment: {
-        type: 'template',
-        payload: {
-          template_type: 'button',
-          text: 'What do you want to do next?',
-          buttons: [
-            {
-              title: 'View Library',
-              type: 'postback',
-              payload: JSON.stringify({
-                command: 'view_library'
-              })
-            },
-            {
-              title: 'Read Summary',
-              type: 'postback',
-              payload: JSON.stringify({
-                command: 'get_summary',
-                book_id
-              })
-            }
-          ]
-        }
-      }
-    }
-  ];
+  return null;
 };
