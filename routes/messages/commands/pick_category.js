@@ -1,5 +1,4 @@
-const Users = require('models/db/users.js');
-const Books = require('models/db/books.js');
+const UserLibrary = require('models/db/userLibraries.js');
 const BookCategories = require('models/db/bookCategories.js');
 const UserCategories = require('models/db/userCategories.js');
 
@@ -59,12 +58,14 @@ async function getEmail(event) {
 
 async function finishCategories(userCategoryIDs, event) {
   const {
+    user_id,
     page: { id: page_id }
   } = event;
 
   const text = 'Based on your preferences, here are some books you might like!';
 
-  const allBooks = await userCategoryIDs.reduce((accumulator, category_id) => {
+  // Get all books matching user's preferences
+  let allBooks = await userCategoryIDs.reduce((accumulator, category_id) => {
     return accumulator.then(async books => {
       const categoryBooks = await BookCategories.retrieve({
         'bc.category_id': category_id,
@@ -73,6 +74,18 @@ async function finishCategories(userCategoryIDs, event) {
       return [...books, ...categoryBooks];
     });
   }, Promise.resolve([]));
+
+  // Get books in the user's library
+  const usersLibrary = await UserLibrary.retrieve({ user_id, page_id });
+  const libraryIDs = usersLibrary.map(ul => ul.id);
+
+  // Do not suggest books the user has already saved
+  allBooks = allBooks.filter(b => !libraryIDs.find(ul => ul === b.id));
+
+  if (!allBooks.length) {
+    // If they've saved all the books, just show them their library
+    allBooks = usersLibrary;
+  }
 
   const carousel = allBooks.length
     ? {
@@ -105,8 +118,9 @@ async function finishCategories(userCategoryIDs, event) {
                 type: 'postback',
                 title: 'Save to Library',
                 payload: JSON.stringify({
-                  command: 'save_to_library',
-                  book_id: b.id
+                  command: 'toggle_in_library',
+                  book_id: b.id,
+                  isAdding: true
                 })
               });
 
