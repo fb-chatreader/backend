@@ -64,15 +64,15 @@ async function finishCategories(userCategoryIDs, event) {
 
   const text = 'Based on your preferences, here are some books you might like!';
 
-  const allBooks = [];
-
-  userCategoryIDs.forEach(async category_id => {
-    const categoryBooks = await BookCategories.retrieve({
-      'bc.category_id': category_id,
-      page_id
+  const allBooks = await userCategoryIDs.reduce((accumulator, category_id) => {
+    return accumulator.then(async books => {
+      const categoryBooks = await BookCategories.retrieve({
+        'bc.category_id': category_id,
+        page_id
+      });
+      return [...books, ...categoryBooks];
     });
-    allBooks.push(...categoryBooks);
-  });
+  }, Promise.resolve([]));
 
   const carousel = allBooks.length
     ? {
