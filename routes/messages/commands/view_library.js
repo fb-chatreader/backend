@@ -41,6 +41,14 @@ module.exports = async event => {
                       book_id: b.id
                     })
                   });
+                  buttons.push({
+                    type: 'postback',
+                    title: 'Buy on Amazon',
+                    payload: JSON.stringify({
+                      command: 'buy_book',
+                      book_id: b.id
+                    })
+                  });
 
                   return {
                     title: b.title,
