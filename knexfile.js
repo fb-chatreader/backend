@@ -5,7 +5,8 @@ module.exports = {
     connection: {
       database: process.env.DB_LOCAL,
       user: process.env.DB_LOCAL_USER,
-      password: process.env.DB_LOCAL_PASSWORD
+      password: process.env.DB_LOCAL_PASSWORD,
+      port: process.env.DB_LOCAL_PORT || 5432
     },
     pool: {
       min: 2,

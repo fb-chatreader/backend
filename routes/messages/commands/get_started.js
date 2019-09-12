@@ -7,6 +7,7 @@ const pickCategory = require('./pick_category.js');
 
 module.exports = async event => {
   const books = await Books.retrieve({ page_id: event.page.id });
+
   if (!books.length) {
     return [
       {
