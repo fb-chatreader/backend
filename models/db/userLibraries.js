@@ -33,14 +33,14 @@ function retrieve(filter) {
         .join('books as b', { 'b.id': 'ul.book_id' });
 }
 
-function add(category) {
+function add(addBook) {
   return db(`user_libraries`)
-    .insert(category, ['*'])
-    .then(u => retrieve({ id: u[0].id }).first());
+    .insert(addBook, ['*'])
+    .then(u => retrieve({ 'b.id': u[0].id }).first());
 }
 
-function remove(id) {
+function remove(filter) {
   return db('user_libraries')
-    .where({ id })
+    .where(filter)
     .del();
 }
