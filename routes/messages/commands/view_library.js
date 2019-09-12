@@ -1,9 +1,12 @@
 const UserLibrary = require('models/db/userLibraries.js');
 const Books = require('models/db/books.js');
 module.exports = async event => {
-  const { user_id } = event;
+  const {
+    user_id,
+    page: { id: page_id }
+  } = event;
 
-  const userLibrary = await UserLibrary.retrieve({ user_id });
+  const userLibrary = await UserLibrary.retrieve({ user_id, page_id });
 
   return !userLibrary.length
     ? [
@@ -17,39 +20,34 @@ module.exports = async event => {
             type: 'template',
             payload: {
               template_type: 'generic',
-              elements: await Promise.all(
-                await userLibrary.slice(0, 10).map(async (lib, i) => {
-                  const b = await Books.retrieve({
-                    id: lib.book_id
-                  }).first();
-                  const buttons = [];
-                  if (b.synopsis) {
-                    buttons.push({
-                      type: 'postback',
-                      title: 'Read Synopsis',
-                      payload: JSON.stringify({
-                        command: 'get_synopsis',
-                        book_id: b.id
-                      })
-                    });
-                  }
+              elements: userLibrary.slice(0, 10).map(b => {
+                const buttons = [];
+                if (b.synopsis) {
                   buttons.push({
                     type: 'postback',
-                    title: 'Start Summary',
+                    title: 'Read Synopsis',
                     payload: JSON.stringify({
-                      command: 'get_summary',
+                      command: 'get_synopsis',
                       book_id: b.id
                     })
                   });
+                }
+                buttons.push({
+                  type: 'postback',
+                  title: 'Start Summary',
+                  payload: JSON.stringify({
+                    command: 'get_summary',
+                    book_id: b.id
+                  })
+                });
 
-                  return {
-                    title: b.title,
-                    image_url: b.image_url,
-                    subtitle: `by ${b.author}`,
-                    buttons
-                  };
-                })
-              )
+                return {
+                  title: b.title,
+                  image_url: b.image_url,
+                  subtitle: `by ${b.author}`,
+                  buttons
+                };
+              })
             }
           }
         }
