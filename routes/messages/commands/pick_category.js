@@ -64,67 +64,63 @@ async function finishCategories(userCategoryIDs, event) {
 
   const text = 'Based on your preferences, here are some books you might like!';
 
-  // Convert IDs into names
-  //   const rawCategories = await Promise.all(
-  //     userCategoryIDs.map(id => Categories.retrieve({ id }).first())
-  //   );
-  //   const categories = cleanCategories(rawCategories);
-  const carousels = await Promise.all(
-    userCategoryIDs.map(async category_id => {
-      const pageBooks = await BookCategories.retrieve({
-        'bc.category_id': category_id,
-        page_id
-      });
+  const allBooks = [];
 
-      return pageBooks.length
-        ? {
-            attachment: {
-              type: 'template',
-              payload: {
-                template_type: 'generic',
-                elements: pageBooks.map(b => {
-                  const buttons = [];
-                  if (b.synopsis) {
-                    buttons.push({
-                      type: 'postback',
-                      title: 'Read Synopsis',
-                      payload: JSON.stringify({
-                        command: 'get_synopsis',
-                        book_id: b.id
-                      })
-                    });
-                  }
-                  buttons.push({
-                    type: 'postback',
-                    title: 'Start Summary',
-                    payload: JSON.stringify({
-                      command: 'get_summary',
-                      book_id: b.id
-                    })
-                  });
+  userCategoryIDs.forEach(async category_id => {
+    const categoryBooks = await BookCategories.retrieve({
+      'bc.category_id': category_id,
+      page_id
+    });
+    allBooks.push(...categoryBooks);
+  });
 
-                  buttons.push({
-                    type: 'postback',
-                    title: 'Save to Library',
-                    payload: JSON.stringify({
-                      command: 'save_to_library',
-                      book_id: b.id
-                    })
-                  });
-
-                  return {
-                    title: b.title,
-                    image_url: b.image_url,
-                    subtitle: `by ${b.author}`,
-                    buttons
-                  };
-                })
+  const carousel = allBooks.length
+    ? {
+        attachment: {
+          type: 'template',
+          payload: {
+            template_type: 'generic',
+            elements: allBooks.slice(0, 10).map(b => {
+              const buttons = [];
+              if (b.synopsis) {
+                buttons.push({
+                  type: 'postback',
+                  title: 'Read Synopsis',
+                  payload: JSON.stringify({
+                    command: 'get_synopsis',
+                    book_id: b.id
+                  })
+                });
               }
-            }
-          }
-        : null;
-    })
-  );
+              buttons.push({
+                type: 'postback',
+                title: 'Start Summary',
+                payload: JSON.stringify({
+                  command: 'get_summary',
+                  book_id: b.id
+                })
+              });
 
-  return [{ text }, ...carousels];
+              buttons.push({
+                type: 'postback',
+                title: 'Save to Library',
+                payload: JSON.stringify({
+                  command: 'save_to_library',
+                  book_id: b.id
+                })
+              });
+
+              return {
+                title: b.title,
+                image_url: b.image_url,
+                subtitle: `by ${b.author}`,
+                buttons
+              };
+            })
+          }
+        }
+      }
+    : null;
+
+  return [{ text }, carousel];
 }
