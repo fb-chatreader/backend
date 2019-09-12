@@ -1,5 +1,6 @@
 const Users = require('models/db/users.js');
 const Pages = require('models/db/pages.js');
+const Books = require('models/db/books.js');
 
 module.exports = { validateWebhook, getPageData, parseWebhook };
 
@@ -61,11 +62,14 @@ async function parseUserAction(entry) {
     user = await Users.add({ facebook_id: event.sender.id });
   }
 
+  const books = await Books.retrieve({ page_id: entry[0].page });
+
   let parsed_data = {
     sender: event.sender.id,
     user,
     user_id: user.id,
-    page: entry[0].page
+    page: entry[0].page,
+    bookCount: books.length
   };
 
   if (event.postback) {
