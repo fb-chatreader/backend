@@ -42,6 +42,12 @@ module.exports = class Message {
     if (Array.isArray(resolved[0])) {
       resolved = [...resolved[0], resolved.slice(1)];
     }
+    if (!Array.isArray(resolved)) {
+      console.error(
+        `No message sent.  An array must be returned from ${this.event.command}`
+      );
+      return;
+    }
     const message = resolved.shift();
 
     await this._sendToMessengerAPI(message);
