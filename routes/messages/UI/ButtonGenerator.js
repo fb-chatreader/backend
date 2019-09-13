@@ -12,8 +12,9 @@ const generateButtons = function(btnArr) {
   return btnArr.map((e) => {
     return {
       type: e.type,
-      url: e.url,
-      title: e.title
+      title: e.title,
+      url: null || e.url,
+      payload: null || e.payload
     };
   });
 };
