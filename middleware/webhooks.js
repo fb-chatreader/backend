@@ -62,7 +62,7 @@ async function parseUserAction(entry) {
     user = await Users.add({ facebook_id: event.sender.id });
   }
 
-  const books = await Books.retrieve({ page_id: entry[0].page });
+  const books = await Books.retrieve({ page_id: entry[0].page.id });
 
   let parsed_data = {
     sender: event.sender.id,
