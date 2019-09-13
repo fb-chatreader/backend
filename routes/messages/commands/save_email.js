@@ -1,11 +1,10 @@
 const Users = require('models/db/users.js');
 const Books = require('models/db/books.js');
-const pickCategory = require('./pick_category.js');
+const browse = require('./browse.js');
 module.exports = async event => {
-  // Currently just saves an email when presented with one.
-  const { user_id: id } = event;
+  // When the user types a valid email address, save it to their account.
+  // Then redirect them to 'browse'
+  const { user_id: id, bookCount } = event;
   event.user = await Users.edit({ id }, { email: event.original_message });
-  const books = await Books.retrieve({ page_id: event.page.id });
-  console.log('save_email book count: ', books.length);
-  return books.length > 1 ? pickCategory(event) : null;
+  return bookCount > 1 ? browse(event) : null;
 };

@@ -1,127 +1,73 @@
-const UserLibrary = require('models/db/userLibraries.js');
-const BookCategories = require('models/db/bookCategories.js');
 const UserCategories = require('models/db/userCategories.js');
-
+const Categories = require('models/db/categories.js');
 // const { getNewCategoriesForUser } = require('../helpers/categories.js');
 
-module.exports = async (event) => {
-	await event;
+module.exports = async event => {
+  const { user_id, category_id, isAdding } = event;
 
-	if (event.type !== 'postback' && event.command !== 'get_started' && event.command !== 'save_email') return;
-	const { user_id, category_id } = event;
+  let userCategories = await UserCategories.retrieve({ user_id });
 
-	const userCategoryObjects = await UserCategories.retrieve({ user_id });
-	const userCategoryIDs = userCategoryObjects.map((c) => c.category_id);
+  if (isAdding) {
+    const newCategory =
+      category_id && !userCategories.find(c => c.category_id === category_id)
+        ? await UserCategories.add({ user_id, category_id })
+        : null;
+    newCategory ? userCategories.push(newCategory) : null;
+  }
 
-	const newCategory =
-		category_id && userCategoryIDs.indexOf(category_id) === -1
-			? await UserCategories.add({ user_id, category_id })
-			: null;
+  if (isAdding === false) {
+    const removedCategory =
+      category_id && userCategories.find(c => c.category_id === category_id)
+        ? await UserCategories.remove({ user_id, category_id })
+        : null;
+    userCategories = removedCategory
+      ? userCategories.filter(c => c.category_id !== category_id)
+      : userCategories;
+  }
 
-	if (newCategory) {
-		userCategoryIDs.push(newCategory.category_id);
-	}
+  if (event.command !== 'pick_category' && userCategories.length >= 3) {
+    // If the user was sent here by another command, send them back as soon as they have
+    // enough categories;
+    return 'Done';
+  }
 
-	if (!userCategoryIDs.length) return;
+  if (event.looped_from === 'pick_category') return;
 
-	if (userCategoryIDs.length >= 3) return event.user.email ? finishCategories(userCategoryIDs, event) : getEmail(event);
+  // Currently categories are not tied to a page_id so we'd have to loop over their books or just add
+  // a page_id to categories
+  const categories = await Categories.retrieve();
+  const text =
+    'You can have any number of favorite genres but give us at least your top three so we can make some suggestions!';
+
+  const buttons = categories.map(c => {
+    const isAdded = userCategories.find(uc => uc.category_id === c.id);
+    let title = userCategories.length
+      ? isAdded
+        ? `Remove ${c.name}`
+        : `Add ${c.name}`
+      : c.name;
+    return {
+      type: 'postback',
+      title,
+      payload: JSON.stringify({
+        command: event.command,
+        looped_from: 'pick_category',
+        category_id: c.id,
+        isAdding: !isAdded
+      })
+    };
+  });
+
+  return [
+    {
+      attachment: {
+        type: 'template',
+        payload: {
+          template_type: 'button',
+          text,
+          buttons
+        }
+      }
+    }
+  ];
 };
-
-async function getEmail(event) {
-	const textResponses = {
-		pick_category:
-			"Great, I have what I need to make some suggestions!  Though first, I'd like to make an account for you so I can remember your preferences across platforms.  What email address can I attach to your account?",
-		get_started:
-			'I have some suggestions ready to go for you, just respond with a valid email and I can get them right to you!',
-		default:
-			"We use an email address to identify you across platforms.  Type a valid email address at any time and I'll save it to your account so you can proceed!"
-	};
-
-	const text = textResponses[event.command] ? textResponses[event.command] : textResponses.default;
-
-	return [
-		{
-			text
-		}
-	];
-}
-
-async function finishCategories(userCategoryIDs, event) {
-	const { user_id, page: { id: page_id } } = event;
-
-	const text = 'Based on your preferences, here are some books you might like!';
-
-	// Get all books matching user's preferences
-	let allBooks = await userCategoryIDs.reduce((accumulator, category_id) => {
-		return accumulator.then(async (books) => {
-			const categoryBooks = await BookCategories.retrieve({
-				'bc.category_id': category_id,
-				page_id
-			});
-			return [ ...books, ...categoryBooks ];
-		});
-	}, Promise.resolve([]));
-
-	// Get books in the user's library
-	const usersLibrary = await UserLibrary.retrieve({ user_id, page_id });
-	const libraryIDs = usersLibrary.map((ul) => ul.id);
-
-	// Do not suggest books the user has already saved
-	allBooks = allBooks.filter((b) => !libraryIDs.find((ul) => ul === b.id));
-
-	if (!allBooks.length) {
-		// If they've saved all the books, just show them their library
-		allBooks = usersLibrary;
-	}
-
-	const carousel = allBooks.length
-		? {
-				attachment: {
-					type: 'template',
-					payload: {
-						template_type: 'generic',
-						elements: allBooks.slice(0, 10).map((b) => {
-							const buttons = [];
-							if (b.synopsis) {
-								buttons.push({
-									type: 'postback',
-									title: 'Read Synopsis',
-									payload: JSON.stringify({
-										command: 'get_synopsis',
-										book_id: b.id
-									})
-								});
-							}
-							buttons.push({
-								type: 'postback',
-								title: 'Start Summary',
-								payload: JSON.stringify({
-									command: 'get_summary',
-									book_id: b.id
-								})
-							});
-
-							buttons.push({
-								type: 'postback',
-								title: 'Save to Library',
-								payload: JSON.stringify({
-									command: 'toggle_in_library',
-									book_id: b.id,
-									isAdding: true
-								})
-							});
-
-							return {
-								title: b.title,
-								image_url: b.image_url,
-								subtitle: `by ${b.author}`,
-								buttons
-							};
-						})
-					}
-				}
-			}
-		: null;
-
-	return [ { text }, carousel ];
-}
