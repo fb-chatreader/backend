@@ -1,3 +1,4 @@
+const Books = require('models/db/books.js');
 const getUserInfo = require('../helpers/getUserInfo.js');
 const UserCategories = require('models/db/userCategories.js');
 const UserLibraries = require('models/db/userLibraries.js');
@@ -13,7 +14,7 @@ module.exports = async event => {
       }
     ];
   }
-  return bookCount > 1 ? getMultipleBooks(event) : getSingleBook(event, books);
+  return bookCount > 1 ? getMultipleBooks(event) : getSingleBook(event);
 };
 
 async function getMultipleBooks(event) {
@@ -71,11 +72,11 @@ async function getMultipleBooks(event) {
   ];
 }
 
-async function getSingleBook(event, promise) {
-  const books = await promise;
+async function getSingleBook(event) {
+  const book = await Books.retrieve({ page_id: event.page.id }).first();
   const userInfo = await getUserInfo(event.sender, event.page.access_token);
 
-  const { id: book_id, title, author, synopsis, intro, image_url } = books[0];
+  const { id: book_id, title, author, synopsis, intro, image_url } = book;
 
   const text = `Hi, ${userInfo.first_name}! ${intro}`;
 
