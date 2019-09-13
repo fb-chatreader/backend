@@ -24,20 +24,31 @@ module.exports = async (bookObj, page_id) => {
     );
     return false;
   }
-  const newBook = await Books.add(book);
-  const book_category = await Categories.retrieve({ name: category }).first();
-  await BookCategories.add({
-    book_id: newBook.id,
-    category_id: book_category.id
-  });
 
-  const summaryArray = getSummaryParts(summary);
-  for (let i = 0; i < summaryArray.length; i++) {
-    const summaryObj = {
-      book_id: newBook.id,
-      summary: summaryArray[i]
-    };
-    await SummaryParts.add(summaryObj);
+  let book_category = await Categories.retrieve({ name: category }).first();
+
+  if (!book_category) {
+    book_category = await Categories.add({ name: category });
   }
-  return true;
+
+  if (book_category) {
+    const newBook = await Books.add(book);
+
+    await BookCategories.add({
+      book_id: newBook.id,
+      category_id: book_category.id
+    });
+    const summaryArray = getSummaryParts(summary);
+    for (let i = 0; i < summaryArray.length; i++) {
+      const summaryObj = {
+        book_id: newBook.id,
+        summary: summaryArray[i]
+      };
+      await SummaryParts.add(summaryObj);
+    }
+    return true;
+  } else {
+    console.error('Something went wrong adding the category');
+    return false;
+  }
 };
