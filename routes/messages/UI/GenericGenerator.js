@@ -15,10 +15,12 @@ module.exports = async (content) => {
   const { type, template_type, elements, buttons } = content;
 
   return {
-    type: type,
-    payload: {
-      template_type: template_type,
-      elements: generateElements(elements, buttons)
+    attachment: {
+      type: type,
+      payload: {
+        template_type: template_type,
+        elements: generateElements(elements, buttons)
+      }
     }
   };
 };
