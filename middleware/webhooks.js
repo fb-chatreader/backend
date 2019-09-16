@@ -23,6 +23,7 @@ async function parseWebhook({ body: { entry } }, res, next) {
   // We receive data for our commands from a variety of places.
   // This middleware is meant to organize that data into a single place to
   // simplify the rest of our code
+
   if (isValidMessengerRequest(entry)) {
     entry[0].event = isPolicyViolation(entry)
       ? parsePolicyViolation(entry)
@@ -78,6 +79,9 @@ async function parseUserAction(entry) {
       ...JSON.parse(event.postback.payload),
       type: 'postback'
     };
+    if (event.postback.referral && event.postback.referral.ref) {
+      console.log('REFERENCE RECEIVED: ', event.postback.referral.ref);
+    }
   } else if (event && event.message) {
     parsed_data = {
       ...parsed_data,
