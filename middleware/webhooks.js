@@ -73,6 +73,7 @@ async function parseUserAction(entry) {
     bookCount: books.length
   };
 
+  console.log('EVENT: ', event);
   if (event.postback) {
     parsed_data = {
       ...parsed_data,
