@@ -1,14 +1,12 @@
 const Books = require('models/db/books.js');
 const getUserInfo = require('../helpers/getUserInfo.js');
 const UserCategories = require('models/db/userCategories.js');
-const { getNewCategoriesForUser } = require('../helpers/categories.js');
-
-const pickCategory = require('./pick_category.js');
+const UserLibraries = require('models/db/userLibraries.js');
 
 module.exports = async event => {
-  const books = await Books.retrieve({ page_id: event.page.id });
+  const { bookCount } = event;
 
-  if (!books.length) {
+  if (!bookCount) {
     return [
       {
         text:
@@ -16,71 +14,69 @@ module.exports = async event => {
       }
     ];
   }
-  return books.length > 1
-    ? getMultipleBooks(event)
-    : getSingleBook(event, books);
+  return bookCount > 1 ? getMultipleBooks(event) : getSingleBook(event);
 };
 
 async function getMultipleBooks(event) {
   // For now, the bot assumes if there are multiple books, it's on ChatReader
   const { user_id } = event;
   const userCategories = await UserCategories.retrieve({ user_id });
+  const userLibraries = await UserLibraries.retrieve({ user_id });
 
-  if (userCategories.length >= 3) {
-    return pickCategory(event);
-  }
-  const response =
+  const introText = `If you'd like to see a list of commands you can use, type "help" at any time!  For now, here are some options for you:`;
+  const firstTimeText =
+    'Hi, welcome to Chatwise!  I can read book summaries to you to help you learn more about them before you buy! You can always say "get started" to come back to this message. Also,';
+
+  const text =
     userCategories.length === 0
-      ? [
-          {
-            text:
-              'Hi, welcome to Chat Reader!  I can read book summaries to you to help you learn more about them before you buy!'
-          }
-        ]
-      : [];
+      ? `${firstTimeText} ${introText[0].toLowerCase()}${introText.substring(
+          1
+        )}`
+      : introText;
 
-  const newCategories = await getNewCategoriesForUser(event.user_id);
-  const choicesLeft = 3 - userCategories.length;
-  let text = `Of the genres below, click your ${
-    choicesLeft === 1 ? 'top' : choicesLeft
-  } favorite${choicesLeft > 1 ? 's' : ''}!`;
+  const buttons = [
+    {
+      type: 'postback',
+      title: 'Browse Books',
+      payload: JSON.stringify({
+        command: 'browse'
+      })
+    }
+  ];
 
-  if (!userCategories.length) {
-    text = "Let's get started! " + text;
+  if (userLibraries.length) {
+    buttons.push({
+      type: 'postback',
+      title: 'View Library',
+      payload: JSON.stringify({ command: 'library' })
+    });
   }
 
-  response.push({
-    attachment: {
-      type: 'template',
-      payload: {
-        template_type: 'button',
-        text,
-        buttons: newCategories.map(c => {
-          // Everything except the category name must be destructured
-          // for this to work
-          const { name: title, id: category_id } = c;
-
-          return {
-            type: 'postback',
-            title: title[0].toUpperCase() + title.substring(1),
-            payload: JSON.stringify({
-              command: 'pick_category',
-              category_id
-            })
-          };
-        })
-      }
-    }
+  buttons.push({
+    type: 'postback',
+    title: 'Get Help',
+    payload: JSON.stringify({ command: 'help' })
   });
 
-  return response;
+  return [
+    {
+      attachment: {
+        type: 'template',
+        payload: {
+          template_type: 'button',
+          text,
+          buttons
+        }
+      }
+    }
+  ];
 }
 
-async function getSingleBook(event, promise) {
-  const books = await promise;
+async function getSingleBook(event) {
+  const book = await Books.retrieve({ page_id: event.page.id }).first();
   const userInfo = await getUserInfo(event.sender, event.page.access_token);
 
-  const { id: book_id, title, author, synopsis, intro, image_url } = books[0];
+  const { id: book_id, title, author, synopsis, intro, image_url } = book;
 
   const text = `Hi, ${userInfo.first_name}! ${intro}`;
 
