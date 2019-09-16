@@ -1,42 +1,23 @@
-const generateButtons = require('routes/messages/UI/ButtonGenerator.js');
-console.log(generateButtons);
+const { generateElements } = require('routes/messages/UI/helpers/generic.js');
 
 /**
  * Dynamically generates messenger buttons
  * Params:
  * - "content" (object) = {
- *  type:String, 
- *  template_type:String, 
- *  elements:Array, 
+ *  elements:Array,
  *  buttons:Array
  * }
  */
-module.exports = async (content) => {
-  const { type, template_type, elements, buttons } = content;
+module.exports = async content => {
+  const { elements, buttons } = content;
 
   return {
     attachment: {
-      type: type,
+      type: 'template',
       payload: {
-        template_type: template_type,
+        template_type: 'generic',
         elements: generateElements(elements, buttons)
       }
     }
   };
-};
-
-const generateElements = function(elemArr, buttons) {
-  return elemArr.map((e) => {
-    return {
-      title: e.title,
-      image_url: e.image_url,
-      subtitle: e.subtitle,
-      default_action: {
-        type: e.da_type,
-        url: e.da_url,
-        webview_height_ratio: e.webview_height_ratio
-      },
-      buttons: generateButtons(buttons)
-    };
-  });
 };
