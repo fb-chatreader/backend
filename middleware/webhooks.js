@@ -28,6 +28,7 @@ async function parseWebhook({ body: { entry } }, res, next) {
     entry[0].event = isPolicyViolation(entry)
       ? parsePolicyViolation(entry)
       : await parseUserAction(entry);
+
     next();
   } else {
     return res.sendStatus(400);
@@ -44,7 +45,7 @@ function parsePolicyViolation(entry) {
 }
 
 async function parseUserAction(entry) {
-  // Order of importance for webhooks --> Postback > Commands
+  // Order of importance for webhooks --> Postback > Referrals > Commands
   // Type added in case we need to verify source (do we want users to say "policy violation"
   // and trigger our policy violation command?)
 
@@ -73,7 +74,6 @@ async function parseUserAction(entry) {
     bookCount: books.length
   };
 
-  console.log('EVENT: ', event);
   if (event.postback) {
     parsed_data = {
       ...parsed_data,
@@ -83,6 +83,12 @@ async function parseUserAction(entry) {
     if (event.postback.referral && event.postback.referral.ref) {
       console.log('REFERENCE RECEIVED: ', event.postback.referral.ref);
     }
+  } else if (event.referral) {
+    parsed_data = {
+      ...parsed_data,
+      ...queryStringToObject(event.referral.ref),
+      type: 'referral'
+    };
   } else if (event && event.message) {
     parsed_data = {
       ...parsed_data,
@@ -105,4 +111,14 @@ function isValidMessengerRequest(entry) {
 
 function isPolicyViolation(entry) {
   return !!entry[0]['policy-enforcement'];
+}
+
+function queryStringToObject(query) {
+  const obj = {};
+  const vars = query.split(',');
+  vars.forEach(v => {
+    const pair = v.split('=');
+    obj[pair[0]] = pair[1];
+  });
+  return obj;
 }
