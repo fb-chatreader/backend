@@ -6,6 +6,5 @@ module.exports = async event => {
   const { user_id: id } = event;
   event.user = await Users.edit({ id }, { email: event.original_message });
   const books = await Books.retrieve({ page_id: event.page.id });
-  console.log('save_email book count: ', books.length);
   return books.length > 1 ? pickCategory(event) : null;
 };

@@ -53,7 +53,7 @@ module.exports = class CommandList {
       email &&
       /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) &&
       /[a-zA-Z0-9]/.test(email[0]) &&
-      /[a-zA-Z]/.test(email[email.length - 1]
+      /[a-zA-Z0-9]/.test(email[email.length - 1])
     );
   }
 };
