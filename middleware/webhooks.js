@@ -23,10 +23,12 @@ async function parseWebhook({ body: { entry } }, res, next) {
   // We receive data for our commands from a variety of places.
   // This middleware is meant to organize that data into a single place to
   // simplify the rest of our code
+
   if (isValidMessengerRequest(entry)) {
     entry[0].event = isPolicyViolation(entry)
       ? parsePolicyViolation(entry)
       : await parseUserAction(entry);
+
     next();
   } else {
     return res.sendStatus(400);
@@ -43,7 +45,7 @@ function parsePolicyViolation(entry) {
 }
 
 async function parseUserAction(entry) {
-  // Order of importance for webhooks --> Postback > Commands
+  // Order of importance for webhooks --> Postback > Referrals > Commands
   // Type added in case we need to verify source (do we want users to say "policy violation"
   // and trigger our policy violation command?)
 
@@ -72,11 +74,23 @@ async function parseUserAction(entry) {
     bookCount: books.length
   };
 
-  if (event.postback) {
+  if (event.postback || (event.message && event.message.quick_reply)) {
+    const payload = event.postback
+      ? event.postback.payload
+      : event.message.quick_reply.payload;
     parsed_data = {
       ...parsed_data,
-      ...JSON.parse(event.postback.payload),
+      ...JSON.parse(payload),
       type: 'postback'
+    };
+    if (event.postback.referral && event.postback.referral.ref) {
+      console.log('REFERENCE RECEIVED: ', event.postback.referral.ref);
+    }
+  } else if (event.referral) {
+    parsed_data = {
+      ...parsed_data,
+      ...queryStringToObject(event.referral.ref),
+      type: 'referral'
     };
   } else if (event && event.message) {
     parsed_data = {
@@ -100,4 +114,14 @@ function isValidMessengerRequest(entry) {
 
 function isPolicyViolation(entry) {
   return !!entry[0]['policy-enforcement'];
+}
+
+function queryStringToObject(query) {
+  const obj = {};
+  const vars = query.split(',');
+  vars.forEach(v => {
+    const pair = v.split('=');
+    obj[pair[0]] = pair[1];
+  });
+  return obj;
 }
