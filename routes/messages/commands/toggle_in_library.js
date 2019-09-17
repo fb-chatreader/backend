@@ -5,9 +5,6 @@ module.exports = async event => {
   if (!book_id) {
     console.error('No book ID supplied, returning without a response');
     return;
-  } else if (!user_id) {
-    console.error('No user ID found, returning without a response');
-    return;
   }
 
   const currentLibrary = await UserLibrary.retrieve({ 'ul.user_id': user_id });
