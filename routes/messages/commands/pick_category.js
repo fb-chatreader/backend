@@ -2,14 +2,15 @@ const UserCategories = require('models/db/userCategories.js');
 const Categories = require('models/db/categories.js');
 // const { getNewCategoriesForUser } = require('../helpers/categories.js');
 
-module.exports = async event => {
+module.exports = async (event) => {
   const { user_id, category_id, isAdding } = event;
+  console.log(event);
 
   let userCategories = await UserCategories.retrieve({ user_id });
 
   if (isAdding) {
     const newCategory =
-      category_id && !userCategories.find(c => c.category_id === category_id)
+      category_id && !userCategories.find((c) => c.category_id === category_id)
         ? await UserCategories.add({ user_id, category_id })
         : null;
     newCategory ? userCategories.push(newCategory) : null;
@@ -17,12 +18,10 @@ module.exports = async event => {
 
   if (isAdding === false) {
     const removedCategory =
-      category_id && userCategories.find(c => c.category_id === category_id)
+      category_id && userCategories.find((c) => c.category_id === category_id)
         ? await UserCategories.remove({ user_id, category_id })
         : null;
-    userCategories = removedCategory
-      ? userCategories.filter(c => c.category_id !== category_id)
-      : userCategories;
+    userCategories = removedCategory ? userCategories.filter((c) => c.category_id !== category_id) : userCategories;
   }
 
   if (event.command !== 'pick_category' && userCategories.length >= 3) {
@@ -39,16 +38,12 @@ module.exports = async event => {
   const text =
     'You can have any number of favorite genres but give us at least your top three so we can make some suggestions!';
 
-  const buttons = categories.map(c => {
-    const isAdded = userCategories.find(uc => uc.category_id === c.id);
-    let title = userCategories.length
-      ? isAdded
-        ? `Remove ${c.name}`
-        : `Add ${c.name}`
-      : c.name;
+  const buttons = categories.map((c) => {
+    const isAdded = userCategories.find((uc) => uc.category_id === c.id);
+    let title = userCategories.length ? (isAdded ? `Remove ${c.name}` : `Add ${c.name}`) : c.name;
     return {
-      type: 'postback',
-      title,
+      content_type: 'text',
+      title: title,
       payload: JSON.stringify({
         command: event.command,
         looped_from: 'pick_category',
@@ -60,14 +55,8 @@ module.exports = async event => {
 
   return [
     {
-      attachment: {
-        type: 'template',
-        payload: {
-          template_type: 'button',
-          text,
-          buttons
-        }
-      }
+      text: 'Pick category',
+      quick_replies: buttons
     }
   ];
 };
