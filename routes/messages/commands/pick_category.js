@@ -48,7 +48,7 @@ module.exports = async (event) => {
         command: event.command,
         looped_from: 'pick_category',
         category_id: c.id,
-        isAdding: !isAdded
+        isAdding: false
       })
     };
   });
