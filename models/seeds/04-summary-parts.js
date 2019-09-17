@@ -1,30 +1,14 @@
-const text = require('./bookSummary').join('  ');
+const books = require('./allBooks/books.json');
+const getSummaryParts = require('routes/books/helpers/getSummaryParts.js');
 
 exports.seed = function(knex) {
-  return knex('summary_parts').insert(getSummaries());
+  return knex('summary_parts').insert(
+    books.reduce((acc, { summary }, i) => {
+      const parts = getSummaryParts(summary).map(summary => ({
+        book_id: i + 1,
+        summary
+      }));
+      return [...acc, ...parts];
+    }, [])
+  );
 };
-
-function getSummaries(num) {
-  const limit = 320;
-  let summaries = [];
-  let current = '';
-  const sentences = text.split('  ');
-
-  for (let i = 0; i < sentences.length; i++) {
-    const sentence = sentences[i];
-    if ((current + ' ' + sentence).length <= limit) {
-      current += ' ' + sentence;
-    } else {
-      summaries.push({
-        book_id: 1,
-        summary: current,
-        created_at: new Date()
-      });
-      if (num && summaries.length >= num) {
-        return summaries;
-      }
-      current = '';
-    }
-  }
-  return summaries;
-}
