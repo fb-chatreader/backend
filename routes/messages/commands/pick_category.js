@@ -1,15 +1,16 @@
 const UserCategories = require('models/db/userCategories.js');
-// const Categories = require('models/db/categories.js');
 const { getNewCategoriesForUser } = require('../helpers/categories.js');
+// const Categories = require('models/db/categories.js');
+const QuickReplyTemplate = require('../UI/QuickReplyTemplate.js');
 
-module.exports = async event => {
+module.exports = async (event) => {
   const { user_id, category_id, isAdding } = event;
 
   let userCategories = await UserCategories.retrieve({ user_id });
 
   if (isAdding) {
     const newCategory =
-      category_id && !userCategories.find(c => c.category_id === category_id)
+      category_id && !userCategories.find((c) => c.category_id === category_id)
         ? await UserCategories.add({ user_id, category_id })
         : null;
     newCategory ? userCategories.push(newCategory) : null;
@@ -17,12 +18,10 @@ module.exports = async event => {
 
   if (isAdding === false) {
     const removedCategory =
-      category_id && userCategories.find(c => c.category_id === category_id)
+      category_id && userCategories.find((c) => c.category_id === category_id)
         ? await UserCategories.remove({ user_id, category_id })
         : null;
-    userCategories = removedCategory
-      ? userCategories.filter(c => c.category_id !== category_id)
-      : userCategories;
+    userCategories = removedCategory ? userCategories.filter((c) => c.category_id !== category_id) : userCategories;
   }
 
   if (event.command !== 'pick_category' && userCategories.length >= 3) {
@@ -36,7 +35,8 @@ module.exports = async event => {
   // Currently categories are not tied to a page_id so we'd have to loop over their books or just add
   // a page_id to categories
   const categories = await getNewCategoriesForUser(user_id);
-  const buttons = categories.map(c => {
+
+  const buttons = categories.map((c) => {
     // const isAdded = userCategories.find(uc => uc.category_id === c.id);
     // let title = userCategories.length
     //   ? isAdded
@@ -51,15 +51,17 @@ module.exports = async event => {
         command: event.command,
         looped_from: 'pick_category',
         category_id: c.id,
-        isAdding: true
+        isAdding: false
       })
     };
   });
   const text = !userCategories.length
     ? 'Tell us your top three favorite genres so we know what to suggest!  To get started pick your favorite!'
-    : userCategories.length === 1
-    ? 'Great, now pick a second!'
-    : 'One more to go!';
+    : userCategories.length === 1 ? 'Great, now pick a second!' : 'One more to go!';
+  // const quickReplies = QuickReplyTemplate(categories, event);
+  // console.log(quickReplies);
+  console.log(buttons);
+
   return [
     {
       text,
