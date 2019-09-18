@@ -4,6 +4,8 @@ const UserLibraries = require('models/db/userLibraries.js');
 const pick_category = require('./pick_category.js');
 const request_email = require('./request_email.js');
 
+const BookTemplate = require('../UI/BookTemplate.js');
+
 module.exports = async event => {
   const {
     user_id,
@@ -11,7 +13,6 @@ module.exports = async event => {
   } = event;
 
   const userCategories = await UserCategories.retrieve({ user_id });
-
   if (userCategories.length < 3) {
     const category = await pick_category(event);
     if (category !== 'Done') {
@@ -38,7 +39,6 @@ module.exports = async event => {
 
   // Get books in the user's library
   const usersLibrary = await UserLibraries.retrieve({ user_id, page_id });
-
   // Do not suggest books the user has already saved
   allBooks = allBooks.filter(b => !usersLibrary.find(ul => ul.id === b.id));
 
@@ -46,55 +46,10 @@ module.exports = async event => {
     // If they've saved all the books, just show them their library
     allBooks = usersLibrary;
   }
-
-  const carousel = allBooks.length
-    ? {
-        attachment: {
-          type: 'template',
-          payload: {
-            template_type: 'generic',
-            elements: allBooks.slice(0, 10).map(b => {
-              const buttons = [];
-              if (b.synopsis) {
-                buttons.push({
-                  type: 'postback',
-                  title: 'Read Synopsis',
-                  payload: JSON.stringify({
-                    command: 'get_synopsis',
-                    book_id: b.id
-                  })
-                });
-              }
-              buttons.push({
-                type: 'postback',
-                title: 'Start Summary',
-                payload: JSON.stringify({
-                  command: 'get_summary',
-                  book_id: b.id
-                })
-              });
-
-              buttons.push({
-                type: 'postback',
-                title: 'Save to Library',
-                payload: JSON.stringify({
-                  command: 'toggle_in_library',
-                  book_id: b.id,
-                  isAdding: true
-                })
-              });
-
-              return {
-                title: b.title,
-                image_url: b.image_url,
-                subtitle: `by ${b.author}`,
-                buttons
-              };
-            })
-          }
-        }
-      }
-    : null;
-
+  if (!allBooks.length) {
+    console.error('Made it to browse but there are no books to show!');
+    return;
+  }
+  const carousel = await BookTemplate(event, allBooks);
   return [{ text }, carousel];
 };
