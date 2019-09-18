@@ -25,7 +25,9 @@ async function parseWebhook({ body: { entry } }, res, next) {
   // simplify the rest of our code
 
   if (isValidMessengerRequest(entry)) {
-    entry[0].event = isPolicyViolation(entry) ? parsePolicyViolation(entry) : await parseUserAction(entry);
+    entry[0].event = isPolicyViolation(entry)
+      ? parsePolicyViolation(entry)
+      : await parseUserAction(entry);
 
     next();
   } else {
@@ -49,10 +51,13 @@ async function parseUserAction(entry) {
 
   // The 'event' exists for postbacks and user messages
   // It's essentially where the data for those webhooks exists
-  const event = entry && entry[0] && entry[0].messaging ? entry[0].messaging[0] : null;
+  const event =
+    entry && entry[0] && entry[0].messaging ? entry[0].messaging[0] : null;
 
   // Get user if they exists already in our database
-  let user = event ? await Users.retrieve({ facebook_id: event.sender.id }).first() : null;
+  let user = event
+    ? await Users.retrieve({ facebook_id: event.sender.id }).first()
+    : null;
 
   if (event && !user) {
     // Save sender ID in DB if they're a new user
@@ -69,9 +74,9 @@ async function parseUserAction(entry) {
     bookCount: books.length
   };
   if (event.postback || (event.message && event.message.quick_reply)) {
-    console.log('sumpin');
-
-    const payload = event.postback ? event.postback.payload : event.message.quick_reply.payload;
+    const payload = event.postback
+      ? event.postback.payload
+      : event.message.quick_reply.payload;
     parsed_data = {
       ...parsed_data,
       ...JSON.parse(payload),
@@ -93,7 +98,10 @@ async function parseUserAction(entry) {
   } else if (event && event.message) {
     parsed_data = {
       ...parsed_data,
-      command: event.message.text.toLowerCase().split(' ').join('_'),
+      command: event.message.text
+        .toLowerCase()
+        .split(' ')
+        .join('_'),
       original_message: event.message.text,
       type: 'message'
     };
@@ -102,7 +110,8 @@ async function parseUserAction(entry) {
 }
 
 function isValidMessengerRequest(entry) {
-  const event = entry && entry[0] && entry[0].messaging ? entry[0].messaging[0] : null;
+  const event =
+    entry && entry[0] && entry[0].messaging ? entry[0].messaging[0] : null;
   return event || (entry && entry[0]);
 }
 
@@ -113,7 +122,7 @@ function isPolicyViolation(entry) {
 function queryStringToObject(query) {
   const obj = {};
   const vars = query.split(',');
-  vars.forEach((v) => {
+  vars.forEach(v => {
     const pair = v.split('=');
     obj[pair[0]] = pair[1];
   });
