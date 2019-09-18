@@ -1,17 +1,15 @@
 module.exports = async (categories, event, userCategories) => {
   await userCategories;
+  const { command } = event;
   const remainingCategories = categories.map((c) => {
-    const isAdded = userCategories.find((uc) => uc.category_id === c.id);
-    let title = userCategories.length ? (isAdded ? `${c.name}` : `${c.name}`) : c.name;
-    // console.log('event.command');
-    // console.log(c);
+    let title = c.name;
 
     return {
       content_type: 'text',
       title,
       payload: JSON.stringify({
-        command: event.command,
-        looped_from: 'pick_category',
+        command: command,
+        looped_from: command,
         category_id: c.id,
       })
     };
