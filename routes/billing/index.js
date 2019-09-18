@@ -40,16 +40,16 @@ router.post('/checkout/newsub', async (req, res) => {
     const customer = await stripe.customers.create({
         source: req.body.source,            // source is the token.id created at checkout
     });
-    // console.log('Stripe charge response:', charge);
+    console.log('Stripe customer response:', customer);
 
     // Create a Stripe charge and subscribe customer to the plan they chose:
     const charge = await stripe.subscriptions.create({
-        customer: customer.id,    // comes from creatCustomer call above
+        customer: customer.id,    // comes from create Customer call above
         items: [
             { plan: req.body.planID }
         ]      
     });
-    // console.log('Stripe charge response:', charge);
+    console.log('Stripe charge response:', charge);
 
     res.status(201).json('Payment successful. Subscribed to plan.')   
 });
