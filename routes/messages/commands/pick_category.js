@@ -36,36 +36,41 @@ module.exports = async (event) => {
   // a page_id to categories
   const categories = await getNewCategoriesForUser(user_id);
 
-  const buttons = categories.map((c) => {
-    // const isAdded = userCategories.find(uc => uc.category_id === c.id);
-    // let title = userCategories.length
-    //   ? isAdded
-    //     ? `- ${c.name}`
-    //     : `+ ${c.name}`
-    //   : c.name;
-    const title = c.name;
-    return {
-      content_type: 'text',
-      title,
-      payload: JSON.stringify({
-        command: event.command,
-        looped_from: 'pick_category',
-        category_id: c.id,
-        isAdding: false
-      })
-    };
-  });
+  // const buttons = categories.map((c) => {
+  //   // const isAdded = userCategories.find(uc => uc.category_id === c.id);
+  //   // let title = userCategories.length
+  //   //   ? isAdded
+  //   //     ? `- ${c.name}`
+  //   //     : `+ ${c.name}`
+  //   //   : c.name;
+  //   const title = c.name;
+  //   return {
+  //     content_type: 'text',
+  //     title,
+  //     payload: JSON.stringify({
+  //       command: event.command,
+  //       looped_from: 'pick_category',
+  //       category_id: c.id,
+  //       isAdding: !isAdding
+  //     })
+  //   };
+  // });
   const text = !userCategories.length
     ? 'Tell us your top three favorite genres so we know what to suggest!  To get started pick your favorite!'
     : userCategories.length === 1 ? 'Great, now pick a second!' : 'One more to go!';
-  // const quickReplies = QuickReplyTemplate(categories, event);
-  // console.log(quickReplies);
-  console.log(buttons);
+  const quickReplies = await QuickReplyTemplate(categories, event);
+  console.log('quickReplies');
+  console.log('quickReplies');
+  console.log('quickReplies');
+  console.log('quickReplies');
+  console.log('quickReplies');
+  console.log(quickReplies);
+  // console.log(buttons);
 
   return [
     {
       text,
-      quick_replies: buttons
+      quick_replies: quickReplies
     }
   ];
 };
