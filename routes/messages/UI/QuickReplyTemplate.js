@@ -1,8 +1,9 @@
-module.exports = async (categories, event) => {
+module.exports = async (categories, event, userCategories) => {
   const remainingCategories = categories.map((c) => {
     const isAdded = userCategories.find((uc) => uc.category_id === c.id);
-    let title = userCategories.length ? (isAdded ? `- ${c.name}` : `+ ${c.name}`) : c.name;
-    // console.log(categories);
+    let title = userCategories.length ? (isAdded ? `${c.name}` : `${c.name}`) : c.name;
+    console.log('event.command');
+    console.log(event.command);
 
     return {
       content_type: 'text',
