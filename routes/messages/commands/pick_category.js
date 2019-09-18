@@ -1,16 +1,15 @@
 const UserCategories = require('models/db/userCategories.js');
-const Categories = require('models/db/categories.js');
-// const { getNewCategoriesForUser } = require('../helpers/categories.js');
+// const Categories = require('models/db/categories.js');
+const { getNewCategoriesForUser } = require('../helpers/categories.js');
 
-module.exports = async (event) => {
+module.exports = async event => {
   const { user_id, category_id, isAdding } = event;
-  console.log(event);
 
   let userCategories = await UserCategories.retrieve({ user_id });
 
   if (isAdding) {
     const newCategory =
-      category_id && !userCategories.find((c) => c.category_id === category_id)
+      category_id && !userCategories.find(c => c.category_id === category_id)
         ? await UserCategories.add({ user_id, category_id })
         : null;
     newCategory ? userCategories.push(newCategory) : null;
@@ -18,10 +17,12 @@ module.exports = async (event) => {
 
   if (isAdding === false) {
     const removedCategory =
-      category_id && userCategories.find((c) => c.category_id === category_id)
+      category_id && userCategories.find(c => c.category_id === category_id)
         ? await UserCategories.remove({ user_id, category_id })
         : null;
-    userCategories = removedCategory ? userCategories.filter((c) => c.category_id !== category_id) : userCategories;
+    userCategories = removedCategory
+      ? userCategories.filter(c => c.category_id !== category_id)
+      : userCategories;
   }
 
   if (event.command !== 'pick_category' && userCategories.length >= 3) {
@@ -30,32 +31,38 @@ module.exports = async (event) => {
     return 'Done';
   }
 
-  if (event.looped_from === 'pick_category') return;
+  // if (event.looped_from === 'pick_category') return;
 
   // Currently categories are not tied to a page_id so we'd have to loop over their books or just add
   // a page_id to categories
-  const categories = await Categories.retrieve();
-  const text =
-    'You can have any number of favorite genres but give us at least your top three so we can make some suggestions!';
-
-  const buttons = categories.map((c) => {
-    const isAdded = userCategories.find((uc) => uc.category_id === c.id);
-    let title = userCategories.length ? (isAdded ? `Remove ${c.name}` : `Add ${c.name}`) : c.name;
+  const categories = await getNewCategoriesForUser(user_id);
+  const buttons = categories.map(c => {
+    // const isAdded = userCategories.find(uc => uc.category_id === c.id);
+    // let title = userCategories.length
+    //   ? isAdded
+    //     ? `- ${c.name}`
+    //     : `+ ${c.name}`
+    //   : c.name;
+    const title = c.name;
     return {
       content_type: 'text',
-      title: title,
+      title,
       payload: JSON.stringify({
         command: event.command,
         looped_from: 'pick_category',
         category_id: c.id,
-        isAdding: false
+        isAdding: true
       })
     };
   });
-
+  const text = !userCategories.length
+    ? 'Tell us your top three favorite genres so we know what to suggest!  To get started pick your favorite!'
+    : userCategories.length === 1
+    ? 'Great, now pick a second!'
+    : 'One more to go!';
   return [
     {
-      text: 'Pick category',
+      text,
       quick_replies: buttons
     }
   ];
