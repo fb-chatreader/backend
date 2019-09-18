@@ -4,23 +4,18 @@ const { getNewCategoriesForUser } = require('../helpers/categories.js');
 const QuickReplyTemplate = require('../UI/QuickReplyTemplate.js');
 
 module.exports = async (event) => {
-  const { user_id, category_id } = event;
-  console.log('category_id');
-  console.log(category_id);
+  const { user_id, category_id, command } = event;
+  console.log('event');
+  console.log('event');
+  console.log('event');
+  console.log('event');
+  console.log('event');
+  console.log(command);
 
-  let userCategories = await UserCategories.retrieve({ user_id });
+  const text = null;
+  const userCategories = await UserCategories.retrieve({ user_id });
   const categories = await getNewCategoriesForUser(user_id);
-  console.log('categories.length');
-  console.log(categories.length);
   const isAdding = categories.length === 0 ? false : true;
-
-  /**
-   * Filter out non-userCats from total cats
-   * Filtered out results assigned to variable
-   * iterate results
-   */
-  console.log('isAdding');
-  console.log(isAdding);
 
   if (isAdding) {
     const newCategory =
@@ -40,19 +35,20 @@ module.exports = async (event) => {
 
   // If the user was sent here by another command, send them back as soon as they have
   // enough categories;
-  if (!isAdding) {
+  if (!isAdding || categories >= 3) {
     return 'Done';
   }
-  // if (event.command !== 'pick_category' && userCategories.length >= 3) {
-  //   return 'Done';
-  // }
 
   // Currently categories are not tied to a page_id so we'd have to loop over their books or just add
   // a page_id to categories
-
-  const text = !userCategories.length
-    ? 'Tell us your top three favorite genres so we know what to suggest!  To get started pick your favorite!'
-    : userCategories.length === 1 ? 'One more to go!' : 'Great, now pick a second!';
+  if (!userCategories.length) {
+    text = 'Tell us your top three favorite genres so we know what to suggest!  To get started pick your favorite!';
+  } else if (userCategories.length === 2) {
+    text = 'Great, now pick a second!';
+  } else if (userCategories.length === 1) {
+    text = 'One more to go!';
+  } else {
+  }
 
   const quickReplies = await QuickReplyTemplate(categories, event, userCategories);
   console.log('quickReplies');
