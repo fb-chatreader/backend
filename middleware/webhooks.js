@@ -73,7 +73,6 @@ async function parseUserAction(entry) {
     page: entry[0].page,
     bookCount: books.length
   };
-
   if (event.postback || (event.message && event.message.quick_reply)) {
     const payload = event.postback
       ? event.postback.payload
@@ -83,7 +82,11 @@ async function parseUserAction(entry) {
       ...JSON.parse(payload),
       type: 'postback'
     };
-    if (event.postback.referral && event.postback.referral.ref) {
+    if (
+      event.postback &&
+      event.postback.referral &&
+      event.postback.referral.ref
+    ) {
       console.log('REFERENCE RECEIVED: ', event.postback.referral.ref);
     }
   } else if (event.referral) {
