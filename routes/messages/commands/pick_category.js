@@ -37,7 +37,7 @@ module.exports = async event => {
   // a page_id to categories
   const categories = await getNewCategoriesForUser(user_id);
   const buttons = categories.map(c => {
-    const isAdded = userCategories.find(uc => uc.category_id === c.id);
+    // const isAdded = userCategories.find(uc => uc.category_id === c.id);
     // let title = userCategories.length
     //   ? isAdded
     //     ? `- ${c.name}`
@@ -51,7 +51,7 @@ module.exports = async event => {
         command: event.command,
         looped_from: 'pick_category',
         category_id: c.id,
-        isAdding: false
+        isAdding: true
       })
     };
   });
