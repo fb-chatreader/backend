@@ -8,23 +8,22 @@ module.exports = async (event) => {
   let text = null;
   const userCategories = await UserCategories.retrieve({ user_id });
   let categories = await getNewCategoriesForUser(user_id);
+
+  console.log('userCategories >>>> before');
+  console.log(userCategories);
   const isAdding = categories.length === 0 ? false : true;
+  const isAddingParams = {
+    isAdding,
+    user_id,
+    category_id,
+    userCategories,
+    UserCategories
+  };
 
-  if (isAdding) {
-    const newCategory =
-      category_id && !userCategories.find((c) => c.category_id === category_id)
-        ? await UserCategories.add({ user_id, category_id })
-        : null;
-    newCategory ? userCategories.push(newCategory) : null;
-  }
+  handleIsAdding(isAddingParams);
 
-  // if (isAdding === false) {
-  //   const removedCategory =
-  //     category_id && userCategories.find((c) => c.category_id === category_id)
-  //       ? await UserCategories.remove({ user_id, category_id })
-  //       : null;
-  //   userCategories = removedCategory ? userCategories.filter((c) => c.category_id !== category_id) : userCategories;
-  // }
+  console.log('userCategories >>>> after');
+  console.log(userCategories);
 
   // If the user was sent here by another command, send them back as soon as they have
   // enough categories;
@@ -55,3 +54,31 @@ module.exports = async (event) => {
     }
   ];
 };
+
+function handleIsAdding(params) {
+  const { isAdding, user_id, category_id, userCategories, UserCategories } = params;
+  if (isAdding) {
+    return addCategory(user_id, category_id, userCategories, UserCategories);
+  }
+  if (!isAdding) {
+    removeCategory(user_id, category_id, userCategories, UserCategories);
+  }
+}
+
+async function addCategory(user_id, category_id, userCategories, UserCategories) {
+  console.log('addCat');
+  const newCategory =
+    category_id && !userCategories.find((c) => c.category_id === category_id)
+      ? await UserCategories.add({ user_id, category_id })
+      : null;
+  newCategory ? userCategories.push(newCategory) : null;
+}
+
+async function removeCategory(user_id, category_id, userCategories, UserCategories) {
+  console.log('removeCat');
+  const removedCategory =
+    category_id && userCategories.find((c) => c.category_id === category_id)
+      ? await UserCategories.remove({ user_id, category_id })
+      : null;
+  userCategories = removedCategory ? userCategories.filter((c) => c.category_id !== category_id) : userCategories;
+}
