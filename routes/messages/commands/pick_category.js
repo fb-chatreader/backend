@@ -1,6 +1,7 @@
 const UserCategories = require('models/db/userCategories.js');
 // const Categories = require('models/db/categories.js');
 const { getNewCategoriesForUser } = require('../helpers/categories.js');
+const QuickReply = require('../UI/QuickReplyTemplate.js');
 
 module.exports = async (event) => {
   const { user_id, category_id, isAdding } = event;
