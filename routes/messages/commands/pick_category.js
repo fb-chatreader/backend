@@ -5,9 +5,9 @@ const QuickReplyTemplate = require('../UI/QuickReplyTemplate.js');
 module.exports = async (event) => {
   const { user_id, category_id, command } = event;
 
-  const text = null;
+  let text = null;
   const userCategories = await UserCategories.retrieve({ user_id });
-  const categories = await getNewCategoriesForUser(user_id);
+  let categories = await getNewCategoriesForUser(user_id);
   const isAdding = categories.length === 0 ? false : true;
 
   if (isAdding) {
@@ -36,13 +36,15 @@ module.exports = async (event) => {
   // a page_id to categories
   if (!userCategories.length) {
     text = 'Tell us your top three favorite genres so we know what to suggest!  To get started pick your favorite!';
-  } else if (userCategories.length === 2) {
-    text = 'Great, now pick a second!';
   } else if (userCategories.length === 1) {
+    text = 'Great, now pick a second!';
+  } else if (userCategories.length === 2) {
     text = 'One more to go!';
   } else {
     console.log('Still hanging on what to do here.');
   }
+
+  categories = await getNewCategoriesForUser(user_id);
 
   const quickReplies = await QuickReplyTemplate(categories, event, userCategories);
 
