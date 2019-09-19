@@ -1,7 +1,13 @@
 exports.up = function(knex) {
   return knex.schema.alterTable('categories', (tbl) => {
-    tbl.increments();
-    tbl.bigInteger('page_id').references('id').inTable('pages').onUpdate('CASCADE').onDelete('CASCADE').notNullable();
+    tbl
+      .bigInteger('page_id')
+      .references('id')
+      .inTable('pages')
+      .onUpdate('CASCADE')
+      .onDelete('CASCADE')
+      .notNullable()
+      .defaultTo(process.env.PAGE_ID);
   });
 };
 
