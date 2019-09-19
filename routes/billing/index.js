@@ -1,6 +1,7 @@
 const router = require('express').Router();
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const UTILS = require('../utils/format-numbers.js');
+const db = require('../../models/db/index.js');
 
 // GET endpoint to retrieve all products and plans from Stripe:
 router.get('/productsandplans', async (req, res) => {
@@ -53,5 +54,15 @@ router.post('/checkout/newsub', async (req, res) => {
 
     res.status(201).json('Payment successful. Subscribed to plan.')   
 });
+
+router.post('/testuser', async (req, res) => {
+    const { email, facebook_id } = req.body;
+    const user = {
+        email,
+        facebook_id
+    };
+    const userInsertResponse = db('users').insert(user);
+    console.log(userInsertResponse);
+})
 
 module.exports = router;
