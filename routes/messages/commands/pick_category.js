@@ -6,9 +6,9 @@ module.exports = async (event) => {
   const { user_id, category_id, command } = event;
 
   let text = null;
-  const userCategories = await UserCategories.retrieve({ user_id });
+  let userCategories = await UserCategories.retrieve({ user_id });
   let categories = await getNewCategoriesForUser(user_id);
-
+  let userCatLength = await getUserCatLength(userCategories);
   console.log('userCategories >>>> before');
   console.log(userCategories);
   const isAdding = categories.length === 0 ? false : true;
@@ -22,9 +22,6 @@ module.exports = async (event) => {
 
   handleIsAdding(isAddingParams);
 
-  console.log('userCategories >>>> after');
-  console.log(userCategories);
-
   // If the user was sent here by another command, send them back as soon as they have
   // enough categories;
   if (!isAdding || categories >= 3) {
@@ -33,20 +30,34 @@ module.exports = async (event) => {
 
   // Currently categories are not tied to a page_id so we'd have to loop over their books or just add
   // a page_id to categories
-  if (!userCategories.length) {
+  console.log('userCategories.length <<<<<<< before');
+  console.log('userCategories.length <<<<<<< before');
+  console.log('userCategories.length <<<<<<< before');
+  console.log('userCategories.length <<<<<<< before');
+  console.log(userCatLength);
+  if (userCatLength === 0) {
     text = 'Tell us your top three favorite genres so we know what to suggest!  To get started pick your favorite!';
-  } else if (userCategories.length === 1) {
+  } else if (userCatLength === 1) {
     text = 'Great, now pick a second!';
-  } else if (userCategories.length === 2) {
+  } else if (userCatLength === 2) {
     text = 'One more to go!';
-  } else {
+  } else if (userCatLength === 3) {
     console.log('Still hanging on what to do here.');
+    text = 'Great!  That is enough to get started.';
   }
 
   categories = await getNewCategoriesForUser(user_id);
-
   const quickReplies = await QuickReplyTemplate(categories, event, userCategories);
 
+  userCategories = await UserCategories.retrieve({ user_id });
+  console.log('userCategories >>>> after');
+  console.log(userCategories);
+  userCatLength = await getUserCatLength(userCategories);
+  console.log('userCategories.length >>> after');
+  console.log('userCategories.length >>> after');
+  console.log('userCategories.length >>> after');
+  console.log('userCategories.length >>> after');
+  console.log(userCatLength);
   return [
     {
       text,
@@ -81,4 +92,7 @@ async function removeCategory(user_id, category_id, userCategories, UserCategori
       ? await UserCategories.remove({ user_id, category_id })
       : null;
   userCategories = removedCategory ? userCategories.filter((c) => c.category_id !== category_id) : userCategories;
+}
+function getUserCatLength(usercats) {
+  return usercats.length;
 }
