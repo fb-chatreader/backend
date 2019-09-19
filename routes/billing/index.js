@@ -59,8 +59,11 @@ router.post('/checkout/newsub', async (req, res) => {
         stripe_subscription_id: subscription.id,
         stripe_subscription_status: subscription.status
     };
-    console.log('userUpdates: ', userUpdates);
-    // const updatedUser = await Users.edit({ facebook_id }, userUpdates);
+    // console.log('userUpdates: ', userUpdates);
+
+    const updatedUser = await Users.edit({ facebook_id }, userUpdates);
+    console.log('updatedUser: ', updatedUser);
+    
     res.status(201).json('Payment successful. Subscribed to plan.')   
 });
 
