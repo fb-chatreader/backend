@@ -1,16 +1,9 @@
 const UserCategories = require('models/db/userCategories.js');
 const { getNewCategoriesForUser } = require('../helpers/categories.js');
-// const Categories = require('models/db/categories.js');
 const QuickReplyTemplate = require('../UI/QuickReplyTemplate.js');
 
 module.exports = async (event) => {
   const { user_id, category_id, command } = event;
-  console.log('event');
-  console.log('event');
-  console.log('event');
-  console.log('event');
-  console.log('event');
-  console.log(command);
 
   const text = null;
   const userCategories = await UserCategories.retrieve({ user_id });
@@ -48,11 +41,10 @@ module.exports = async (event) => {
   } else if (userCategories.length === 1) {
     text = 'One more to go!';
   } else {
+    console.log('Still hanging on what to do here.');
   }
 
   const quickReplies = await QuickReplyTemplate(categories, event, userCategories);
-  console.log('quickReplies');
-  console.log(quickReplies);
 
   return [
     {
