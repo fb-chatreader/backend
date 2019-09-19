@@ -9,6 +9,7 @@ require('./jobs/timedMessages.js');
 const messageRouter = require('./routes/messages/');
 const bookRouter = require('./routes/books/');
 const pageRouter = require('./routes/pages/');
+const billingRouter = require('./routes/billing/');
 
 // Error handling
 const errorHandler = require('./middleware/errorHandling');
@@ -22,6 +23,7 @@ server.use(express.json());
 server.use('/api/messenger', messageRouter);
 server.use('/api/books', bookRouter);
 server.use('/api/pages', pageRouter);
+server.use('/api/billing', billingRouter);
 
 server.get('/', (req, res) => {
   return res.send(200).json({ message: 'Welcome to ChatReader server!' });
