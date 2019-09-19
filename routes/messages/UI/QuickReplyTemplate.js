@@ -7,9 +7,9 @@
  * 
  */
 
-module.exports = async (categories, event, userCategories) => {
-  await userCategories;
+module.exports = async (categories, event) => {
   const { command } = event;
+
   const remainingCategories = categories.map((c) => {
     let title = c.name;
     return {
@@ -18,7 +18,8 @@ module.exports = async (categories, event, userCategories) => {
       payload: JSON.stringify({
         command: command,
         looped_from: command,
-        category_id: c.id
+        category_id: c.id,
+        isAdding: true
       })
     };
   });
