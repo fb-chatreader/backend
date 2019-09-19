@@ -4,32 +4,28 @@ const UTILS = require('../utils/format-numbers.js');
 const Users = require('models/db/users.js');
 
 // GET endpoint to retrieve all products and plans from Stripe:
-router.post('/productsandplans', async (req, res) => {
+router.get('/productsandplans/:id', async (req, res) => {
     const productsFromStripe = await stripe.products.list({});
     const plansFromStripe = await stripe.plans.list({});
+
     // get data from responses above, which contains array of products/plans:
     let products = productsFromStripe.data;
     let plans = plansFromStripe.data;
 
     // Get the user's subscripition id if they have one:
-    const { facebook_id } = req.body;
-    const user = await Users.retrieve({ facebook_id });
-    console.log('user: ', user);
+    const facebook_id = req.params.id;
+    const user = await Users.retrieve({ facebook_id }).first();
     
-    // Check if user has subscription id; if they do get the sub details from Stripe:
+    // Check if user has subscription id; if they do get the subscription plan id:
     const subID = await user.stripe_subscription_id;
-    console.log('subID: ', subID);
-    let subscription = {};
-    if (subID) {
-        // subID = user.stripe_subscription_id;
-        subscription = await stripe.subscriptions.retrieve(subID);
-        console.log(subscription);
-    }
+    const subscription = subID ? await stripe.subscriptions.retrieve(subID) : {};
+    const currentPlanID = subscription.plan.id;
 
     // Sort plans in ascending order of price (amount):
     plans = plans.sort((a, b) => {
         return a.amount - b.amount;
     }).map(plan => {
+        plan.user_is_subscribed = plan.id === currentPlanID ? true : false;
         // Map to new array with formatted price (amount) for each plan:
         amount = UTILS.formatUSD(plan.amount);
         return {...plan, amount};
