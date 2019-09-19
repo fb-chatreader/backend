@@ -1,7 +1,8 @@
 const router = require('express').Router();
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const UTILS = require('../utils/format-numbers.js');
-const db = require('../../models/db/index.js');
+const db = require('../../models/index.js');
+const Users = require('models/db/users.js');
 
 // GET endpoint to retrieve all products and plans from Stripe:
 router.get('/productsandplans', async (req, res) => {
@@ -34,35 +35,42 @@ router.get('/productsandplans', async (req, res) => {
 
 // POST endpoint to create a new subscription when a customer completes checkout:
 router.post('/checkout/newsub', async (req, res) => {
-    // TO DO:
+    // POSSIBLE TO DO:
         // check if user already has an active subscription
     
+    const { facebook_id, source } = req.body;
+
     // Create a customer with Stripe:
     const customer = await stripe.customers.create({
-        source: req.body.source,            // source is the token.id created at checkout
+        source: source           // source is the token.id created at checkout
     });
     console.log('Stripe customer response:', customer);
 
     // Create a Stripe charge and subscribe customer to the plan they chose:
-    const charge = await stripe.subscriptions.create({
+    const subscription = await stripe.subscriptions.create({
         customer: customer.id,    // comes from create Customer call above
         items: [
             { plan: req.body.planID }
         ]      
     });
-    console.log('Stripe charge response:', charge);
+    console.log('Stripe subscription response:', subscription);
+
+
 
     res.status(201).json('Payment successful. Subscribed to plan.')   
 });
 
 router.post('/testuser', async (req, res) => {
+    console.log('testuser post endpoint hit');
     const { email, facebook_id } = req.body;
     const user = {
         email,
         facebook_id
     };
-    const userInsertResponse = db('users').insert(user);
-    console.log(userInsertResponse);
-})
+
+    const newUser = await Users.add(user);
+
+    res.status(201).json(newUser);
+});
 
 module.exports = router;
