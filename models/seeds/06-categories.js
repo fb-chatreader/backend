@@ -9,7 +9,5 @@ exports.seed = function(knex) {
     }
   });
 
-  return knex('categories').insert(
-    Object.keys(categories).map(s => ({ name: s }))
-  );
+  return knex('categories').insert(Object.keys(categories).map((s) => ({ name: s, page_id: process.env.PAGE_ID })));
 };
