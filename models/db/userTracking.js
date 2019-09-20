@@ -1,3 +1,5 @@
+const db = require('../index.js');
+
 module.exports = { retrieve, add, edit };
 
 function retrieve(filter) {
