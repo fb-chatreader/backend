@@ -37,7 +37,7 @@
     "require-dir": "^1.2.0",
     "sqlite": "^3.0.3",
     "sqlite3": "^4.0.9",
-    "stripe": "^7.9.0"
+    "stripe": "^7.9.1"
   },
   "devDependencies": {
     "cross-env": "^5.2.0",
