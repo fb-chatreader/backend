@@ -22,14 +22,16 @@ module.exports = async event => {
     current_summary_id = firstSummary.id;
 
     // Increment book read count
-    const { repeat_count } = Books.retrieve({ id: book_id }).first();
-    await Books.edit({ id: book_id }, { repeat_count: repeat_count + 1 });
+    const { read_count } = await Books.retrieve({ id: book_id }).first();
+    console.log('READ COUNT: ', read_count);
+    await Books.edit({ id: book_id }, { read_count: read_count + 1 });
 
     // If the chatread doesn't exists, either create it or update it in user tracking
     const progressOnBook = await UserTracking.retrieve({
       user_id,
       book_id
     }).first();
+    console.log('PROGRESS: ', progressOnBook);
     !progressOnBook
       ? await UserTracking.add({
           user_id,
