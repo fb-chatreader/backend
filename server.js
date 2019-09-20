@@ -10,12 +10,18 @@ const messageRouter = require('./routes/messages/');
 const bookRouter = require('./routes/books/');
 const pageRouter = require('./routes/pages/');
 const billingRouter = require('./routes/billing/');
+const stripeWebhooksRouter = require('./routes/stripe-webhooks');
 
 // Error handling
 const errorHandler = require('./middleware/errorHandling');
 
 // Server config
 const server = express();
+
+// trying to send raw req for stripe signature to verify, 
+// hence defining this route before app.use(express.json());
+server.use('/api/stripe-webhooks', stripeWebhooksRouter);
+
 server.use(cors());
 server.use(express.json());
 
