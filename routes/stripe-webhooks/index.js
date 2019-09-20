@@ -50,15 +50,15 @@ router.post('/paymentsuccess', async (req, res) => {
 
 router.post('/paymentfailure', async (req, res)=>{
     console.log('req.rawBody.type inside paymentfailure webhook endpoint:', JSON.parse(req.rawBody).type);
-    console.log('req.rawBody.data.object.customer is stripe_customer_id in subscriptions table inside webhook endpoint:', JSON.parse(req.rawBody).data.object.customer);
+    console.log('req.rawBody.data.object.customer inside webhook endpoint:', JSON.parse(req.rawBody).data.object.customer);
 
-    const stripe_customer_id = JSON.parse(req.rawBody).data.object.customer;  //id is stripe_customer_id in subscriptions table
+    const stripe_customer_id = await JSON.parse(req.rawBody).data.object.customer;  //id is stripe_customer_id in subscriptions table
 
     let signature = req.headers['stripe-signature'];
     console.log('stripe signature:', signature);
 
     try {
-        let evs = stripe.webhooks.constructEvent(req.rawBody, signature, FAILURE_ENDPOINT_SECRET);
+        let evs = await stripe.webhooks.constructEvent(req.rawBody, signature, FAILURE_ENDPOINT_SECRET);
         console.log('response from stripe signature verification: ', evs);
 
         // Send recurring payment failure status update to database
@@ -68,8 +68,8 @@ router.post('/paymentfailure', async (req, res)=>{
         console.log('updatedUser: ', updatedUser);
     }
     catch (err) {
-        console.log('error in stripe signature verification: ', err.message);
-        res.sendStatus(400).json({ error: err.message });
+        console.log('error in stripe signature verification: ', err);
+        res.sendStatus(400).json({ error: err });
     }
 
     //Return a response to stripe to acknowledge receipt of the webhook event
