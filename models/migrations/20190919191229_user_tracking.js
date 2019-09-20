@@ -1,13 +1,7 @@
 exports.up = function(knex) {
   return knex.schema
     .createTable('user_tracking', tbl => {
-      tbl
-        .integer('book_id')
-        .references('id')
-        .inTable('books')
-        .onDelete('CASCADE')
-        .onUpdate('CASCADE')
-        .notNullable();
+      tbl.increments();
       tbl
         .integer('user_id')
         .references('id')
@@ -16,7 +10,14 @@ exports.up = function(knex) {
         .onUpdate('CASCADE')
         .notNullable();
       tbl
-        .integer('last_summary_part')
+        .integer('book_id')
+        .references('id')
+        .inTable('books')
+        .onDelete('CASCADE')
+        .onUpdate('CASCADE')
+        .notNullable();
+      tbl
+        .integer('last_summary_id')
         .references('id')
         .inTable('summary_parts')
         .onDelete('CASCADE')
@@ -25,6 +26,10 @@ exports.up = function(knex) {
         .integer('repeat_count')
         .notNullable()
         .defaultTo(0);
+      tbl
+        .timestamp('created_at')
+        .notNullable()
+        .defaultTo(knex.fn.now());
     })
     .alterTable('books', tbl => {
       tbl
