@@ -5,30 +5,19 @@ const SummaryParts = require('models/db/summaryParts');
 const getSummaryParts = require('./getSummaryParts.js');
 
 module.exports = async (bookObj, page_id) => {
+  console.log(page_id);
+
   const { summary, category, ...book } = bookObj;
   book.page_id = page_id;
-  if (
-    !summary ||
-    !category ||
-    !book ||
-    !book.title ||
-    !book.author ||
-    !book.image_url
-  ) {
-    console.log(
-      'Missing book data: ',
-      book.title,
-      book.author,
-      book.image_url,
-      category
-    );
+  if (!summary || !category || !book || !book.title || !book.author || !book.image_url) {
+    console.log('Missing book data: ', book.title, book.author, book.image_url, category);
     return false;
   }
 
   let book_category = await Categories.retrieve({ name: category }).first();
 
   if (!book_category) {
-    book_category = await Categories.add({ name: category });
+    book_category = await Categories.add({ name: category, page_id });
   }
 
   if (book_category) {
