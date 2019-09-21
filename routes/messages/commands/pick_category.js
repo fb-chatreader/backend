@@ -4,13 +4,11 @@ const { getNewCategoriesForUser } = require('../helpers/categories.js');
 const QuickReply = require('../UI/QuickReplyTemplate.js');
 
 module.exports = async (event) => {
-  const { user_id, category_id, isAdding } = event;
-  console.log('isAdding');
-  console.log(event);
+  const { user_id, category_id, isAdded } = event;
 
   let userCategories = await UserCategories.retrieve({ user_id });
 
-  if (isAdding) {
+  if (isAdded) {
     const newCategory =
       category_id && !userCategories.find((c) => c.category_id === category_id)
         ? await UserCategories.add({ user_id, category_id })
@@ -18,7 +16,7 @@ module.exports = async (event) => {
     newCategory ? userCategories.push(newCategory) : null;
   }
 
-  if (isAdding === false) {
+  if (isAdded === false) {
     const removedCategory =
       category_id && userCategories.find((c) => c.category_id === category_id)
         ? await UserCategories.remove({ user_id, category_id })
@@ -37,24 +35,17 @@ module.exports = async (event) => {
   // Currently categories are not tied to a page_id so we'd have to loop over their books or just add
   // a page_id to categories
   const categories = await getNewCategoriesForUser(user_id);
-  const buttons = categories.map((c) => {
-    const isAdded = userCategories.find((uc) => uc.category_id === c.id);
-    let title = userCategories.length ? (isAdded ? `- ${c.name}` : `+ ${c.name}`) : c.name;
 
-    // return {
-    //   content_type: 'text',
-    //   title,
-    //   payload: JSON.stringify({
-    //     command: event.command,
-    //     looped_from: 'pick_category',
-    //     category_id: c.id
-    //   })
-    // };
+  const buttons = categories.map((c) => {
+    // let title = userCategories.length ? (isAdded ? `- ${c.name}` : `+ ${c.name}`) : c.name;
+    let title = c.name;
+
     let params = {
       content_type: 'text',
       title,
       command: 'pick_category',
-      isAdded
+      category_id: c.id,
+      isAdded: null
     };
     return QuickReply(params, event);
   });
@@ -68,5 +59,3 @@ module.exports = async (event) => {
     }
   ];
 };
-
-function buttons() {}

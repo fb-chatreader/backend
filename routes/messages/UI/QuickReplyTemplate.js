@@ -7,13 +7,9 @@
  * 
  */
 
-module.exports = (params, event) => {
+module.exports = (params) => {
   const { command, title, category_id, isAdded } = params;
-  console.log('command');
-  console.log('command');
-  console.log('command');
-  console.log('command');
-  console.log(params);
+
   return {
     content_type: 'text',
     title,
@@ -21,10 +17,7 @@ module.exports = (params, event) => {
       command: command,
       looped_from: command,
       category_id: category_id,
-      isAdded: isAdded
+      isAdded: isAdded === null
     })
   };
 };
-
-//define and return payload
-function createPayload(payload) {}
