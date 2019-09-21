@@ -4,8 +4,7 @@ module.exports = {
   retrieve,
   add,
   edit,
-  remove,
-  editOrCreate
+  remove
 };
 
 function retrieve(filter) {
@@ -29,14 +28,4 @@ function remove(id) {
   return db('chat_reads')
     .where({ id })
     .del();
-}
-
-async function editOrCreate(filter, summary_id) {
-  const chatRead = await retrieve(filter).first();
-  if (chatRead) {
-    return edit(filter, summary_id);
-  } else {
-    const { id, ...noID } = filter;
-    return add({ ...noID, ...summary_id });
-  }
 }
