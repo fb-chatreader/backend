@@ -1,7 +1,8 @@
 const router = require('express').Router();
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const UTILS = require('../utils/format-numbers.js');
 const Users = require('models/db/users.js');
+
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 // GET endpoint to retrieve all products and plans from Stripe:
 router.get('/productsandplans/:id', async (req, res) => {
