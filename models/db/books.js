@@ -20,7 +20,7 @@ function add(book) {
 function edit(filter, changes) {
   return db('books')
     .where(filter)
-    .update(changes)
+    .update(changes, ['*'])
     .then(b => retrieve({ id: b[0].id }).first());
 }
 
