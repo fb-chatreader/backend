@@ -25,7 +25,7 @@ module.exports = async (user_id, categoryIDs) => {
     categoryIDs.map(category_id => BookCategories.retrieve({ category_id }))
   );
   const books = [];
-  for (let i = 0; i < categoryIDs.length; i++) {
+  for (let i = 0; i < 10; i++) {
     // Push X number of the first category, second category, etc.  Any remainder from 10 / number of categories gets
     // put into the first category
     const index =
@@ -33,13 +33,17 @@ module.exports = async (user_id, categoryIDs) => {
         ? 0
         : Math.floor((i - firstCategoryLength) / booksPerCategory) + 1;
 
-    let book =
-      allBooks[index][Math.round(Math.random() * allBooks[index].length)];
-    while (userLibrary.find(l => l.book_id === book.book_id)) {
-      book =
-        allBooks[index][Math.round(Math.random() * allBooks[index].length)];
+    const categoryBooks = allBooks[index];
+
+    const rIndex = Math.round(Math.random() * (categoryBooks.length - 1));
+
+    let book = categoryBooks.splice(rIndex, 1)[0];
+
+    while (userLibrary.find(l => l.book_id === book[0].id)) {
+      const rIndex = Math.round(Math.random() * (categoryBooks.length - 1));
+      book = categoryBooks.splice(rIndex, 1)[0];
     }
-    console.log('book: ', book);
+
     books.push(book);
   }
 
