@@ -24,7 +24,7 @@ module.exports = async (event) => {
     userCategories = removedCategory ? userCategories.filter((c) => c.category_id !== category_id) : userCategories;
   }
 
-  if (event.command !== 'pick_category' && userCategories.length >= 3) {
+  if (event.command === 'pick_category' && userCategories.length >= 3) {
     // If the user was sent here by another command, send them back as soon as they have
     // enough categories;
     return 'Done';
@@ -35,6 +35,8 @@ module.exports = async (event) => {
   // Currently categories are not tied to a page_id so we'd have to loop over their books or just add
   // a page_id to categories
   const categories = await getNewCategoriesForUser(user_id);
+  console.log('categories');
+  console.log(categories);
 
   const buttons = categories.map((c) => {
     // let title = userCategories.length ? (isAdded ? `- ${c.name}` : `+ ${c.name}`) : c.name;
@@ -49,6 +51,11 @@ module.exports = async (event) => {
     };
     return QuickReply(params, event);
   });
+  console.log('userCategories.length');
+  console.log('userCategories.length');
+  console.log('userCategories.length');
+  console.log(userCategories.length);
+
   const text = !userCategories.length
     ? 'Tell us your top three favorite genres so we know what to suggest!  To get started pick your favorite!'
     : userCategories.length === 1 ? 'Great, now pick a second!' : 'One more to go!';
