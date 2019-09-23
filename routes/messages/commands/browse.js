@@ -1,8 +1,10 @@
 const UserCategories = require('models/db/userCategories.js');
+const Categories = require('models/db/categories.js');
 const pick_category = require('./pick_category.js');
 const request_email = require('./request_email.js');
-const getBooksInCategories = require('../helpers/getBooksInCategories.js');
-const BookTemplate = require('../UI/BookTemplate.js');
+// const getBooksInCategories = require('../helpers/getBooksInCategories.js');
+// const BookTemplate = require('../UI/BookTemplate.js');
+const QuickReplyTemplate = require('../UI/QuickReplyTemplate.js');
 
 module.exports = async event => {
   const { user_id } = event;
@@ -19,10 +21,20 @@ module.exports = async event => {
     return request_email(event);
   }
 
-  const text = 'Based on your preferences, here are some books you might like!';
+  const text = 'Which of your genres would you like to browse?';
 
-  return [
-    { text },
-    await BookTemplate(event, await getBooksInCategories(user_id))
-  ];
+  const categories = await Promise.all(
+    userCategories.map(
+      async ({ category_id: id }) => await Categories.retrieve({ id }).first()
+    )
+  );
+  const replies = categories.map(({ id: category_id, name: title }) => ({
+    title,
+    payload: JSON.stringify({
+      command: 'get_books_from_category',
+      category_id
+    })
+  }));
+
+  return [QuickReplyTemplate(text, replies)];
 };
