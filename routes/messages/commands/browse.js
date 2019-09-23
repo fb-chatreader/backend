@@ -2,8 +2,6 @@ const UserCategories = require('models/db/userCategories.js');
 const Categories = require('models/db/categories.js');
 const pick_category = require('./pick_category.js');
 const request_email = require('./request_email.js');
-// const getBooksInCategories = require('../helpers/getBooksInCategories.js');
-// const BookTemplate = require('../UI/BookTemplate.js');
 const QuickReplyTemplate = require('../UI/QuickReplyTemplate.js');
 
 module.exports = async event => {
