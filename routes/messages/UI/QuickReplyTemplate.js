@@ -1,30 +1,25 @@
-/**
- * Quick reply template
- * - content_type (text),
- * - title,
- * - image,
- * - payload,
- * 
- */
+module.exports = (text, replies) => {
+  /*
+  "replies" must be an array of objects.  Each object must have a title and payload and optionally an image_url
+  [
+      {
+        "content_type":"text",
+        "title":"Red",
+        "payload":"<POSTBACK_PAYLOAD>",
+        "image_url":"http://example.com/img/red.png"
+      },{
+        "content_type":"text",
+        "title":"Green",
+        "payload":"<POSTBACK_PAYLOAD>",
+        "image_url":"http://example.com/img/green.png"
+      }
+    ]
+  */
 
-module.exports = async (categories, event) => {
-  const { command } = event;
+  const quick_replies = replies.map(qr => ({ content_type: 'text', ...qr }));
 
-  const remainingCategories = categories.map((c) => {
-    let title = c.name;
-    return {
-      content_type: 'text',
-      title,
-      payload: JSON.stringify({
-        command: command,
-        looped_from: command,
-        category_id: c.id,
-        isAdding: true
-      })
-    };
-  });
-  return remainingCategories;
+  return {
+    text,
+    quick_replies
+  };
 };
-
-//define and return payload
-function createPayload(payload) {}
