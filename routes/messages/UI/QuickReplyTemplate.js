@@ -9,7 +9,6 @@
 
 module.exports = (params) => {
   const { command, title, category_id, isAdded } = params;
-
   return {
     content_type: 'text',
     title,

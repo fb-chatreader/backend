@@ -1,6 +1,6 @@
 const UserCategories = require('models/db/userCategories.js');
-// const Categories = require('models/db/categories.js');
 const { getNewCategoriesForUser } = require('../helpers/categories.js');
+const request_email = require('./request_email.js');
 const QuickReply = require('../UI/QuickReplyTemplate.js');
 
 module.exports = async (event) => {
@@ -27,21 +27,15 @@ module.exports = async (event) => {
   if (event.command === 'pick_category' && userCategories.length >= 3) {
     // If the user was sent here by another command, send them back as soon as they have
     // enough categories;
-    return 'Done';
+    return request_email(event);
   }
-
-  // if (event.looped_from === 'pick_category') return;
 
   // Currently categories are not tied to a page_id so we'd have to loop over their books or just add
   // a page_id to categories
   const categories = await getNewCategoriesForUser(user_id);
-  console.log('categories');
-  console.log(categories);
 
   const buttons = categories.map((c) => {
-    // let title = userCategories.length ? (isAdded ? `- ${c.name}` : `+ ${c.name}`) : c.name;
     let title = c.name;
-
     let params = {
       content_type: 'text',
       title,
@@ -51,10 +45,6 @@ module.exports = async (event) => {
     };
     return QuickReply(params, event);
   });
-  console.log('userCategories.length');
-  console.log('userCategories.length');
-  console.log('userCategories.length');
-  console.log(userCategories.length);
 
   const text = !userCategories.length
     ? 'Tell us your top three favorite genres so we know what to suggest!  To get started pick your favorite!'
