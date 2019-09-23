@@ -16,10 +16,8 @@ module.exports = (text, replies) => {
     ]
   */
 
-  const quick_replies = replies.map(qr => ({ content_type: 'text', ...qr }));
-
   return {
     text,
-    quick_replies
+    quick_replies: replies.map(qr => ({ content_type: 'text', ...qr }))
   };
 };
