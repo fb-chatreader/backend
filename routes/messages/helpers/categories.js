@@ -4,12 +4,10 @@ const UserCategories = require('models/db/userCategories.js');
 
 module.exports = { getNewCategoriesForUser };
 
-async function getNewCategoriesForUser(user_id) {
-  const allCategories = await Categories.retrieve();
+async function getNewCategoriesForUser(user_id, page_id) {
+  const allCategories = await Categories.retrieve({ page_id });
   const userCategories = await UserCategories.retrieve({ user_id });
-  const userCategoryIDs = userCategories.map((c) => c.category_id);
-  console.log('userCategoryIDs');
-  console.log(userCategoryIDs);
+  const userCategoryIDs = userCategories.map(c => c.category_id);
 
-  return allCategories.filter((c) => userCategoryIDs.indexOf(c.id) === -1);
+  return allCategories.filter(c => userCategoryIDs.indexOf(c.id) === -1);
 }
