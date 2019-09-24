@@ -1,5 +1,6 @@
 const get_started = require('./get_started.js');
 const Books = require('models/db/books.js');
+const QuickReplyTemplate = require('../UI/QuickReplyTemplate.js');
 
 module.exports = async event => {
   const books = await Books.retrieve({ page_id: event.page.id });
@@ -33,30 +34,19 @@ module.exports = async event => {
   ];
 
   let text = 'Here are some commands you can use to navigate around!';
-  const buttons = [];
+
+  const quickReplies = [];
 
   options.forEach((o, i) => {
     const { title, command, description } = o;
-    const space = i > 0 ? '\n' : '\n\n';
-    text += `${space}*${command}*: ${description}`;
 
-    buttons.push({
-      type: 'postback',
+    quickReplies.push({
       title,
       payload: JSON.stringify({ command: command.toLowerCase() })
     });
   });
 
   return [
-    {
-      attachment: {
-        type: 'template',
-        payload: {
-          template_type: 'button',
-          text,
-          buttons
-        }
-      }
-    }
+    QuickReplyTemplate(text, quickReplies)
   ];
 };
