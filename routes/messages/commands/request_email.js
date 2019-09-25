@@ -15,7 +15,7 @@ module.exports = async event => {
   return [
     {
       text:
-        'Looks like I need an email address from you first!  This will let me identify you across platforms!  Feel free to type your email at any time.'
+        "And what's your email address?"
     }
   ];
 };
