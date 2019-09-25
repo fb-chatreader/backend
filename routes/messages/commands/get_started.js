@@ -2,16 +2,15 @@ const Books = require('models/db/books.js');
 const getUserInfo = require('../helpers/getUserInfo.js');
 const UserCategories = require('models/db/userCategories.js');
 const UserLibraries = require('models/db/userLibraries.js');
-const GenericTemplate = require('routes/messages/UI/GenericTemplate.js');
+const bookSearch = require('routes/books/helpers/book_search.js');
 
-module.exports = async event => {
+module.exports = async (event) => {
   const { bookCount } = event;
 
   if (!bookCount) {
     return [
       {
-        text:
-          'Sorry, this bot is still being created, please visit us again soon!'
+        text: 'Sorry, this bot is still being created, please visit us again soon!'
       }
     ];
   }
@@ -30,13 +29,9 @@ async function getMultipleBooks(event) {
   const FIRST_NAME = facebookUser.first_name;
 
   const introText = `Chatwise summarizes 2000+ popular non-fiction books into chat messages with key insights. Each book is summarized into a 10-15 minute read.`;
-  const firstTimeText =
-    `Hi ${FIRST_NAME}, welcome to Chatwise!\n\nWe summarize 2000+ popular non-fiction books into chat messages with key insights. Each book is summarized into a 10-15 minute read.`;
+  const firstTimeText = `Hi ${FIRST_NAME}, welcome to Chatwise!\n\nWe summarize 2000+ popular non-fiction books into chat messages with key insights. Each book is summarized into a 10-15 minute read.`;
 
-  const text =
-    userCategories.length === 0
-      ? firstTimeText
-      : introText;
+  const text = userCategories.length === 0 ? firstTimeText : introText;
 
   const buttons = [
     {
