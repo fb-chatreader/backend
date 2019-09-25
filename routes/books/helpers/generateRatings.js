@@ -1,6 +1,10 @@
 const Books = require('../../../models/db/books');
 const createJSON = require('../../utils/create-json-file');
 const path = '/Users/erikkimsey/Desktop/sidd/models/seeds/allBooks/ratings.json';
+
+/**
+ * This is an utility function to generate mock book ratings data and create ratings.json file containing generated data.
+ */
 module.exports = async (books) => {
   const booksToJsonArr = [];
   await Books.retrieve().then((books) => {
@@ -12,8 +16,6 @@ module.exports = async (books) => {
   });
   createJSON(booksToJsonArr, path);
 };
-
-function sortBooks(books) {}
 
 function generateRatingObj() {
   return {
