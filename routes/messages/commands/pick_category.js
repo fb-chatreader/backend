@@ -53,10 +53,10 @@ module.exports = async event => {
   });
 
   const text = !userCategories.length
-    ? 'Tell us your top three favorite genres so we know what to suggest!  To get started pick your favorite!'
+    ? 'To get started, please select 3 categories'
     : userCategories.length === 1
-    ? 'Great, now pick a second!'
-    : 'One more to go!';
+    ? '2 more to go...'
+    : 'Last one!';
 
   return [QuickReply(text, quick_replies)];
 };
