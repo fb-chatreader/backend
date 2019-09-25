@@ -23,12 +23,15 @@ async function getMultipleBooks(event) {
   const userCategories = await UserCategories.retrieve({ user_id });
   const userLibraries = await UserLibraries.retrieve({ user_id });
 
-  const introText = `If you'd like to see a list of commands you can use, type "help" at any time!  For now, here are some options for you:`;
-  const firstTimeText =
-    'Hi, welcome to Chatwise!  I can read book summaries to you to help you learn more about them before you buy! You can always say "get started" to come back to this message. Also,';
+  const facebookID = event.user.facebook_id;
+  const accessToken = event.page.access_token;
+  const facebookUser = await getUserInfo(facebookID, accessToken);
+  const FIRST_NAME = facebookUser.first_name;
 
-  const text =
-    userCategories.length === 0 ? `${firstTimeText} ${introText[0].toLowerCase()}${introText.substring(1)}` : introText;
+  const introText = `Chatwise summarizes 2000+ popular non-fiction books into chat messages with key insights. Each book is summarized into a 10-15 minute read.`;
+  const firstTimeText = `Hi ${FIRST_NAME}, welcome to Chatwise!\n\nWe summarize 2000+ popular non-fiction books into chat messages with key insights. Each book is summarized into a 10-15 minute read.`;
+
+  const text = userCategories.length === 0 ? firstTimeText : introText;
 
   const buttons = [
     {
