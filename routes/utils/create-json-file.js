@@ -8,3 +8,5 @@ const storeData = (data, path) => {
     console.error(err);
   }
 };
+
+module.exports = { storeData };
