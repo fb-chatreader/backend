@@ -2,11 +2,8 @@ const Books = require('models/db/books.js');
 const getUserInfo = require('../helpers/getUserInfo.js');
 const UserCategories = require('models/db/userCategories.js');
 const UserLibraries = require('models/db/userLibraries.js');
-const GenericTemplate = require('routes/messages/UI/GenericTemplate.js');
 const bookSearch = require('routes/books/helpers/book_search.js');
-// bookSearch();
-// const generateRatings = require('../../books/helpers/generateRatings');
-// getRatings();
+
 module.exports = async (event) => {
   const { bookCount } = event;
 
