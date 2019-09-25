@@ -17,12 +17,12 @@ const errorHandler = require('./middleware/errorHandling');
 
 // Server config
 const server = express();
+server.use(cors());
 
 // trying to send raw req for stripe signature to verify, 
 // hence defining this route before app.use(express.json());
 server.use('/api/stripe-webhooks', stripeWebhooksRouter);
 
-server.use(cors());
 server.use(express.json());
 
 // Use routes
