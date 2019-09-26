@@ -15,7 +15,9 @@ function retrieve(filter) {
           'b.author as author',
           'b.intro as intro',
           'b.synopsis as synopsis',
-          'b.image_url as image_url'
+          'b.image_url as image_url',
+          'b.rating_qty as rating_qty',
+          'b.avg_rating as avg_rating'
         )
         .join('books as b', { 'b.id': 'bc.book_id' })
         .where(filter)
@@ -31,7 +33,5 @@ function retrieve(filter) {
 }
 
 function add(category) {
-  return db('book_categories')
-    .insert(category, ['*'])
-    .then(c => retrieve({ 'bc.id': c[0].id }).first());
+  return db('book_categories').insert(category, [ '*' ]).then((c) => retrieve({ 'bc.id': c[0].id }).first());
 }
