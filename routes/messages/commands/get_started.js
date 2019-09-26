@@ -2,6 +2,8 @@ const Books = require('models/db/books.js');
 const getUserInfo = require('../helpers/getUserInfo.js');
 const UserCategories = require('models/db/userCategories.js');
 const UserLibraries = require('models/db/userLibraries.js');
+const sortBooks = require('../../books/helpers/sortBooksByRating');
+sortBooks({category_name:'Health'});
 
 module.exports = async (event) => {
   const { bookCount } = event;
