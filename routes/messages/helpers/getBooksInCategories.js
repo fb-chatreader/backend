@@ -1,6 +1,6 @@
 // Will get a set of 10 random books based on either provided category IDs or user's preferences
 // Will not return any books currently in the user's library
-const BookCategories = require('models/db/bookCategories.js');
+// const BookCategories = require('models/db/bookCategories.js');
 const UserCategories = require('models/db/userCategories.js');
 const UserLibraries = require('models/db/userLibraries.js');
 const sortBooks = require('../../books/helpers/sortBooksByRating');
