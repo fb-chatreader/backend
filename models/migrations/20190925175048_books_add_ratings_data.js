@@ -1,16 +1,13 @@
 exports.up = function(knex) {
   return knex.schema.alterTable('books', (tbl) => {
-    tbl
-      .text('avg_rating')
-      .references('id')
-      .inTable('pages')
-      .onUpdate('CASCADE')
-      .onDelete('CASCADE')
-      .notNullable()
-      .defaultTo(process.env.PAGE_ID);
+    tbl.float('avg_rating').notNullable().defaultTo(0);
+    tbl.float('rating_qty').notNullable().defaultTo(0);
   });
 };
 
 exports.down = function(knex) {
-  knex.schema.dropColumn('page_id');
+  return knex.schema.alterTable('books', (tbl) => {
+    tbl.dropColumn('avg_rating');
+    tbl.dropColumn('rating_qty');
+  });
 };
