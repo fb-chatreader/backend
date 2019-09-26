@@ -1,27 +1,26 @@
-const Books = require('../../../models/db/books');
 const Categories = require('../../../models/db/categories');
 const BookCategories = require('../../../models/db/bookCategories');
-const getBooksFromCategory = require('../../../routes/messages/commands/get_books_from_category');
-/**
- * CONSIDERATIONS:
- * - sort as new books are added to allBooks?
- * - sort
- */
 
 module.exports = async (event) => {
   let category_id = null;
   const { category_name } = event;
   const categories = await Categories.retrieve();
 
-  categories.forEach((cat) => {
-    if (cat.name === category_name) {
-      category_id = cat.id;
+  category_id = await findCategoryId(categories, category_name);
+  const catBooks = await BookCategories.retrieve({ category_id });
+
+  return sortRatingQty(catBooks);
+};
+
+function findCategoryId(cats, name) {
+  let id = null;
+  cats.forEach((cat) => {
+    if (cat.name === name) {
+      id = cat.id;
     }
   });
-
-  const catBooks = await BookCategories.retrieve({ category_id });
-  console.log(sortRatingQty(catBooks));
-};
+  return id;
+}
 
 function sortRatingQty(books) {
   return books.sort((a, b) => {
