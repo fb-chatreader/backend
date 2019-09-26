@@ -1,9 +1,7 @@
-const Categories = require('../../../models/db/categories');
 const BookCategories = require('../../../models/db/bookCategories');
 
 module.exports = async (event) => {
   const { category_id } = event;
-
   const catBooks = await BookCategories.retrieve({ category_id });
   const sortedBooks = sortRatingQty(catBooks);
   return sortedBooks;
