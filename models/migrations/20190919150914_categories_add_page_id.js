@@ -12,5 +12,7 @@ exports.up = function(knex) {
 };
 
 exports.down = function(knex) {
-  knex.schema.dropColumn('page_id');
+  return knex.schema.alterTable('books', (tbl) => {
+    knex.schema.dropColumn('page_id');
+  });
 };
