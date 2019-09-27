@@ -72,7 +72,6 @@ module.exports = async (user_id, categoryIDs) => {
     });
   }
   
-  
   return books;
 };
 
