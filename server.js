@@ -4,6 +4,7 @@ const cors = require('cors');
 
 // Jobs -- Tasks running on a schedule
 require('./jobs/timedMessages.js');
+// require('./jobs/bookRatings.js');
 
 // Import routes
 const messageRouter = require('./routes/messages/');
@@ -19,7 +20,7 @@ const errorHandler = require('./middleware/errorHandling');
 const server = express();
 server.use(cors());
 
-// trying to send raw req for stripe signature to verify, 
+// trying to send raw req for stripe signature to verify,
 // hence defining this route before app.use(express.json());
 server.use('/api/stripe-webhooks', stripeWebhooksRouter);
 
