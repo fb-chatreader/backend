@@ -1,9 +1,14 @@
 const fs = require('fs');
 
-module.exports = (data, path) => {
-  try {
-    fs.writeFileSync(path, JSON.stringify(data));
-  } catch (err) {
-    console.error(err);
-  }
+module.exports = (book, path) => {
+  fs.readFile(path, (err, data) => {
+    const books = JSON.parse(data);
+    books.push(book);
+    fs.writeFile(path, JSON.stringify(books), function(err) {
+      if (err) {
+        return console.log(err);
+      }
+      console.log('The file was saved!');
+    });
+  });
 };
