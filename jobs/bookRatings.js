@@ -3,7 +3,7 @@ const Books = require('models/db/books.js');
 const url = 'https://www.googleapis.com/books/v1/volumes?q=';
 const booksWithReviews = [];
 Books.retrieve()
-  .then(books => {
+  .then((books) => {
     const counts = {
       notFound: 0,
       noRating: 0,
@@ -11,20 +11,26 @@ Books.retrieve()
       success: 0
     };
 
+    function analyzeAuthorName(name) {
+      // check if [1] is null,
+      // if so, return [0] (if it is not null)
+      let author = name.split(' ').replace(/[^\w\s]/gi, '').toLowerCase();
+      console.log(author);
+
+      if (author !== null) {
+        return author;
+      }
+    }
+
     books.forEach(async (b, i, arr) => {
       // Add check for author name being one word
-      const author = b.author
-        .split(' ')[1]
-        .replace(/[^\w\s]/gi, '')
-        .toLowerCase();
+      // const author = b.author.split(' ')[1].replace(/[^\w\s]/gi, '').toLowerCase();
+      const author = b.author;
 
       console.log('AUTHOR: ', `${b.title} by ${author}`);
 
-      const fullURL = `${url}${b.title
-        .replace(/[^\w\s]/gi, '')
-        .toLowerCase()}+inauthor:${author}&key=${
-        process.env.GOOGLE_BOOKS_API_KEY
-      }`;
+      const fullURL = `${url}${b.title.replace(/[^\w\s]/gi, '').toLowerCase()}+inauthor:${author}&key=${process.env
+        .GOOGLE_BOOKS_API_KEY}`;
 
       console.log(fullURL);
       setTimeout(async () => {
@@ -35,10 +41,7 @@ Books.retrieve()
           for (let i = 0; i < res.data.items.length; i++) {
             const { volumeInfo } = res.data.items[i];
             const title = b && b.title ? b.title.toLowerCase() : null;
-            const volumeTitle =
-              volumeInfo && volumeInfo.title
-                ? volumeInfo.title.toLowerCase()
-                : null;
+            const volumeTitle = volumeInfo && volumeInfo.title ? volumeInfo.title.toLowerCase() : null;
 
             if (title && volumeTitle && title === volumeTitle) {
               found = true;
@@ -50,9 +53,7 @@ Books.retrieve()
                   avg_rating: averageRating,
                   rating_qty: ratingsCount
                 });
-                console.log(
-                  `${b.title}: ${volumeInfo.averageRating} rating with ${volumeInfo.ratingsCount} reviews`
-                );
+                console.log(`${b.title}: ${volumeInfo.averageRating} rating with ${volumeInfo.ratingsCount} reviews`);
               } else {
                 booksWithReviews.push({ ...b, avg_rating: 0, rating_qty: 0 });
                 console.log('No rating');
@@ -74,7 +75,7 @@ Books.retrieve()
           console.log('COUNTS: ', counts);
           console.log('TOTAL: ', books.length);
           Promise.all(
-            booksWithReviews.map(b => {
+            booksWithReviews.map((b) => {
               const { id, ...noID } = b;
               Books.edit({ id: b.id }, noID);
             })
@@ -83,4 +84,4 @@ Books.retrieve()
       }, 500 * i);
     });
   })
-  .catch(err => console.log('ERROR: ', err.response.data));
+  .catch((err) => console.log('ERROR: ', err.response.data));
