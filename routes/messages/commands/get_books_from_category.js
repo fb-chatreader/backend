@@ -1,9 +1,14 @@
 const getBooksInCategories = require('../helpers/getBooksInCategories.js');
 const BookTemplate = require('../UI/BookTemplate.js');
 const QuickReplyTemplate = require('../UI/QuickReplyTemplate.js');
+const browse = require('./browse.js');
 
 module.exports = async event => {
   const { category_id, user_id } = event;
+  const { isEndOfCategory, books } = await getBooksInCategories(
+    user_id,
+    category_id
+  );
 
   const options = [
     {
@@ -12,7 +17,7 @@ module.exports = async event => {
     }
   ];
 
-  let text = 'Would you like to see more books from this category?';
+  const text = 'Would you like to see more books from this genre?';
 
   const quickReplies = [];
 
@@ -24,9 +29,11 @@ module.exports = async event => {
       payload: JSON.stringify({ command: command.toLowerCase() })
     });
   });
-
-  return [
-    await BookTemplate(event, await getBooksInCategories(user_id, category_id)),
-    await QuickReplyTemplate(text, quickReplies)
-  ];
+  const browseQR = await browse(event);
+  return isEndOfCategory
+    ? [await BookTemplate(event, books), ...browseQR]
+    : [
+        await BookTemplate(event, books),
+        await QuickReplyTemplate(text, quickReplies)
+      ];
 };
