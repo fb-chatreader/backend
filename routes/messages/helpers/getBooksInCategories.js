@@ -28,12 +28,13 @@ module.exports = async (user_id, categoryIDs) => {
 
   // books = [[first category books], [secondary category books], [etc]]
   const allBooks = await Promise.all(categoryIDs.map((category_id) => sortBooks({ category_id })));
-  console.log('allBooks[0]:', allBooks[0]);
-  console.log('allBooks[1]:', allBooks[1]);
+  // Get current sorted book index for the first category to start the new batch of books:
+  //const currentSortedIndex = 
   const books = [];
   for (let i = 0; i < 10; i++) {
     // Push X number of the first category, second category, etc.  Any remainder from 10 / number of categories gets
     // put into the first category
+    // within a single category, set index === current_sorted_book_index from recommended_books table:
     const index = i < firstCategoryLength ? 0 : Math.floor((i - firstCategoryLength) / booksPerCategory) + 1;
 
     const categoryBooks = allBooks[index];
@@ -49,7 +50,7 @@ module.exports = async (user_id, categoryIDs) => {
 
     books.push(book);
   }
-
+  // 
   return books;
 };
 
