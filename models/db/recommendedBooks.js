@@ -8,7 +8,9 @@ module.exports = {
 };
 
 function retrieve(filter) {
-  return filter ? db('recommended_books').where(filter) : db('chat_reads');
+  return filter
+    ? db('recommended_books').where(filter)
+    : db('recommended_books');
 }
 
 function add(newData) {
