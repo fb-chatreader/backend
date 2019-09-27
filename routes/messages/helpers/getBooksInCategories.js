@@ -18,7 +18,6 @@ module.exports = async (user_id, category_id) => {
 
   const booksInCategory = await BookCategories.retrieve({ category_id });
 
-<<<<<<< HEAD
   const sortedBooks = sortBooks(booksInCategory);
 
   // Get current sorted book index for the first category to start the new batch of books:
@@ -46,59 +45,5 @@ module.exports = async (user_id, category_id) => {
         category_id
       });
 
-=======
-  // Get all books divided into arrays for each category:
-  // allBooks = [[first category books], [secondary category books], [etc]]
-  const allBooks = await Promise.all(categoryIDs.map((category_id) => sortBooks({ category_id })));
-  // console.log('allBooks[0]:', allBooks[0]);
-
-  // Hard code index for first category in allBooks and get that array of  books:
-  const categoryIndex = 0;
-  const categoryBooks = allBooks[categoryIndex];
-
-  // Check for record in recommended_books table:
-  const recommendedBookRecord = await RecommendedBooks.retrieve({ user_id }).first();
-
-  // Get current sorted book index to start the new batch of books:
-  const startSortedBookIndex = recommendedBookRecord ? recommendedBookRecord.current_sorted_book_index : 0;
-  // Set the end index for the batch, not to exceed length of remaining books:
-  const remainingBookCount = (categoryBooks.length - 1) - startSortedBookIndex;
-  const endSortedBookIndex = remainingBookCount >= 9 ? startSortedBookIndex + 9 : startSortedBookIndex + remainingBookCount;
-
-  // Update the current_sorted_index in recommended_books table to be used on the next round:
-  const newSortedBookIndex = remainingBookCount <= 9 ? 0 : endSortedBookIndex + 1;
-  if (recommendedBookRecord) {
-    await RecommendedBooks.edit({ user_id }, { current_sorted_book_index: newSortedBookIndex});
-  } else {
-    await RecommendedBooks.add({ 
-      user_id,
-      current_sorted_book_index: newSortedBookIndex,
-      category_id: categoryIDs[0]  // assumes categoryIDs arg was provided, and it only has one element
-    });
-  }
-
-  const books = [];
-  for (let i = startSortedBookIndex; i <= endSortedBookIndex; i++) {
-    books.push(categoryBooks[i]);
-
-    // Push X number of the first category, second category, etc.  Any remainder from 10 / number of categories gets
-    // put into the first category
-    // const index = i < firstCategoryLength ? 0 : Math.floor((i - firstCategoryLength) / booksPerCategory) + 1;
-
-    // const categoryBooks = allBooks[index];
-
-    // const rIndex = Math.round(Math.random() * (categoryBooks.length - 1));
-
-    // let book = categoryBooks.splice(rIndex, 1)[0];
-
-    // while (userLibrary.find((l) => l.book_id === book[0].id)) {
-    //   const rIndex = Math.round(Math.random() * (categoryBooks.length - 1));
-    //   book = categoryBooks.splice(rIndex, 1)[0];
-    // }
-
-    // books.push(book);
-  }
-  
->>>>>>> master
   return books;
 };

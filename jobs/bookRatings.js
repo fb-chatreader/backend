@@ -1,4 +1,3 @@
-const fs = require('fs');
 const axios = require('axios');
 const Books = require('models/db/books.js');
 const url = 'https://www.googleapis.com/books/v1/volumes?q=';
@@ -78,7 +77,6 @@ module.exports = () => {
             found = false;
           } catch (err) {
             counts.error++;
-            console.log('ERROR ON: ', fullURL);
           }
           if (i === arr.length - 1) {
             console.log('COUNTS: ', counts);
@@ -86,7 +84,7 @@ module.exports = () => {
             Promise.all(
               booksWithReviews.map(b => {
                 const { id, ...noID } = b;
-                Books.edit({ id: b.id }, noID);
+                Books.edit({ id }, noID);
               })
             );
           }
