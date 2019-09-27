@@ -1,3 +1,10 @@
+// *** To Do:
+// upon new request check user_tracking table for last book id
+// get a set of 10 books and send in response to client. If last book id was found in user tracking, these shoud be a new batch
+// update user_tracking table with last book id
+// on subsequent requests, check last book id in user tracking, rinse, and repeat
+// ***
+
 // Will get a set of 10 random books based on either provided category IDs or user's preferences
 // Will not return any books currently in the user's library
 // const BookCategories = require('models/db/bookCategories.js');
@@ -21,7 +28,8 @@ module.exports = async (user_id, categoryIDs) => {
 
   // books = [[first category books], [secondary category books], [etc]]
   const allBooks = await Promise.all(categoryIDs.map((category_id) => sortBooks({ category_id })));
-
+  console.log('allBooks[0]:', allBooks[0]);
+  console.log('allBooks[1]:', allBooks[1]);
   const books = [];
   for (let i = 0; i < 10; i++) {
     // Push X number of the first category, second category, etc.  Any remainder from 10 / number of categories gets
@@ -44,3 +52,5 @@ module.exports = async (user_id, categoryIDs) => {
 
   return books;
 };
+
+
