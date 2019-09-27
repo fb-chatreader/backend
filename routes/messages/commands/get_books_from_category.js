@@ -7,9 +7,8 @@ module.exports = async event => {
 
   const options = [
     {
-      command: 'Get books from category',
-      description: 'More books',
-      title: 'Yes, show me more'
+      title: 'Yes, show me more',
+      command: 'get_books_from_category'
     }
   ];
 
