@@ -34,7 +34,7 @@ module.exports = async (user_id, categoryIDs) => {
 
     let book = categoryBooks.splice(rIndex, 1)[0];
 
-    while (userLibrary.find((l) => l.book_id === book[0].id)) {
+    while (userLibrary.find((l) => l.book_id === book.id)) {
       const rIndex = Math.round(Math.random() * (categoryBooks.length - 1));
       book = categoryBooks.splice(rIndex, 1)[0];
     }
