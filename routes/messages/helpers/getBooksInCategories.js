@@ -27,21 +27,40 @@ module.exports = async (user_id, categoryIDs) => {
   const booksPerCategory = Math.floor(10 / categoryIDs.length);
   const firstCategoryLength = 10 % categoryIDs.length + booksPerCategory;
 
-  // books = [[first category books], [secondary category books], [etc]]
+  // Get all books divided into arrays for each category:
+  // allBooks = [[first category books], [secondary category books], [etc]]
   const allBooks = await Promise.all(categoryIDs.map((category_id) => sortBooks({ category_id })));
-  console.log('allBooks[0]:', allBooks[0]);
+  // console.log('allBooks[0]:', allBooks[0]);
 
-  // Get current sorted book index for the first category to start the new batch of books:
-  const recommendedBookRecord = await RecommendedBooks.retrieve({ user_id }).first();
-
-  const startSortedBookIndex = recommendedBookRecord ? recommendedBookRecord.current_sorted_book_index : 0;
-  const endSortedBookIndex = startSortedBookIndex + 9;
-  // Hard code index for first category in allBooks:
+  // Hard code index for first category in allBooks and get that array of  books:
   const categoryIndex = 0;
   const categoryBooks = allBooks[categoryIndex];
 
+  // Check for record in recommended_books table:
+  const recommendedBookRecord = await RecommendedBooks.retrieve({ user_id }).first();
+
+  // Get current sorted book index to start the new batch of books:
+  const startSortedBookIndex = recommendedBookRecord ? recommendedBookRecord.current_sorted_book_index : 0;
+  // Set the end index for the batch, not to exceed length of remaining books:
+  const remainingBookCount = (categoryBooks.length - 1) - startSortedBookIndex;
+  const endSortedBookIndex = remainingBookCount >= 9 ? startSortedBookIndex + 9 : startSortedBookIndex + remainingBookCount;
+
+  // Update the current_sorted_index in recommended_books table to be used on the next round:
+  const newSortedBookIndex = remainingBookCount <= 9 ? 0 : endSortedBookIndex + 1;
+  if (recommendedBookRecord) {
+    await RecommendedBooks.edit({ user_id }, { current_sorted_book_index: newSortedBookIndex});
+  } else {
+    await RecommendedBooks.add({ 
+      user_id,
+      current_sorted_book_index: newSortedBookIndex,
+      category_id: categoryIDs[0]  // assumes categoryIDs arg was provided, and it only has one element
+    });
+  }
+
   const books = [];
   for (let i = startSortedBookIndex; i <= endSortedBookIndex; i++) {
+    books.push(categoryBooks[i]);
+
     // Push X number of the first category, second category, etc.  Any remainder from 10 / number of categories gets
     // put into the first category
     // const index = i < firstCategoryLength ? 0 : Math.floor((i - firstCategoryLength) / booksPerCategory) + 1;
@@ -58,18 +77,6 @@ module.exports = async (user_id, categoryIDs) => {
     // }
 
     // books.push(book);
-
-    books.push(categoryBooks[i]);
-  }
-  const newSortedBookIndex = endSortedBookIndex + 1;
-  if (recommendedBookRecord) {
-    await RecommendedBooks.edit({ user_id }, { current_sorted_book_index: newSortedBookIndex});
-  } else {
-    await RecommendedBooks.add({ 
-      user_id,
-      current_sorted_book_index: newSortedBookIndex,
-      category_id: categoryIDs[0]  // assumes categoryIDs arg was provided, and it only has one element
-    });
   }
   
   return books;
