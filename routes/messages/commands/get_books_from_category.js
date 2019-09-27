@@ -10,15 +10,15 @@ module.exports = async event => {
       command: 'Get books from category',
       description: 'More books',
       title: 'Yes, show me more'
-    },
+    }
   ];
 
   let text = 'Would you like to see more books from this category?';
 
   const quickReplies = [];
 
-  options.forEach((o, i) => {
-    const { title, command, description } = o;
+  options.forEach(o => {
+    const { title, command } = o;
 
     quickReplies.push({
       title,
@@ -27,10 +27,7 @@ module.exports = async event => {
   });
 
   return [
-    await BookTemplate(
-      event,
-      await getBooksInCategories(user_id, [category_id])
-    ),
+    await BookTemplate(event, await getBooksInCategories(user_id, category_id)),
     await QuickReplyTemplate(text, quickReplies)
   ];
 };
