@@ -7,10 +7,9 @@ module.exports = async event => {
 
   const options = [
     {
-      command: 'Get books from category',
-      description: 'More books',
-      title: 'Yes, show me more'
-    },
+      title: 'Yes, show me more',
+      command: 'get_books_from_category'
+    }
   ];
 
   let text = 'Would you like to see more books from this category?';
@@ -18,7 +17,7 @@ module.exports = async event => {
   const quickReplies = [];
 
   options.forEach((o, i) => {
-    const { title, command, description } = o;
+    const { title, command } = o;
 
     quickReplies.push({
       title,
