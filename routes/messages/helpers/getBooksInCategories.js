@@ -5,6 +5,7 @@
 // on subsequent requests, check last book id in user tracking, rinse, and repeat
 // ***
 
+const UserCategories = require('models/db/userCategories.js');
 const BookCategories = require('models/db/bookCategories.js');
 const sortBooks = require('../../books/helpers/sortBooksByRating');
 const RecommendedBooks = require('models/db/recommendedBooks.js');
@@ -19,6 +20,8 @@ module.exports = async (user_id, category_id) => {
   const booksInCategory = await BookCategories.retrieve({ category_id });
 
   const sortedBooks = sortBooks(booksInCategory);
+  const bookCount = sortedBooks.length;
+  console.log('Books in category: ', bookCount);
 
   // Get current sorted book index for the first category to start the new batch of books:
   const recommendedBookRecord = await RecommendedBooks.retrieve({
@@ -37,7 +40,10 @@ module.exports = async (user_id, category_id) => {
   recommendedBookRecord
     ? await RecommendedBooks.edit(
         { user_id, category_id },
-        { current_sorted_book_index: endSortedBookIndex }
+        {
+          current_sorted_book_index:
+            endSortedBookIndex >= bookCount ? 0 : endSortedBookIndex
+        }
       )
     : await RecommendedBooks.add({
         user_id,
@@ -45,5 +51,5 @@ module.exports = async (user_id, category_id) => {
         category_id
       });
 
-  return books;
+  return { isEndOfCategory: endSortedBookIndex >= bookCount, books };
 };
