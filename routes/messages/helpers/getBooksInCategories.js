@@ -11,6 +11,7 @@
 const UserCategories = require('models/db/userCategories.js');
 const UserLibraries = require('models/db/userLibraries.js');
 const sortBooks = require('../../books/helpers/sortBooksByRating');
+const RecommendedBooks = require('models/db/recommendedBooks.js');
 
 module.exports = async (user_id, categoryIDs) => {
   // If no category IDs are provided, it will look up the user's preferences and use those
@@ -28,29 +29,50 @@ module.exports = async (user_id, categoryIDs) => {
 
   // books = [[first category books], [secondary category books], [etc]]
   const allBooks = await Promise.all(categoryIDs.map((category_id) => sortBooks({ category_id })));
+  console.log('allBooks[0]:', allBooks[0]);
+
   // Get current sorted book index for the first category to start the new batch of books:
-  //const currentSortedIndex = 
+  const recommendedBookRecord = await RecommendedBooks.retrieve({ user_id }).first();
+
+  const startSortedBookIndex = recommendedBookRecord ? recommendedBookRecord.current_sorted_book_index : 0;
+  const endSortedBookIndex = startSortedBookIndex + 9;
+  // Hard code index for first category in allBooks:
+  const categoryIndex = 0;
+  const categoryBooks = allBooks[categoryIndex];
+
   const books = [];
-  for (let i = 0; i < 10; i++) {
+  for (let i = startSortedBookIndex; i <= endSortedBookIndex; i++) {
     // Push X number of the first category, second category, etc.  Any remainder from 10 / number of categories gets
     // put into the first category
-    // within a single category, set index === current_sorted_book_index from recommended_books table:
-    const index = i < firstCategoryLength ? 0 : Math.floor((i - firstCategoryLength) / booksPerCategory) + 1;
+    // const index = i < firstCategoryLength ? 0 : Math.floor((i - firstCategoryLength) / booksPerCategory) + 1;
 
-    const categoryBooks = allBooks[index];
+    // const categoryBooks = allBooks[index];
 
-    const rIndex = Math.round(Math.random() * (categoryBooks.length - 1));
+    // const rIndex = Math.round(Math.random() * (categoryBooks.length - 1));
 
-    let book = categoryBooks.splice(rIndex, 1)[0];
+    // let book = categoryBooks.splice(rIndex, 1)[0];
 
-    while (userLibrary.find((l) => l.book_id === book[0].id)) {
-      const rIndex = Math.round(Math.random() * (categoryBooks.length - 1));
-      book = categoryBooks.splice(rIndex, 1)[0];
-    }
+    // while (userLibrary.find((l) => l.book_id === book[0].id)) {
+    //   const rIndex = Math.round(Math.random() * (categoryBooks.length - 1));
+    //   book = categoryBooks.splice(rIndex, 1)[0];
+    // }
 
-    books.push(book);
+    // books.push(book);
+
+    books.push(categoryBooks[i]);
   }
-  // 
+  const newSortedBookIndex = endSortedBookIndex + 1;
+  if (recommendedBookRecord) {
+    await RecommendedBooks.edit({ user_id }, { current_sorted_book_index: newSortedBookIndex});
+  } else {
+    await RecommendedBooks.add({ 
+      user_id,
+      current_sorted_book_index: newSortedBookIndex,
+      category_id: categoryIDs[0]  // assumes categoryIDs arg was provided, and it only has one element
+    });
+  }
+  
+  
   return books;
 };
 
