@@ -12,12 +12,12 @@ module.exports = async event => {
   if (event.type !== 'postback') return;
   // Collect needed data from DB
   const { user_id, book_id } = event;
-  const chatread = await ChatReads.retrieve({ user_id, book_id }).first();
+  const chatRead = await ChatReads.retrieve({ user_id, book_id }).first();
   // Get the user's current chat read summary_id or if they don't have one,
   // Set to the current book's first summary_id
 
-  let current_summary_id = chatread ? chatread.current_summary_id : null;
-  if (!chatread) {
+  let current_summary_id = chatRead ? chatRead.current_summary_id : null;
+  if (!chatRead) {
     const firstSummary = await Summaries.retrieve({ book_id }).first();
     current_summary_id = firstSummary.id;
 
@@ -25,12 +25,11 @@ module.exports = async event => {
     const { read_count } = await Books.retrieve({ id: book_id }).first();
     await Books.edit({ id: book_id }, { read_count: read_count + 1 });
 
-    // If the chatread doesn't exists, either create it or update it in user tracking
+    // If the chatRead doesn't exists, either create it or update it in user tracking
     const progressOnBook = await UserTracking.retrieve({
       user_id,
       book_id
     }).first();
-
     !progressOnBook
       ? await UserTracking.add({
           user_id,
@@ -51,7 +50,6 @@ module.exports = async event => {
       { last_summary_id: current_summary_id }
     );
   }
-
   const summaries = await Summaries.retrieveBlock(
     { book_id },
     current_summary_id
@@ -61,17 +59,21 @@ module.exports = async event => {
   // the last id in the series if there are no more for the current book)
   const next_summary_id = current_summary_id + summaries.block.length;
 
-  // Check if the user has an active chat read
-  const chatRead = await ChatReads.retrieve({ user_id, book_id }).first();
-
   // Is this the final summary?  If so, delete their progress
   // If not, just update the table with the new ID
   // Otherwise, create a new chat read for the user for this book
   chatRead
     ? summaries.isFinal
-      ? ChatReads.remove(chatRead.id)
-      : ChatReads.edit({ user_id, book_id }, next_summary_id)
-    : ChatReads.add({ user_id, book_id, current_summary_id });
+      ? await ChatReads.remove(chatRead.id)
+      : await ChatReads.edit(
+          { user_id, book_id },
+          { current_summary_id: next_summary_id }
+        )
+    : await ChatReads.add({
+        user_id,
+        book_id,
+        current_summary_id: next_summary_id
+      });
 
   // Add 24 hour timer to send a follow up message
   addTimedMessages(user_id, book_id, summaries.isFinal);
