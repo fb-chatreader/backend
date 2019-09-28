@@ -15,6 +15,6 @@ function add(userBook) {
 function edit(filter, changes) {
   return db('user_tracking')
     .where(filter)
-    .update(changes)
+    .update(changes, ['*'])
     .then(u => retrieve({ id: u[0].id }).first());
 }
