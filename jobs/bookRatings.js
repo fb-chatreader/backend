@@ -27,7 +27,7 @@ module.exports = () => {
         error: 0,
         success: 0
       };
-
+      console.log(`Checking ratings for ${books.length} books`);
       books.forEach(async (b, i, arr) => {
         // Add check for author name being one word
         const author = analyzeAuthorName(b.author);
