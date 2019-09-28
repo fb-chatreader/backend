@@ -4,7 +4,7 @@ const cors = require('cors');
 
 // Jobs -- Tasks running on a schedule
 require('./jobs/timedMessages.js');
-// require('./jobs/bookRatings.js')();
+require('./jobs/bookRatings.js')();
 
 // Import routes
 const messageRouter = require('./routes/messages/');
