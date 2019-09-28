@@ -18,6 +18,7 @@ function add(chatRead) {
 }
 
 function edit(filter, summary) {
+  console.log('CR: ', summary);
   return db(`chat_reads`)
     .where(filter)
     .update(summary, ['*'])
