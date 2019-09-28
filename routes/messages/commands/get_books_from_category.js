@@ -10,25 +10,30 @@ module.exports = async event => {
     category_id
   );
 
-  const options = [
-    {
-      title: 'Yes, show me more',
-      command: 'get_books_from_category'
-    }
-  ];
+  // const options = [
+  //   {
+  const title = 'Yes, show me more';
+  const command = 'get_books_from_category';
+  //   }
+  // ];
 
   const text = 'Would you like to see more books from this genre?';
 
-  const quickReplies = [];
-
-  options.forEach(o => {
-    const { title, command } = o;
-
-    quickReplies.push({
+  const quickReplies = [
+    {
       title,
-      payload: JSON.stringify({ command: command.toLowerCase() })
-    });
-  });
+      payload: JSON.stringify({ command, category_id })
+    }
+  ];
+
+  // options.forEach(o => {
+  //   const { title, command } = o;
+
+  //   quickReplies.push({
+  //     title,
+  //     payload: JSON.stringify({ command: command.toLowerCase() })
+  //   });
+  // });
   const browseQR = await browse(event);
   return isEndOfCategory
     ? [await BookTemplate(event, books), ...browseQR]
