@@ -13,6 +13,7 @@ function add(userBook) {
 }
 
 function edit(filter, changes) {
+  console.log(changes);
   return db('user_tracking')
     .where(filter)
     .update(changes, ['*'])
