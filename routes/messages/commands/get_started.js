@@ -5,7 +5,7 @@ const UserLibraries = require('models/db/userLibraries.js');
 const sortBooks = require('../../books/helpers/sortBooksByRating');
 // sortBooks({category_name:'Health'});
 const bookRatings = require('../../../jobs/bookRatings');
-
+const QuickReplyTemplate = require('../UI/QuickReplyTemplate.js');
 
 module.exports = async (event) => {
   const { bookCount } = event;
@@ -36,42 +36,80 @@ async function getMultipleBooks(event) {
 
   const text = userCategories.length === 0 ? firstTimeText : introText;
 
-  const buttons = [
+  // const buttons = [
+  //   {
+  //     type: 'postback',
+  //     title: 'Browse Books',
+  //     payload: JSON.stringify({
+  //       command: 'browse'
+  //     })
+  //   }
+  // ];
+
+  // if (userLibraries.length) {
+  //   buttons.push({
+  //     type: 'postback',
+  //     title: 'View Library',
+  //     payload: JSON.stringify({ command: 'library' })
+  //   });
+  // }
+
+  // buttons.push({
+  //   type: 'postback',
+  //   title: 'Get Help',
+  //   payload: JSON.stringify({ command: 'help' })
+  // });
+
+  // return [
+  //   {
+  //     attachment: {
+  //       type: 'template',
+  //       payload: {
+  //         template_type: 'button',
+  //         text,
+  //         buttons
+  //       }
+  //     }
+  //   }
+  // ];
+
+  const replyOptions = userLibraries.length ? 
+  [
     {
-      type: 'postback',
       title: 'Browse Books',
-      payload: JSON.stringify({
-        command: 'browse'
-      })
-    }
+      command: 'browse'
+    },
+    {
+      title: 'View Library',
+      command: 'library'
+    },
+    {
+      title: 'Get Help',
+      command: 'help'
+    },
+  ] :
+  [
+    {
+      title: 'Browse Books',
+      command: 'browse'
+    },
+    {
+      title: 'Get Help',
+      command: 'help'
+    },
   ];
 
-  if (userLibraries.length) {
-    buttons.push({
-      type: 'postback',
-      title: 'View Library',
-      payload: JSON.stringify({ command: 'library' })
-    });
-  }
+  const quickReplies = [];
+  replyOptions.forEach(o => {
+    const { title, command } = o;
 
-  buttons.push({
-    type: 'postback',
-    title: 'Get Help',
-    payload: JSON.stringify({ command: 'help' })
+    quickReplies.push({
+      title,
+      payload: JSON.stringify({ command: command.toLowerCase() })
+    });
   });
 
-  return [
-    {
-      attachment: {
-        type: 'template',
-        payload: {
-          template_type: 'button',
-          text,
-          buttons
-        }
-      }
-    }
-  ];
+  return [ await QuickReplyTemplate(text, quickReplies)];
 }
 
 async function getSingleBook(event) {
