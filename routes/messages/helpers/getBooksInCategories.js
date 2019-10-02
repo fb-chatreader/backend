@@ -21,7 +21,7 @@ module.exports = async (user_id, category_id) => {
 
   const sortedBooks = sortBooks(booksInCategory);
   const bookCount = sortedBooks.length;
-  console.log('Books in category: ', bookCount);
+  // console.log('Books in category: ', bookCount);
 
   // Get current sorted book index for the first category to start the new batch of books:
   const recommendedBookRecord = await RecommendedBooks.retrieve({
@@ -29,10 +29,9 @@ module.exports = async (user_id, category_id) => {
     category_id
   }).first();
 
-  const startSortedBookIndex = recommendedBookRecord
-    ? recommendedBookRecord.current_sorted_book_index
-    : 0;
+  const startSortedBookIndex = recommendedBookRecord ? recommendedBookRecord.current_sorted_book_index : 0;
 
+  // const endSortedBookIndex = startSortedBookIndex + 10;
   const endSortedBookIndex = startSortedBookIndex + 10;
 
   const books = sortedBooks.slice(startSortedBookIndex, endSortedBookIndex);
@@ -41,8 +40,7 @@ module.exports = async (user_id, category_id) => {
     ? await RecommendedBooks.edit(
         { user_id, category_id },
         {
-          current_sorted_book_index:
-            endSortedBookIndex >= bookCount ? 0 : endSortedBookIndex
+          current_sorted_book_index: endSortedBookIndex >= bookCount ? 0 : endSortedBookIndex
         }
       )
     : await RecommendedBooks.add({
