@@ -7,13 +7,14 @@ const path = '/Users/erikkimsey/Desktop/sidd/models/seeds/allBooks/ratings.json'
  */
 module.exports = async (books) => {
   const booksToJsonArr = [];
-  await Books.retrieve().then((books) => {
-    console.log(books.length);
-    for (let i = 0; i < books.length; i++) {
-      console.log(i);
-      booksToJsonArr.push(generateRatingObj());
-    }
-  });
+  // console.log(books.length);
+  // await Books.retrieve().then((books) => {
+  console.log(books.length);
+  for (let i = 0; i < books.length; i++) {
+    // console.log(i);
+    booksToJsonArr.push(generateRatingObj());
+  }
+  // });
   createJSON(booksToJsonArr, path);
 };
 
