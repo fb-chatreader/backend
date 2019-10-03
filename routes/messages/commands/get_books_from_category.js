@@ -6,21 +6,19 @@ const browse = require('./browse.js');
 
 module.exports = async (event) => {
   const { category_id, user_id } = event;
-  console.log(event);
   const currentCat = await Categories.retrieve({ id: category_id });
-  console.log(currentCat[0].name);
 
   const { isEndOfCategory, books } = await getBooksInCategories(user_id, category_id);
 
-  const text = 'Would you like to see more books from this genre?';
+  const text = 'Would you like to see more books from this genre? Or, peruse another genre?';
   const quickReplies = [];
   const options = [
     {
-      title: `See more ${currentCat[0].name}`,
+      title: `More from ${currentCat[0].name}`,
       command: 'get_books_from_category'
     },
     {
-      title: 'Browse other categories',
+      title: 'Other categories',
       command: 'browse'
     }
   ];
