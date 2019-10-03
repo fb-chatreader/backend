@@ -14,23 +14,29 @@ module.exports = async (event) => {
   //   }
   // ];
 
-  const text = 'Would you like to see more books from this genre?';
-
-  const quickReplies = [
+  const options = [
     {
-      title,
-      payload: JSON.stringify({ command, category_id })
+      title: 'Yes, show me more',
+      command: 'get_books_from_category'
+    },
+    {
+      title: 'Browse other categories',
+      command: 'browse'
     }
   ];
 
-  // options.forEach(o => {
-  //   const { title, command } = o;
+  const text = 'Would you like to see more books from this genre?';
 
-  //   quickReplies.push({
-  //     title,
-  //     payload: JSON.stringify({ command: command.toLowerCase() })
-  //   });
-  // });
+  const quickReplies = [];
+
+  options.forEach((opt) => {
+    const { title, command } = opt;
+
+    quickReplies.push({
+      title,
+      payload: JSON.stringify({ command: command.toLowerCase() })
+    });
+  });
   const browseQR = await browse(event);
   return isEndOfCategory
     ? [ await BookTemplate(event, books), ...browseQR ]
