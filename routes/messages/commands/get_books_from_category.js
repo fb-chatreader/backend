@@ -1,3 +1,4 @@
+const Categories = require('../../../models/db/categories');
 const getBooksInCategories = require('../helpers/getBooksInCategories.js');
 const BookTemplate = require('../UI/BookTemplate.js');
 const QuickReplyTemplate = require('../UI/QuickReplyTemplate.js');
@@ -5,18 +6,17 @@ const browse = require('./browse.js');
 
 module.exports = async (event) => {
   const { category_id, user_id } = event;
+  console.log(event);
+  const currentCat = await Categories.retrieve({ id: category_id });
+  console.log(currentCat[0].name);
+
   const { isEndOfCategory, books } = await getBooksInCategories(user_id, category_id);
 
-  // const options = [
-  //   {
-  const title = 'Yes, show me more';
-  const command = 'get_books_from_category';
-  //   }
-  // ];
-
+  const text = 'Would you like to see more books from this genre?';
+  const quickReplies = [];
   const options = [
     {
-      title: 'Yes, show me more',
+      title: `See more ${currentCat[0].name}`,
       command: 'get_books_from_category'
     },
     {
@@ -24,10 +24,6 @@ module.exports = async (event) => {
       command: 'browse'
     }
   ];
-
-  const text = 'Would you like to see more books from this genre?';
-
-  const quickReplies = [];
 
   options.forEach((opt) => {
     const { title, command } = opt;
