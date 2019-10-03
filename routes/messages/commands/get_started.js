@@ -11,7 +11,6 @@ const QuickReplyTemplate = require('../UI/QuickReplyTemplate.js');
 const generateRatings = require('../../../routes/books/helpers/generateRatings');
 const books = '../../../models/seeds/allBooks/ratings.json';
 // generateRatings();
-console.log(books.length);
 
 module.exports = async (event) => {
   const { bookCount } = event;
