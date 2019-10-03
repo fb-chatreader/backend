@@ -4,14 +4,14 @@ const UserCategories = require('models/db/userCategories.js');
 const UserLibraries = require('models/db/userLibraries.js');
 const sortBooks = require('../../books/helpers/sortBooksByRating');
 // sortBooks({category_name:'Health'});
-const bookRatings = require('../../../jobs/bookRatings');
+// const bookRatings = require('../../../jobs/bookRatings');
+// console.log(bookRatings.length);
+
 const QuickReplyTemplate = require('../UI/QuickReplyTemplate.js');
 const generateRatings = require('../../../routes/books/helpers/generateRatings');
-
-const books = require('../../../models/seeds/allBooks/books.json');
+const books = '../../../models/seeds/allBooks/ratings.json';
+// generateRatings();
 console.log(books.length);
-// const books = '../../../models/seeds/allBooks/books.json'
-// generateRatings(books);
 
 module.exports = async (event) => {
   const { bookCount } = event;

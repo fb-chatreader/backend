@@ -1,21 +1,33 @@
-const Books = require('../../../models/db/books');
+// const Books = require('../../../models/db/books');
+const Books = require('../../../models/seeds/allBooks/books.json');
 const createJSON = require('../../utils/create-json-file');
 const path = '/Users/erikkimsey/Desktop/sidd/models/seeds/allBooks/ratings.json';
+const ratings = '../../../models/seeds/allBooks/ratings.json';
 
 /**
  * This is an utility function to generate mock book ratings data and create ratings.json file containing generated data.
  */
-module.exports = async (books) => {
+const generateRatings = async (books) => {
   const booksToJsonArr = [];
-  // console.log(books.length);
-  // await Books.retrieve().then((books) => {
-  console.log(books.length);
-  for (let i = 0; i < books.length; i++) {
-    // console.log(i);
-    booksToJsonArr.push(generateRatingObj());
+  // console.log(Books.length);
+  // await Books.retrieve().then((book) => {
+  //   console.log(book.length);
+  if (Books.length === 349) {
+    for (let i = 0; i < 349; i++) {
+      // console.log(Books.img_url);
+      // console.log(i);
+      console.log(generateRatingObj());
+
+      booksToJsonArr.push(generateRatingObj());
+    }
+    // console.log('booksToJsonArr.length');
+    // console.log(booksToJsonArr.length);
+
+    createJSON(booksToJsonArr, path);
   }
   // });
-  createJSON(booksToJsonArr, path);
+  // console.log('ratings length');
+  // console.log(ratings.length);
 };
 
 function generateRatingObj() {
@@ -32,3 +44,5 @@ function generateAvgRating(max, min) {
 function generateRatingQty(max) {
   return Math.floor(Math.random() * Math.floor(max));
 }
+
+// generateRatings();

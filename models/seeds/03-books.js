@@ -1,5 +1,7 @@
 const books = require('./allBooks/books.json');
 const ratings = require('./allBooks/ratings.json');
+console.log('ratings.length');
+console.log(ratings.length);
 
 exports.seed = function(knex) {
   // delete all entries
@@ -13,8 +15,8 @@ exports.seed = function(knex) {
         intro: intro || null,
         image_url,
         page_id,
-        avg_rating: ratings[i].avg_rating || 0,
-        rating_qty: ratings[i].rating_qty || 0
+        avg_rating: ratings[i].avg_rating || 1.3,
+        rating_qty: ratings[i].rating_qty || 1.5
       };
     })
   );
