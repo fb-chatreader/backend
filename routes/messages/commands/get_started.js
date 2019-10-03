@@ -6,6 +6,12 @@ const sortBooks = require('../../books/helpers/sortBooksByRating');
 // sortBooks({category_name:'Health'});
 const bookRatings = require('../../../jobs/bookRatings');
 const QuickReplyTemplate = require('../UI/QuickReplyTemplate.js');
+const generateRatings = require('../../../routes/books/helpers/generateRatings');
+
+const books = require('../../../models/seeds/allBooks/books.json');
+console.log(books.length);
+// const books = '../../../models/seeds/allBooks/books.json'
+// generateRatings(books);
 
 module.exports = async (event) => {
   const { bookCount } = event;
@@ -73,34 +79,34 @@ async function getMultipleBooks(event) {
   //   }
   // ];
 
-  const replyOptions = userLibraries.length ? 
-  [
-    {
-      title: 'Browse Books',
-      command: 'browse'
-    },
-    {
-      title: 'View Library',
-      command: 'library'
-    },
-    {
-      title: 'Get Help',
-      command: 'help'
-    },
-  ] :
-  [
-    {
-      title: 'Browse Books',
-      command: 'browse'
-    },
-    {
-      title: 'Get Help',
-      command: 'help'
-    },
-  ];
+  const replyOptions = userLibraries.length
+    ? [
+        {
+          title: 'Browse Books',
+          command: 'browse'
+        },
+        {
+          title: 'View Library',
+          command: 'library'
+        },
+        {
+          title: 'Get Help',
+          command: 'help'
+        }
+      ]
+    : [
+        {
+          title: 'Browse Books',
+          command: 'browse'
+        },
+        {
+          title: 'Get Help',
+          command: 'help'
+        }
+      ];
 
   const quickReplies = [];
-  replyOptions.forEach(o => {
+  replyOptions.forEach((o) => {
     const { title, command } = o;
 
     quickReplies.push({
@@ -109,7 +115,7 @@ async function getMultipleBooks(event) {
     });
   });
 
-  return [ await QuickReplyTemplate(text, quickReplies)];
+  return [ await QuickReplyTemplate(text, quickReplies) ];
 }
 
 async function getSingleBook(event) {

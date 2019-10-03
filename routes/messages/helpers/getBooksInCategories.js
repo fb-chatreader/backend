@@ -31,7 +31,6 @@ module.exports = async (user_id, category_id) => {
 
   const startSortedBookIndex = recommendedBookRecord ? recommendedBookRecord.current_sorted_book_index : 0;
 
-  // const endSortedBookIndex = startSortedBookIndex + 10;
   const endSortedBookIndex = startSortedBookIndex + 10;
 
   const books = sortedBooks.slice(startSortedBookIndex, endSortedBookIndex);
