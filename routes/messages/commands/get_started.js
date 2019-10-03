@@ -8,12 +8,13 @@ const sortBooks = require('../../books/helpers/sortBooksByRating');
 // console.log(bookRatings.length);
 
 const QuickReplyTemplate = require('../UI/QuickReplyTemplate.js');
-const generateRatings = require('../../../routes/books/helpers/generateRatings');
-const books = '../../../models/seeds/allBooks/ratings.json';
+// const generateRatings = require('../../../routes/books/helpers/generateRatings');
+// const books = '../../../models/seeds/allBooks/ratings.json';
 // generateRatings();
 
 module.exports = async (event) => {
   const { bookCount } = event;
+  console.log('getting started');
 
   if (!bookCount) {
     return [
