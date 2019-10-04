@@ -3,15 +3,21 @@ const Books = require('models/db/books.js');
 const Summaries = require('models/db/summaryParts.js');
 const TimedMessages = require('models/db/timedMessages.js');
 const UserTracking = require('models/db/userTracking.js');
+const Users = require('models/db/users.js');
 
 // Query database to get current summary location
 // If there isn't one, create it
 // Otherwise, increment and get next summary (check for end of book)
 
-module.exports = async event => {
+module.exports = async (event) => {
   if (event.type !== 'postback') return;
   // Collect needed data from DB
-  const { user_id, book_id } = event;
+
+  const { user_id, book_id, user } = event;
+  // const user = await Users.require({ id: user_id });
+  console.log('user');
+  console.log(user.credits);
+
   const chatRead = await ChatReads.retrieve({ user_id, book_id }).first();
   // Get the user's current chat read summary_id or if they don't have one,
   // Set to the current book's first summary_id
@@ -43,17 +49,13 @@ module.exports = async event => {
             repeat_count: progressOnBook.repeat_count + 1
           }
         );
+  } else if (!chatRead && user.credits === 0) {
+    return { text: 'Please, subscribe to read more summaries.' };
   } else {
     // It already exists and we just need to update the current summary being tracked
-    await UserTracking.edit(
-      { user_id, book_id },
-      { last_summary_id: current_summary_id }
-    );
+    await UserTracking.edit({ user_id, book_id }, { last_summary_id: current_summary_id });
   }
-  const summaries = await Summaries.retrieveBlock(
-    { book_id },
-    current_summary_id
-  );
+  const summaries = await Summaries.retrieveBlock({ book_id }, current_summary_id);
 
   // For the next round, update to the next summary_id (which will just be
   // the last id in the series if there are no more for the current book)
@@ -62,18 +64,32 @@ module.exports = async event => {
   // Is this the final summary?  If so, delete their progress
   // If not, just update the table with the new ID
   // Otherwise, create a new chat read for the user for this book
-  chatRead
-    ? summaries.isFinal
-      ? await ChatReads.remove(chatRead.id)
-      : await ChatReads.edit(
-          { user_id, book_id },
-          { current_summary_id: next_summary_id }
-        )
-    : await ChatReads.add({
-        user_id,
-        book_id,
-        current_summary_id: next_summary_id
-      });
+  /**
+   * chatRead = true, if summaries.isFinal and 
+   */
+  // chatRead
+  //   ? summaries.isFinal
+  //     ? await ChatReads.remove(chatRead.id)
+  //     : await ChatReads.edit({ user_id, book_id }, { current_summary_id: next_summary_id })
+  //   : await ChatReads.add({
+  //       user_id,
+  //       book_id,
+  //       current_summary_id: next_summary_id
+  //     });
+
+  if (summaries.isFinal && chatRead) {
+    await ChatReads.remove(chatRead.id);
+  } else if (summaries.isFinal && !chatRead) {
+    await ChatReads.edit({ user_id, book_id }, { current_summary_id: next_summary_id });
+  } else {
+    await ChatReads.add({
+      user_id,
+      book_id,
+      current_summary_id: next_summary_id
+    });
+    let updatedCredits = user.credits - 1;
+    // await Users.edit({ id: user_id, credits: updatedCredits });
+  }
 
   // Add 24 hour timer to send a follow up message
   addTimedMessages(user_id, book_id, summaries.isFinal);
