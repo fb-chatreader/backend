@@ -74,9 +74,17 @@ async function parseUserAction(entry) {
     bookCount: books.length
   };
   if (event.postback || (event.message && event.message.quick_reply)) {
+    // This statement will fire for a postback or quick reply event but also if
+    // the user is following a referral link and it's their first interaction with
+    // the bot.
+
+    // Postbacks and quick replies are handled in exactly the same way, the payload
+    // is just in a different location in the object.
+
     const payload = event.postback
       ? event.postback.payload
       : event.message.quick_reply.payload;
+
     parsed_data = event.postback.referral
       ? {
           ...parsed_data,
