@@ -21,6 +21,8 @@ module.exports = async (event) => {
   const chatRead = await ChatReads.retrieve({ user_id, book_id }).first();
   // Get the user's current chat read summary_id or if they don't have one,
   // Set to the current book's first summary_id
+  console.log('chatRead');
+  console.log(chatRead);
 
   let current_summary_id = chatRead ? chatRead.current_summary_id : null;
   if (!chatRead) {
@@ -64,8 +66,9 @@ module.exports = async (event) => {
   // Is this the final summary?  If so, delete their progress
   // If not, just update the table with the new ID
   // Otherwise, create a new chat read for the user for this book
+
   /**
-   * chatRead = true, if summaries.isFinal and 
+   * /// Begin -- AJ's Ternary Hell
    */
   // chatRead
   //   ? summaries.isFinal
@@ -76,19 +79,22 @@ module.exports = async (event) => {
   //       book_id,
   //       current_summary_id: next_summary_id
   //     });
+  /**
+   * /// End -- AJ's Ternary Hell
+   */
 
-  if (summaries.isFinal && chatRead) {
-    await ChatReads.remove(chatRead.id);
-  } else if (summaries.isFinal && !chatRead) {
-    await ChatReads.edit({ user_id, book_id }, { current_summary_id: next_summary_id });
-  } else {
+  if (chatRead) {
+    if (summaries.isFinal) {
+      await ChatReads.remove(chatRead.id);
+    } else {
+      await ChatReads.edit({ user_id, book_id }, { current_summary_id: next_summary_id });
+    }
+  } else if (!chatRead) {
     await ChatReads.add({
       user_id,
       book_id,
       current_summary_id: next_summary_id
     });
-    let updatedCredits = user.credits - 1;
-    // await Users.edit({ id: user_id, credits: updatedCredits });
   }
 
   // Add 24 hour timer to send a follow up message
