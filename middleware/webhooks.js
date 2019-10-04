@@ -77,18 +77,17 @@ async function parseUserAction(entry) {
     const payload = event.postback
       ? event.postback.payload
       : event.message.quick_reply.payload;
-    parsed_data = {
-      ...parsed_data,
-      ...JSON.parse(payload),
-      type: 'postback'
-    };
-    if (
-      event.postback &&
-      event.postback.referral &&
-      event.postback.referral.ref
-    ) {
-      console.log('REFERENCE RECEIVED: ', event.postback.referral.ref);
-    }
+    parsed_data = event.postback.referral
+      ? {
+          ...parsed_data,
+          ...queryStringToObject(event.postback.referral.ref),
+          type: 'referral'
+        }
+      : {
+          ...parsed_data,
+          ...JSON.parse(payload),
+          type: 'postback'
+        };
   } else if (event.referral) {
     parsed_data = {
       ...parsed_data,
