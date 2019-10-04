@@ -97,12 +97,15 @@ async function parseUserAction(entry) {
           type: 'postback'
         };
   } else if (event.referral) {
+    // If the user has interacted with the bot before and they're following a
+    // referral link, this statement will fire
     parsed_data = {
       ...parsed_data,
       ...queryStringToObject(event.referral.ref),
       type: 'referral'
     };
   } else if (event && event.message) {
+    // Fires whenever the user types something at the bot
     parsed_data = {
       ...parsed_data,
       command: event.message.text
