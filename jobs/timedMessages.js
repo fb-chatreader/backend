@@ -13,11 +13,10 @@ async function cycleMessages() {
 
   messages.forEach(async m => {
     if (new Date(m.send_at) <= now) {
-      const book = await Books.retrieve({ id: m.book_id }).first();
       const user = await Users.retrieve({ id: m.user_id }).first();
       // This gets us around having to add a page_id column to the timed_messages
       // table but likely won't work long term if books lose the page_id column
-      const page = await Pages.retrieve({ id: book.page_id }).first();
+      const page = await Pages.retrieve({ id: m.page_id }).first();
       const psid = user.facebook_id;
 
       const response = {
@@ -27,9 +26,9 @@ async function cycleMessages() {
             template_type: 'generic',
             elements: [
               {
-                title: 'Would you like to read more books like this?',
+                title: 'Over 1000 book summaries are waiting for you!',
                 image_url: 'https://i.imgur.com/32LoIYe.png',
-                subtitle: `${book.title} by ${book.author}`,
+                subtitle: `Want to get started?`,
                 buttons: [
                   {
                     type: 'postback',
