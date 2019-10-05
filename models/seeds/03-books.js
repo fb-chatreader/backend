@@ -1,7 +1,5 @@
 const books = require('./allBooks/books.json');
 const ratings = require('./allBooks/ratings.json');
-console.log('ratings.length');
-console.log(ratings.length);
 
 exports.seed = function(knex) {
   // delete all entries
