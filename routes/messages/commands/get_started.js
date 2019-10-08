@@ -12,14 +12,15 @@ const QuickReplyTemplate = require('../UI/QuickReplyTemplate.js');
 // const books = '../../../models/seeds/allBooks/ratings.json';
 // generateRatings();
 
-module.exports = async (event) => {
+module.exports = async event => {
   const { bookCount } = event;
   console.log('getting started');
 
   if (!bookCount) {
     return [
       {
-        text: 'Sorry, this bot is still being created, please visit us again soon!'
+        text:
+          'Sorry, this bot is still being created, please visit us again soon!'
       }
     ];
   }
@@ -106,7 +107,7 @@ async function getMultipleBooks(event) {
       ];
 
   const quickReplies = [];
-  replyOptions.forEach((o) => {
+  replyOptions.forEach(o => {
     const { title, command } = o;
 
     quickReplies.push({
@@ -115,11 +116,11 @@ async function getMultipleBooks(event) {
     });
   });
 
-  return [ await QuickReplyTemplate(text, quickReplies) ];
+  return [await QuickReplyTemplate(text, quickReplies)];
 }
 
 async function getSingleBook(event) {
-  const book = await Books.retrieve({ page_id: event.page.id }).first();
+  const book = await Books.retrieve({ 'b.page_id': event.page.id }).first();
   const userInfo = await getUserInfo(event.sender, event.page.access_token);
 
   const { id: book_id, title, author, synopsis, intro, image_url } = book;
