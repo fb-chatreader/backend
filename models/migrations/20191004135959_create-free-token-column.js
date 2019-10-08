@@ -1,6 +1,6 @@
 exports.up = function(knex) {
   return knex.schema.alterTable('users', (tbl) => {
-    tbl.bigInteger('credits').notNullable().defaultTo(1);
+    tbl.integer('credits').notNullable().defaultTo(1);
   });
 };
 
