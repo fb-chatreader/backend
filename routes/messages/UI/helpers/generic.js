@@ -1,35 +1,41 @@
+module.exports = { generateWebButtons, generatePostbackButtons };
+
 /**
  * Dynamically generates messenger buttons
  * Params:
- * - content: (Array) containing Button object values
+ * - "buttons" (array of objects) = [{
+ *  title:String,
+ *  url:String,
+ * }]
  */
-module.exports = { generateButtons, generateElements };
 
-function generateButtons(btnArr) {
-  return btnArr.map(e => {
+function generateWebButtons(buttons) {
+  // Requires a title and URL for each button
+  return buttons.map(({ title, url }) => {
     return {
-      type: e.type,
-      title: e.title,
-      url: e.url || null,
-      payload: e.payload || null
+      type: 'web_url',
+      title,
+      url
     };
   });
 }
 
-function generateElements(elemArr, buttons) {
-  // Will only return at max 10 items (FB API limitation)
-  return elemArr.slice(0, 10).map(e => {
-    const { title, image_url, subtitle, default_action } = e;
-    const element = {
-      title,
-      image_url,
-      subtitle,
-      buttons: generateButtons(buttons)
-    };
-    if (default_action) {
-      element.default_action = default_action;
-    }
+/**
+ * Dynamically generates messenger buttons
+ * Params:
+ * - "buttons" (array of objects) = [{
+ *  title:String,
+ *  payload:Array (of Objects),
+ * }]
+ */
 
-    return element;
+function generatePostbackButtons(buttons) {
+  // Requires a title and a payload OBJECT that will be stringified.
+  return buttons.map(({ title, payload }) => {
+    return {
+      type: 'postback',
+      title,
+      payload: JSON.stringify(payload)
+    };
   });
 }
