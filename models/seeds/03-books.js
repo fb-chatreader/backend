@@ -13,8 +13,8 @@ exports.seed = function(knex) {
         intro: intro || null,
         image_url,
         page_id,
-        avg_rating: ratings[i].avg_rating || 0,
-        rating_qty: ratings[i].rating_qty || 0
+        avg_rating: ratings[i].avg_rating || 1.3,
+        rating_qty: ratings[i].rating_qty || 1.5
       };
     })
   );

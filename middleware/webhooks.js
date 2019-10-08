@@ -1,11 +1,12 @@
 const Users = require('models/db/users.js');
 const Pages = require('models/db/pages.js');
 const Books = require('models/db/books.js');
+const addTimedMessage = require('routes/messages/helpers/addTimedMessage.js');
 
 module.exports = { validateWebhook, getPageData, parseWebhook };
 
 function validateWebhook({ body }, res, next) {
-  if (body.object === 'page') {
+  if (body.object === 'page' && body.entry && body.entry[0]) {
     next();
   }
 }
@@ -63,6 +64,9 @@ async function parseUserAction(entry) {
     // Save sender ID in DB if they're a new user
     user = await Users.add({ facebook_id: event.sender.id });
   }
+  // Any interaction with the bot will trigger a 24 hour message to be sent later.
+  // Only 1 timed message can exist for a user per page
+  await addTimedMessage(user.id, entry[0].page.id);
 
   const books = await Books.retrieve({ page_id: entry[0].page.id });
 
@@ -73,29 +77,40 @@ async function parseUserAction(entry) {
     page: entry[0].page,
     bookCount: books.length
   };
+
   if (event.postback || (event.message && event.message.quick_reply)) {
+    // This statement will fire for a postback or quick reply event but also if
+    // the user is following a referral link and it's their first interaction with
+    // the bot.
+
+    // Postbacks and quick replies are handled in exactly the same way, the payload
+    // is just in a different location in the object.
     const payload = event.postback
       ? event.postback.payload
       : event.message.quick_reply.payload;
-    parsed_data = {
-      ...parsed_data,
-      ...JSON.parse(payload),
-      type: 'postback'
-    };
-    if (
-      event.postback &&
-      event.postback.referral &&
-      event.postback.referral.ref
-    ) {
-      console.log('REFERENCE RECEIVED: ', event.postback.referral.ref);
-    }
+
+    parsed_data =
+      event.postback && event.postback.referral
+        ? {
+            ...parsed_data,
+            ...queryStringToObject(event.postback.referral.ref),
+            type: 'referral'
+          }
+        : {
+            ...parsed_data,
+            ...JSON.parse(payload),
+            type: 'postback'
+          };
   } else if (event.referral) {
+    // If the user has interacted with the bot before and they're following a
+    // referral link, this statement will fire
     parsed_data = {
       ...parsed_data,
       ...queryStringToObject(event.referral.ref),
       type: 'referral'
     };
   } else if (event && event.message) {
+    // Fires whenever the user types something at the bot
     parsed_data = {
       ...parsed_data,
       command: event.message.text

@@ -1,7 +1,6 @@
 const ChatReads = require('models/db/chatReads.js');
 const Books = require('models/db/books.js');
 const Summaries = require('models/db/summaryParts.js');
-const TimedMessages = require('models/db/timedMessages.js');
 const UserTracking = require('models/db/userTracking.js');
 const Users = require('models/db/users.js');
 
@@ -97,9 +96,6 @@ module.exports = async (event) => {
     });
   }
 
-  // Add 24 hour timer to send a follow up message
-  addTimedMessages(user_id, book_id, summaries.isFinal);
-
   return summaries.block.map((s, i) => {
     if (i < summaries.block.length - 1) {
       return {
@@ -150,17 +146,3 @@ module.exports = async (event) => {
     }
   });
 };
-
-async function addTimedMessages(user_id, book_id, isComplete = false) {
-  // To better catch a user at the start of their free time,
-  // only update timed messages if one doesn't already exists
-  const timedMessage = await TimedMessages.retrieve({ user_id }).first();
-  const newMsg = {
-    user_id,
-    book_id,
-    isComplete
-  };
-  if (!timedMessage) {
-    await TimedMessages.add(newMsg);
-  }
-}
