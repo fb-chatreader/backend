@@ -2,12 +2,14 @@ const Users = require('models/db/users.js');
 const Pages = require('models/db/pages.js');
 const Books = require('models/db/books.js');
 const addTimedMessage = require('routes/messages/helpers/addTimedMessage.js');
+const CommandListClass = require('classes/CommandList.js');
+const CommandList = new CommandListClass();
 
 module.exports = { validateWebhook, getPageData, parseWebhook };
 
-function validateWebhook({ body }, res, next) {
-  console.log('what the F?!?!?');
+const commands = Object.keys(CommandList.commands);
 
+function validateWebhook({ body }, res, next) {
   if (body.object === 'page' && body.entry && body.entry[0]) {
     next();
   }
@@ -44,7 +46,7 @@ function parsePolicyViolation(entry) {
     page_id: entry[0].id
   };
 }
-// http://m.me/Qooouuuf?ref=command=start_book,book_id=1
+// http://m.me/109461977131004?ref=command=start_book,book_id=1
 async function parseUserAction(entry) {
   // Order of importance for webhooks --> Postback > Referrals > Commands
   // Type added in case we need to verify source (do we want users to say "policy violation"
@@ -52,19 +54,9 @@ async function parseUserAction(entry) {
 
   // The 'event' exists for postbacks and user messages
   // It's essentially where the data for those webhooks exists
-  console.log('>>>>>>');
-  console.log('>>>>>>');
-  console.log('>>>>>>');
-  console.log('entry');
-  console.log(entry[0].messaging[0].message.mid);
-  console.log('>>>>>>');
+  const referralCommand = queryStringToObject(entry[0].messaging[0].referral.ref).command;
 
   const event = entry && entry[0] && entry[0].messaging ? entry[0].messaging[0] : null;
-  console.log('>>>>>>');
-  console.log('event');
-
-  console.log(entry);
-  console.log('>>>>>>');
 
   // Get user if they exists already in our database
   let user = event ? await Users.retrieve({ facebook_id: event.sender.id }).first() : null;
@@ -100,7 +92,7 @@ async function parseUserAction(entry) {
       event.postback && event.postback.referral
         ? {
             ...parsed_data,
-            ...queryStringToObject(event.postback.referral.ref),
+            ...queryStringToObject(),
             type: 'referral'
           }
         : {
@@ -111,6 +103,13 @@ async function parseUserAction(entry) {
   } else if (event.referral) {
     // If the user has interacted with the bot before and they're following a
     // referral link, this statement will fire
+    if (isValidCommand(referralCommand) === false) {
+      return (parsed_data = {
+        ...parsed_data,
+        ...queryStringToObject('command=start_book,book_id=1'),
+        type: 'referral'
+      });
+    }
     parsed_data = {
       ...parsed_data,
       ...queryStringToObject(event.referral.ref),
@@ -126,6 +125,10 @@ async function parseUserAction(entry) {
     };
   }
   return parsed_data;
+}
+
+function isValidCommand(str) {
+  return CommandList.commands.hasOwnProperty(str);
 }
 
 function isValidMessengerRequest(entry) {
