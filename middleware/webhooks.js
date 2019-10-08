@@ -48,7 +48,6 @@ function parsePolicyViolation(entry) {
 }
 // http://m.me/109461977131004?ref=command=start_book,book_id=1
 async function parseUserAction(entry) {
-
   // Order of importance for webhooks --> Postback > Referrals > Commands
   // Type added in case we need to verify source (do we want users to say "policy violation"
   // and trigger our policy violation command?)
@@ -92,16 +91,12 @@ async function parseUserAction(entry) {
     // Postbacks and quick replies are handled in exactly the same way, the payload
     // is just in a different location in the object.
     const payload = event.postback ? event.postback.payload : event.message.quick_reply.payload;
-    console.log('payload');
-    console.log('payload');
-    console.log('payload');
-    console.log(payload);
 
     parsed_data =
       event.postback && event.postback.referral
         ? {
             ...parsed_data,
-            ...queryStringToObject(event.postback.referral),
+            ...queryStringToObject(event.postback.referral.ref),
             type: 'referral'
           }
         : {
