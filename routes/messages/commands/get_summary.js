@@ -13,15 +13,10 @@ module.exports = async (event) => {
   // Collect needed data from DB
 
   const { user_id, book_id, user } = event;
-  // const user = await Users.require({ id: user_id });
-  console.log('user');
-  console.log(user.credits);
 
   const chatRead = await ChatReads.retrieve({ user_id, book_id }).first();
   // Get the user's current chat read summary_id or if they don't have one,
   // Set to the current book's first summary_id
-  console.log('chatRead');
-  console.log(chatRead);
 
   let current_summary_id = chatRead ? chatRead.current_summary_id : null;
   if (!chatRead) {
