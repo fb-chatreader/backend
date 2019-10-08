@@ -13,6 +13,9 @@ const pageRouter = require('./routes/pages/');
 const billingRouter = require('./routes/billing/');
 const stripeWebhooksRouter = require('./routes/stripe-webhooks');
 
+// Auth middleware
+const validateOrigin = require('auth/origin.js');
+
 // Error handling
 const errorHandler = require('./middleware/errorHandling');
 
@@ -28,7 +31,7 @@ server.use(express.json());
 
 // Use routes
 server.use('/api/messenger', messageRouter);
-server.use('/api/books', bookRouter);
+server.use('/api/books', validateOrigin, bookRouter);
 server.use('/api/pages', pageRouter);
 server.use('/api/billing', billingRouter);
 
