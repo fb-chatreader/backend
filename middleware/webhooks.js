@@ -7,7 +7,7 @@ const CommandList = new CommandListClass();
 
 module.exports = { validateWebhook, getPageData, parseWebhook };
 
-const commands = Object.keys(CommandList.commands);
+// const commands = Object.keys(CommandList.commands);
 
 function validateWebhook({ body }, res, next) {
   if (body.object === 'page' && body.entry && body.entry[0]) {
@@ -48,16 +48,21 @@ function parsePolicyViolation(entry) {
 }
 // http://m.me/109461977131004?ref=command=start_book,book_id=1
 async function parseUserAction(entry) {
+
   // Order of importance for webhooks --> Postback > Referrals > Commands
   // Type added in case we need to verify source (do we want users to say "policy violation"
   // and trigger our policy violation command?)
 
   // The 'event' exists for postbacks and user messages
   // It's essentially where the data for those webhooks exists
-  const referralCommand = queryStringToObject(entry[0].messaging[0].referral.ref).command;
 
   const event = entry && entry[0] && entry[0].messaging ? entry[0].messaging[0] : null;
 
+  let referralCommand = null;
+  if (event && entry[0].messaging[0].referral) {
+    referralCommand = queryStringToObject(entry[0].messaging[0].referral.ref).command;
+    console.log(referralCommand);
+  }
   // Get user if they exists already in our database
   let user = event ? await Users.retrieve({ facebook_id: event.sender.id }).first() : null;
 
@@ -87,12 +92,16 @@ async function parseUserAction(entry) {
     // Postbacks and quick replies are handled in exactly the same way, the payload
     // is just in a different location in the object.
     const payload = event.postback ? event.postback.payload : event.message.quick_reply.payload;
+    console.log('payload');
+    console.log('payload');
+    console.log('payload');
+    console.log(payload);
 
     parsed_data =
       event.postback && event.postback.referral
         ? {
             ...parsed_data,
-            ...queryStringToObject(),
+            ...queryStringToObject(event.postback.referral),
             type: 'referral'
           }
         : {
