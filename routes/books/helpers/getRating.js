@@ -14,16 +14,17 @@ module.exports = async book => {
 
   try {
     const res = await axios.get(url);
-
-    for (let i = 0; i < res.data.items.length; i++) {
+    const length = res.data.items ? res.data.items.length : 0;
+    for (let i = 0; i < length; i++) {
       // API returns an array of books based on search query.
       // This loops over those results to find a perfect match, if it exists
       const { volumeInfo } = res.data.items[i];
-      const title = title ? title.toLowerCase() : null;
-      const volumeTitle =
-        volumeInfo && volumeInfo.title ? volumeInfo.title.toLowerCase() : null;
 
-      if (title && volumeTitle && title === volumeTitle) {
+      if (
+        title &&
+        volumeInfo.title &&
+        title.toLowerCase() === volumeInfo.title.toLowerCase()
+      ) {
         found = true;
         const { averageRating, ratingsCount } = volumeInfo;
 
