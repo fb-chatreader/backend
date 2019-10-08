@@ -1,8 +1,8 @@
 const TimedMessages = require('../models/db/timedMessages.js');
 const Users = require('models/db/users.js');
-const Books = require('models/db/books.js');
 const Pages = require('models/db/pages.js');
 const Message = require('classes/Message.js');
+const GenericTemplate = require('routes/messages/UI/GenericTemplate.js');
 
 module.exports = setInterval(cycleMessages, 1000 * 60 * 30);
 
@@ -13,42 +13,37 @@ async function cycleMessages() {
 
   messages.forEach(async m => {
     if (new Date(m.send_at) <= now) {
-      const book = await Books.retrieve({ id: m.book_id }).first();
       const user = await Users.retrieve({ id: m.user_id }).first();
       // This gets us around having to add a page_id column to the timed_messages
       // table but likely won't work long term if books lose the page_id column
-      const page = await Pages.retrieve({ id: book.page_id }).first();
+      const page = await Pages.retrieve({ id: m.page_id }).first();
       const psid = user.facebook_id;
 
-      const response = {
-        attachment: {
-          type: 'template',
-          payload: {
-            template_type: 'generic',
-            elements: [
-              {
-                title: 'Would you like to read more books like this?',
-                image_url: 'https://i.imgur.com/32LoIYe.png',
-                subtitle: `${book.title} by ${book.author}`,
-                buttons: [
-                  {
-                    type: 'postback',
-                    title: 'Get Started',
-                    payload: 'get_started'
-                  }
-                ]
-              }
-            ]
-          }
+      const response = GenericTemplate([
+        {
+          title: 'Over 1000 book summaries are waiting for you!',
+          image_url: 'https://i.imgur.com/UdZlgQA.png',
+          subtitle: `Want to get started?`,
+          buttons: [
+            {
+              type: 'postback',
+              title: 'Get Started',
+              payload: JSON.stringify({ command: 'browse' })
+            }
+          ]
         }
-      };
+      ]);
 
-      const timedMsgCommand = new Message(response, {
-        sender: psid,
-        page,
-        command: 'timed_message'
-      });
-      timedMsgCommand.sendResponses();
+      const timed = new Message(
+        {
+          sender: psid,
+          page,
+          command: 'timed_message'
+        },
+        [response]
+      );
+
+      await timed.respond();
       await TimedMessages.remove(m.id);
       console.log('Sent timed response');
     }
