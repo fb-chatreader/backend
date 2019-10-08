@@ -45,8 +45,9 @@ module.exports = async (event) => {
             repeat_count: progressOnBook.repeat_count + 1
           }
         );
-  } else if (!chatRead && user.credits === 0) {
-    return { text: 'Please, subscribe to read more summaries.' };
+
+    // else if (!chatRead && user.credits === 0) {
+    //   return { text: 'Please, subscribe to read more summaries.' };
   } else {
     // It already exists and we just need to update the current summary being tracked
     await UserTracking.edit({ user_id, book_id }, { last_summary_id: current_summary_id });
