@@ -6,6 +6,8 @@ const addTimedMessage = require('routes/messages/helpers/addTimedMessage.js');
 module.exports = { validateWebhook, getPageData, parseWebhook };
 
 function validateWebhook({ body }, res, next) {
+  console.log('what the F?!?!?');
+
   if (body.object === 'page' && body.entry && body.entry[0]) {
     next();
   }
@@ -26,9 +28,7 @@ async function parseWebhook({ body: { entry } }, res, next) {
   // simplify the rest of our code
 
   if (isValidMessengerRequest(entry)) {
-    entry[0].event = isPolicyViolation(entry)
-      ? parsePolicyViolation(entry)
-      : await parseUserAction(entry);
+    entry[0].event = isPolicyViolation(entry) ? parsePolicyViolation(entry) : await parseUserAction(entry);
 
     next();
   } else {
@@ -44,7 +44,7 @@ function parsePolicyViolation(entry) {
     page_id: entry[0].id
   };
 }
-
+// http://m.me/Qooouuuf?ref=command=start_book,book_id=1
 async function parseUserAction(entry) {
   // Order of importance for webhooks --> Postback > Referrals > Commands
   // Type added in case we need to verify source (do we want users to say "policy violation"
@@ -52,13 +52,22 @@ async function parseUserAction(entry) {
 
   // The 'event' exists for postbacks and user messages
   // It's essentially where the data for those webhooks exists
-  const event =
-    entry && entry[0] && entry[0].messaging ? entry[0].messaging[0] : null;
+  console.log('>>>>>>');
+  console.log('>>>>>>');
+  console.log('>>>>>>');
+  console.log('entry');
+  console.log(entry[0].messaging[0].message.mid);
+  console.log('>>>>>>');
+
+  const event = entry && entry[0] && entry[0].messaging ? entry[0].messaging[0] : null;
+  console.log('>>>>>>');
+  console.log('event');
+
+  console.log(entry);
+  console.log('>>>>>>');
 
   // Get user if they exists already in our database
-  let user = event
-    ? await Users.retrieve({ facebook_id: event.sender.id }).first()
-    : null;
+  let user = event ? await Users.retrieve({ facebook_id: event.sender.id }).first() : null;
 
   if (event && !user) {
     // Save sender ID in DB if they're a new user
@@ -85,9 +94,7 @@ async function parseUserAction(entry) {
 
     // Postbacks and quick replies are handled in exactly the same way, the payload
     // is just in a different location in the object.
-    const payload = event.postback
-      ? event.postback.payload
-      : event.message.quick_reply.payload;
+    const payload = event.postback ? event.postback.payload : event.message.quick_reply.payload;
 
     parsed_data =
       event.postback && event.postback.referral
@@ -113,10 +120,7 @@ async function parseUserAction(entry) {
     // Fires whenever the user types something at the bot
     parsed_data = {
       ...parsed_data,
-      command: event.message.text
-        .toLowerCase()
-        .split(' ')
-        .join('_'),
+      command: event.message.text.toLowerCase().split(' ').join('_'),
       original_message: event.message.text,
       type: 'message'
     };
@@ -125,8 +129,7 @@ async function parseUserAction(entry) {
 }
 
 function isValidMessengerRequest(entry) {
-  const event =
-    entry && entry[0] && entry[0].messaging ? entry[0].messaging[0] : null;
+  const event = entry && entry[0] && entry[0].messaging ? entry[0].messaging[0] : null;
   return event || (entry && entry[0]);
 }
 
@@ -137,7 +140,7 @@ function isPolicyViolation(entry) {
 function queryStringToObject(query) {
   const obj = {};
   const vars = query.split(',');
-  vars.forEach(v => {
+  vars.forEach((v) => {
     const pair = v.split('=');
     obj[pair[0]] = pair[1];
   });
