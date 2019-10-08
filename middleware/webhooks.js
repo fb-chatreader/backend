@@ -68,7 +68,7 @@ async function parseUserAction(entry) {
   // Only 1 timed message can exist for a user per page
   await addTimedMessage(user.id, entry[0].page.id);
 
-  const books = await Books.retrieve({ page_id: entry[0].page.id });
+  const books = await Books.retrieve({ 'b.page_id': entry[0].page.id });
 
   let parsed_data = {
     sender: event.sender.id,

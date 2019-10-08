@@ -5,8 +5,7 @@ const Pages = require('models/db/pages.js');
 const Books = require('models/db/books.js');
 
 router.get('/', async (req, res) => {
-  const books = await Books.retrieve({ page_id: process.env.PAGE_ID });
-
+  const books = await Books.retrieve({ 'b.page_id': process.env.PAGE_ID });
   return res.status(200).json(books);
 });
 

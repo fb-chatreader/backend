@@ -2,7 +2,7 @@ const Books = require('models/db/books.js');
 
 module.exports = async event => {
   const { book_id } = event;
-  const book = await Books.retrieve({ id: book_id }).first();
+  const book = await Books.retrieve({ 'b.id': book_id }).first();
   return [
     {
       attachment: {
