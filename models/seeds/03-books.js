@@ -1,20 +1,34 @@
 const books = require('./allBooks/books.json');
-const ratings = require('./allBooks/ratings.json');
+const getRating = require('routes/books/helpers/getRating.js');
 
 exports.seed = function(knex) {
   // delete all entries
   const page_id = process.env.PAGE_ID;
+
   return knex('books').insert(
-    books.map(({ title, author, synopsis, intro, image_url }, i) => {
+    books.map(book => {
+      // if (!book.rating_qty || !book.avg_rating) {
+      //   book = await getRating(book);
+      // }
+      const {
+        title,
+        author,
+        synopsis,
+        intro,
+        image_url,
+        rating_qty,
+        avg_rating
+      } = book;
+
       return {
         title,
         author,
         synopsis,
         intro: intro || null,
-        image_url,
+        image_url: image_url || 'https://i.imgur.com/pRMQU6d.jpg',
         page_id,
-        avg_rating: ratings[i].avg_rating || 1.3,
-        rating_qty: ratings[i].rating_qty || 1.5
+        avg_rating: avg_rating || 0,
+        rating_qty: rating_qty || 0
       };
     })
   );

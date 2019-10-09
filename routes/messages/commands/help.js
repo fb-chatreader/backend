@@ -3,7 +3,7 @@ const Books = require('models/db/books.js');
 const QuickReplyTemplate = require('../UI/QuickReplyTemplate.js');
 
 module.exports = async event => {
-  const books = await Books.retrieve({ page_id: event.page.id });
+  const books = await Books.retrieve({ 'b.page_id': event.page.id });
 
   // This command is only useful for pages with multiple books
   // So handle the cases first where the page is not multi-book
@@ -46,7 +46,5 @@ module.exports = async event => {
     });
   });
 
-  return [
-    QuickReplyTemplate(text, quickReplies)
-  ];
+  return [QuickReplyTemplate(text, quickReplies)];
 };
