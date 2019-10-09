@@ -9,8 +9,8 @@ module.exports = async event => {
     return;
   }
   const book = await Books.retrieve({
-    id: event.book_id,
-    page_id: event.page.id
+    'b.id': event.book_id,
+    'b.page_id': event.page.id
   }).first();
 
   if (!book) {
