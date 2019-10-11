@@ -10,7 +10,7 @@ module.exports = async (event) => {
 
   const { isEndOfCategory, books } = await getBooksInCategories(user_id, category_id);
 
-  const text = `Would you like to see more books on ${currentCat[0].name}`;
+  const text = `Would you like to see more books on ${currentCat[0].name}?`;
   const quickReplies = [];
   const options = [
     {

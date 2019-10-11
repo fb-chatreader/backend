@@ -19,7 +19,7 @@ module.exports = async event => {
     return request_email(event);
   }
 
-  const text = 'Which of your genres would you like to browse?';
+  const text = 'Which category would you like to browse?';
 
   const categories = await Promise.all(
     userCategories.map(
