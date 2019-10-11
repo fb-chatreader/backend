@@ -1,6 +1,8 @@
 const axios = require('axios');
 
 module.exports = async book => {
+  book = { ...book };
+  delete book.category;
   // 'book' object only needs a title and author
 
   const { title } = book;
