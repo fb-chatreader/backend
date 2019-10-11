@@ -15,7 +15,8 @@ module.exports = async (event) => {
   const options = [
     {
       title: 'More',
-      command: 'get_books_from_category'
+      command: 'get_books_from_category',
+      category_id
     },
     {
       title: 'Other',
@@ -24,11 +25,14 @@ module.exports = async (event) => {
   ];
 
   options.forEach((opt) => {
-    const { title, command } = opt;
+    const { title, command, category_id } = opt;
 
     quickReplies.push({
       title,
-      payload: JSON.stringify({ command: command.toLowerCase() })
+      payload: JSON.stringify({ 
+        command: command.toLowerCase(),
+        category_id 
+      })
     });
   });
   const browseQR = await browse(event);
