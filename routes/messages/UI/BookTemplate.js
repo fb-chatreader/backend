@@ -40,7 +40,7 @@ module.exports = async (event, books) => {
 
               buttons.push({
                 type: 'postback',
-                title: isInLibrary ? 'Remove from Library' : 'Save to Library',
+                title: isInLibrary ? 'Remove from Library' : 'Add to Library',
                 payload: JSON.stringify({
                   command: 'toggle_in_library',
                   book_id,
