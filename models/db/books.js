@@ -21,7 +21,8 @@ function retrieve(filter) {
           'b.page_id as page_id',
           'b.created_at as created_at',
           'b.image_url as image_url',
-          'c.name as category'
+          'c.name as category',
+          'b.read_count as read_count'
         )
         .where(filter)
         .join('book_categories as bc', { 'bc.book_id': 'b.id' })
@@ -38,7 +39,8 @@ function retrieve(filter) {
           'b.page_id as page_id',
           'b.created_at as created_at',
           'b.image_url as image_url',
-          'c.name as category'
+          'c.name as category',
+          'b.read_count as read_count'
         )
         .join('book_categories as bc', { 'bc.book_id': 'b.id' })
         .join('categories as c', { 'c.id': 'bc.category_id' });
