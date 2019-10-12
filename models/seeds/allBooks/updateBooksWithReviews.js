@@ -4,13 +4,19 @@ const fs = require('fs');
 const location = 'models/seeds/allBooks/updated_books.json';
 
 books
+  .slice(0, 200)
   .reduce((acc, b, i) => {
     return acc.then(async resolved => {
       console.log(`${i} of ${books.length}`);
       const book = await getRating(b);
-      resolved.push(book);
+      if (book) {
+        const { summary, synopsis, headers, ...rest } = book;
+        resolved.push(book);
 
-      return resolved;
+        return resolved;
+      } else {
+        console.error('Error retrieving reviews for: ', b.title);
+      }
     });
   }, Promise.resolve([]))
   .then(allBooks => {
