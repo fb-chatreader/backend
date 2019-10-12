@@ -2,6 +2,7 @@
 require('app-module-path').addPath(__dirname);
 // Enable Automated error handling middleware
 require('express-async-errors');
+require('dotenv').config();
 const server = require('./server.js');
 
 const port = process.env.PORT || 8000;
