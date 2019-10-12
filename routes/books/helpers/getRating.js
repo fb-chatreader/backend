@@ -1,9 +1,30 @@
 const axios = require('axios');
 require('dotenv').config();
 
-module.exports = async book => {
+module.exports = ((counter, timeout) => book => {
   // 'book' object only needs a title and author
+  console.log('COUNTER: ', counter);
+  const { category, ...rest } = book;
 
+  const delay = 250;
+
+  if (timeout) {
+    clearTimeout(timeout);
+  }
+
+  timeout = setInterval(() => (counter = 0), 5000);
+
+  const promise = new Promise(resolve => {
+    setTimeout(async () => {
+      resolve(await getReviews(rest));
+    }, counter * delay);
+  });
+
+  counter++;
+  return promise;
+})(0, null);
+
+async function getReviews(book) {
   const { title } = book;
 
   const author = analyzeAuthorName(book.author);
@@ -11,7 +32,7 @@ module.exports = async book => {
   const baseURL = 'https://www.googleapis.com/books/v1/volumes?q=';
   const url = `${baseURL}${title
     .replace(/[^\w\s]/gi, '')
-    .toLowerCase()}+inauthor:${author}&key=${process.env.GOOGLE_BOOKS_API_KEY}`;
+    .toLowerCase()}+inauthor:${author}`;
 
   try {
     const res = await axios.get(url);
@@ -45,9 +66,9 @@ module.exports = async book => {
   } catch (err) {
     console.error('Error encountered while finding book in the Google API');
     console.error('Book: ', book);
-    console.error('Error: ', err);
+    console.error('Error: ', err.response.data);
   }
-};
+}
 
 function analyzeAuthorName(name) {
   // check if [1] is null,
