@@ -14,7 +14,6 @@ const QuickReplyTemplate = require('../UI/QuickReplyTemplate.js');
 
 module.exports = async event => {
   const { bookCount } = event;
-  console.log('getting started');
 
   if (!bookCount) {
     return [
