@@ -19,8 +19,8 @@ router.get('/productsandplans/:id', async (req, res) => {
     
     // Check if user has subscription id; if they do get the subscription plan id:
     const subID = await user.stripe_subscription_id;
-    const subscription = subID ? await stripe.subscriptions.retrieve(subID) : {};
-    const currentPlanID = subscription.plan.id;
+    const subscription = subID ? await stripe.subscriptions.retrieve(subID) : null;
+    const currentPlanID = subscription ? subscription.plan.id : null;
 
     // Sort plans in ascending order of price (amount):
     plans = plans.sort((a, b) => {
