@@ -46,7 +46,6 @@ function parsePolicyViolation(entry) {
     page_id: entry[0].id
   };
 }
-// http://m.me/109461977131004?ref=command=start_book,book_id=1
 async function parseUserAction(entry) {
   // Order of importance for webhooks --> Postback > Referrals > Commands
   // Type added in case we need to verify source (do we want users to say "policy violation"
@@ -107,6 +106,10 @@ async function parseUserAction(entry) {
   } else if (event.referral) {
     // If the user has interacted with the bot before and they're following a
     // referral link, this statement will fire
+    
+    // Sample referral link:
+    // http://m.me/109461977131004?ref=command=start_book,book_id=1
+
     if (isValidCommand(referralCommand) === false) {
       return (parsed_data = {
         ...parsed_data,
