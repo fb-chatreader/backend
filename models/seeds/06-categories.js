@@ -1,4 +1,4 @@
-const books = require('./allBooks/books.json');
+const books = require('./allBooks/books.js');
 
 exports.seed = function(knex) {
   const categories = {};
@@ -9,5 +9,10 @@ exports.seed = function(knex) {
     }
   });
 
-  return knex('categories').insert(Object.keys(categories).map((s) => ({ name: s, page_id: process.env.PAGE_ID })));
+  return knex('categories').insert(
+    Object.keys(categories).map(s => ({
+      name: s,
+      page_id: process.env.PAGE_ID
+    }))
+  );
 };
