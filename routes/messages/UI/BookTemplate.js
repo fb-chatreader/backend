@@ -12,16 +12,7 @@ module.exports = async (event, books) => {
           books.slice(0, 10).map(async b => {
             const { id: book_id, title, image_url, synopsis } = b;
             const buttons = [];
-            // if (synopsis) {
-            //   buttons.push({
-            //     type: 'postback',
-            //     title: 'Read Synopsis',
-            //     payload: JSON.stringify({
-            //       command: 'get_synopsis',
-            //       book_id
-            //     })
-            //   });
-            // }
+
             buttons.push({
               type: 'postback',
               title: 'Start Summary',
@@ -30,6 +21,7 @@ module.exports = async (event, books) => {
                 book_id
               })
             });
+
             if (event.bookCount > 1) {
               const usersLibrary = await UserLibraries.retrieve({
                 user_id: event.user_id
@@ -48,11 +40,13 @@ module.exports = async (event, books) => {
                 })
               });
             }
+
             buttons.push({
               type: 'web_url',
               title: 'Share',
               url: 'https://chatreader.netlify.com'
             });
+
             return {
               title,
               image_url,
