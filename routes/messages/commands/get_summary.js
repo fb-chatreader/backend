@@ -15,7 +15,8 @@ module.exports = async event => {
 
   const { user_id, book_id, user } = event;
 
-  const { stripe_subscription_status: isSubscribed, credits } = user;
+  const { stripe_subscription_status, credits } = user;
+  const isSubscribed = stripe_subscription_status === 'active';
 
   const chatRead = await ChatReads.retrieve({ user_id, book_id }).first();
 
