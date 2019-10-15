@@ -1,4 +1,4 @@
-const books = require('./allBooks/books.json');
+const books = require('./allBooks/books.js');
 const getRating = require('routes/books/helpers/getRating.js');
 
 exports.seed = function(knex) {
