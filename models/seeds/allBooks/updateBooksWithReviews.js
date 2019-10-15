@@ -1,8 +1,7 @@
 const getRating = require('../../../routes/books/helpers/getRating.js');
-const books = require('./books.json');
+const books = require('./full_books.json');
 const fs = require('fs');
 const location = 'models/seeds/allBooks/updated_books.json';
-// const updated = require('./updated_books.json');
 
 const saveBook = ((counter, timeout) => book => {
   if (timeout) {
@@ -31,9 +30,8 @@ const saveBook = ((counter, timeout) => book => {
   );
 })(0, null);
 
-books.slice(800, 1000).reduce((acc, b, i, arr) => {
+books.slice(1178).reduce((acc, b, i, arr) => {
   return acc.then(async () => {
-    // console.log(`${i} of ${books.length}`);
     const book = await getRating(b);
 
     console.log(
