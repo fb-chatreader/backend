@@ -10,7 +10,7 @@ const GenericTemplate = require('../UI/GenericTemplate.js');
 // Otherwise, increment and get next summary (check for end of book)
 
 module.exports = async event => {
-  if (event.type !== 'postback') return;
+  if (event.type !== 'postback' && event.type !== 'referral') return;
   // Collect needed data from DB
 
   const { user_id, book_id, user } = event;
