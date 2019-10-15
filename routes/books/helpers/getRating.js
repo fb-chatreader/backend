@@ -3,11 +3,6 @@ require('dotenv').config();
 
 module.exports = ((counter, timeout) => book => {
   // 'book' object only needs a title and author
-  console.log('COUNTER: ', counter);
-  const { category, ...rest } = book;
-
-  const delay = 250;
-
   if (timeout) {
     clearTimeout(timeout);
   }
@@ -16,8 +11,8 @@ module.exports = ((counter, timeout) => book => {
 
   const promise = new Promise(resolve => {
     setTimeout(async () => {
-      resolve(await getReviews(rest));
-    }, counter * delay);
+      resolve(await getReviews(book));
+    }, counter * 150);
   });
 
   counter++;
@@ -32,7 +27,7 @@ async function getReviews(book) {
   const baseURL = 'https://www.googleapis.com/books/v1/volumes?q=';
   const url = `${baseURL}${title
     .replace(/[^\w\s]/gi, '')
-    .toLowerCase()}+inauthor:${author}`;
+    .toLowerCase()}+inauthor:${author}&key=${process.env.GOOGLE_BOOKS_API_KEY}`;
 
   try {
     const res = await axios.get(url);
