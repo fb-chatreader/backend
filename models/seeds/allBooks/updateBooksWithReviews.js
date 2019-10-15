@@ -1,33 +1,49 @@
 const getRating = require('../../../routes/books/helpers/getRating.js');
-const books = require('./books.json');
+const books = require('./full_books.json');
 const fs = require('fs');
 const location = 'models/seeds/allBooks/updated_books.json';
 
-books
-  .slice(0, 200)
-  .reduce((acc, b, i) => {
-    return acc.then(async resolved => {
-      console.log(`${i} of ${books.length}`);
-      const book = await getRating(b);
-      if (book) {
-        const { summary, synopsis, headers, ...rest } = book;
-        resolved.push(book);
+const saveBook = ((counter, timeout) => book => {
+  if (timeout) {
+    clearInterval(timeout);
+  }
+  timeout = setTimeout(() => (counter = 0), 5000);
+  counter++;
 
-        return resolved;
-      } else {
-        console.error('Error retrieving reviews for: ', b.title);
-      }
-    });
-  }, Promise.resolve([]))
-  .then(allBooks => {
-    saveBooks(allBooks);
-  });
+  setTimeout(
+    () =>
+      fs.readFile(location, (err, data) => {
+        if (err) {
+          return console.log('READ ERROR: ', err);
+        }
+        const books = JSON.parse(data);
+        books.push(book);
+        fs.writeFile(location, JSON.stringify(books), function(err) {
+          if (err) {
+            return console.log(err);
+          }
 
-function saveBooks(books) {
-  fs.writeFile(location, JSON.stringify(books), err => {
-    if (err) {
-      return console.log('ERROR SAVING: ', err);
+          console.log('The file was saved!');
+        });
+      }),
+    250 * counter
+  );
+})(0, null);
+
+books.slice(1178).reduce((acc, b, i, arr) => {
+  return acc.then(async () => {
+    const book = await getRating(b);
+
+    console.log(
+      `${i} of ${arr.length - 1} = ${((i / (arr.length - 1)) * 100)
+        .toString()
+        .substring(0, 5)}`
+    );
+
+    if (book) {
+      saveBook(book);
+    } else {
+      console.error('Error retrieving reviews for: ', b.title);
     }
-    console.log('The file was saved!');
   });
-}
+}, Promise.resolve([]));
