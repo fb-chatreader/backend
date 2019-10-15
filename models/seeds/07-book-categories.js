@@ -1,4 +1,4 @@
-const books = require('./allBooks/books.json');
+const books = require('./allBooks/books.js');
 
 exports.seed = function(knex) {
   const categories = {};
