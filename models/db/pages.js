@@ -14,7 +14,7 @@ function retrieve(filter) {
 }
 
 function add(page) {
-  const { access_token, page_id: id, isNewApp } = page;
+  const { access_token, page_id: id } = page;
   // Because of the unique constraint, we always have to generate a new
   // verification_token, even when it isn't used
   return db(`pages`)
@@ -58,17 +58,4 @@ function newVerificationToken(id) {
       ['*']
     )
     .then(c => retrieve({ id: c.id }).first());
-}
-
-function _hashCode(str) {
-  let hash = 0;
-  if (str.length == 0) {
-    return hash;
-  }
-  for (let i = 0; i < str.length; i++) {
-    const char = str.charCodeAt(i);
-    hash = (hash << 5) - hash + char;
-    hash = hash & hash; // Convert to 32bit integer
-  }
-  return hash;
 }
