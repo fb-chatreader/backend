@@ -11,8 +11,7 @@ const {
   parseWebhook
 } = require('middleware/webhooks.js');
 
-const CommandListClass = require('classes/CommandList.js');
-const CommandList = new CommandListClass();
+const CommandList = require('classes/CommandList.js');
 
 router.post(
   '/',
