@@ -18,7 +18,7 @@ module.exports = class Message {
     if (this.response.then || this.response[0].then) {
       const resolved = await this._resolvePromises();
       if (!resolved) {
-        console.log(
+        console.error(
           `No response sent to user.  ${this.event.command} returned: ${resolved}`
         );
         return;
@@ -70,8 +70,10 @@ module.exports = class Message {
       await axios
         .post(url, msgObj)
         .catch(err =>
-          console.log('Error sending Response: ', err.response.data)
+          console.error('Error sending Response: ', err.response.data)
         );
-    } else return;
+    } else {
+      console.error('Error: No message to send!');
+    }
   }
 };
