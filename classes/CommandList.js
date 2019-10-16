@@ -1,7 +1,7 @@
 const Message = require('./Message.js');
 const reqDir = require('require-dir');
 
-module.exports = class CommandList {
+class CommandList {
   constructor() {
     this.commands = reqDir('../routes/messages/commands/');
   }
@@ -56,4 +56,6 @@ module.exports = class CommandList {
       /[a-zA-Z0-9]/.test(email[email.length - 1])
     );
   }
-};
+}
+
+module.exports = new CommandList();
