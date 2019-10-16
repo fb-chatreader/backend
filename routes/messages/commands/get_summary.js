@@ -27,7 +27,7 @@ module.exports = async event => {
   if (!chatRead) {
     // Before proceeding with a new book, verify the user is subscribed or has a credit
     if (!isSubscribed && !credits) {
-      return [SubscribeTemplate(user_id)];
+      return [SubscribeTemplate({ ...event, command: 'start_book' })];
     }
 
     if (!isSubscribed) {

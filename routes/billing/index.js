@@ -1,24 +1,24 @@
 const router = require('express').Router();
 const UTILS = require('../utils/format-numbers.js');
 const Users = require('models/db/users.js');
-const getUserID = require('routes/messages/helpers/hashUserID.js');
+const getUserID = require('routes/messages/helpers/tokenSwap.js');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const CommandList = require('classes/CommandList.js');
 
 // GET endpoint to retrieve all products and plans from Stripe:
 router.get('/productsandplans/:token', async (req, res) => {
   const { token } = req.params;
-  const user_id = getUserID({ token });
+  const event = getUserID({ token });
+
   const productsFromStripe = await stripe.products.list({});
   const plansFromStripe = await stripe.plans.list({});
+
   // get data from responses above, which contains array of products/plans:
   let products = productsFromStripe.data;
   let plans = plansFromStripe.data;
 
-  // Get the user's subscripition id if they have one:
-  const user = await Users.retrieve({ id: user_id }).first();
-
   // Check if user has subscription id; if they do get the subscription plan id:
-  const subID = await user.stripe_subscription_id;
+  const subID = await event.user.stripe_subscription_id;
   const subscription = subID
     ? await stripe.subscriptions.retrieve(subID)
     : null;
@@ -42,18 +42,17 @@ router.get('/productsandplans/:token', async (req, res) => {
 
     product.plans = filteredPlans;
   });
-  console.log('FILTERED');
+
   return res.status(201).json(products);
 });
 
 // POST endpoint to create a new subscription when a customer completes checkout:
-router.post('/checkout/newsub', async (req, res) => {
+router.post('/checkout/newsub/', async (req, res) => {
   // POSSIBLE TO DO:
   // check if user already has an active subscription
 
   const { id_token, source, planID } = req.body;
-  const user_id = getUserID({ token: id_token });
-
+  const event = getUserID({ token: id_token });
   // Create a customer with Stripe:
   const customer = await stripe.customers.create({
     source: source // source is the token.id created at checkout
@@ -71,9 +70,9 @@ router.post('/checkout/newsub', async (req, res) => {
     stripe_subscription_status: subscription.status
   };
 
-  await Users.edit({ id: user_id }, userUpdates);
-
-  res.status(201).json('Payment successful. Subscribed to plan.');
+  event.user = await Users.edit({ id: event.user_id }, userUpdates);
+  CommandList.execute(event);
+  res.status(201).send('SUCCESS!');
 });
 
 router.post('/testuser', async (req, res) => {
