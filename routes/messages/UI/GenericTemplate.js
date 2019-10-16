@@ -1,5 +1,3 @@
-const { generateElements } = require('routes/messages/UI/helpers/generic.js');
-
 /**
  * Dynamically generates Generic Template object for the Messenger API
  * Params:
@@ -7,15 +5,24 @@ const { generateElements } = require('routes/messages/UI/helpers/generic.js');
  *  title:String,
  *  subtitle:String,
  *  image_url:String,
+ *  default_action: Object,
  *  buttons:Array (of Objects)*
  * }]
+ *
+ * * default_action (optional, action taken when card is clicked): {
+ *    "type": "web_url",
+ *    "url": "<DEFAULT_URL_TO_OPEN>",
+ *    "messenger_extensions": <TRUE | FALSE >,
+ *    "webview_height_ratio": "<COMPACT | TALL | FULL>" NOTE: this property applies ONLY to the messenger_extension
+ *   }
  *
  * * buttons: [{
  *    type:String ("web_url", "postback"),
  *    url/payload:String (url for web_url, payload for postback),
  *    title:String
- * }]
+ *   }]
  */
+
 module.exports = elements => {
   return {
     attachment: {

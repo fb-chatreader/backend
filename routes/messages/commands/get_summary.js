@@ -3,7 +3,7 @@ const Books = require('models/db/books.js');
 const Summaries = require('models/db/summaryParts.js');
 const UserTracking = require('models/db/userTracking.js');
 const Users = require('models/db/users.js');
-const GenericTemplate = require('../UI/GenericTemplate.js');
+const SubscribeTemplate = require('../UI/SubscribeTemplate.js');
 
 // Query database to get current summary location
 // If there isn't one, create it
@@ -27,21 +27,7 @@ module.exports = async event => {
   if (!chatRead) {
     // Before proceeding with a new book, verify the user is subscribed or has a credit
     if (!isSubscribed && !credits) {
-      return [
-        GenericTemplate([
-          {
-            title: 'Please subscribe to continue reading more book summaries!',
-            image_url: 'https://i.imgur.com/UdZlgQA.png',
-            buttons: [
-              {
-                type: 'web_url',
-                url: process.env.FRONTEND_URL,
-                title: 'Subscribe'
-              }
-            ]
-          }
-        ])
-      ];
+      return [SubscribeTemplate(user_id)];
     }
 
     if (!isSubscribed) {
