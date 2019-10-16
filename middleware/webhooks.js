@@ -2,8 +2,7 @@ const Users = require('models/db/users.js');
 const Pages = require('models/db/pages.js');
 const Books = require('models/db/books.js');
 const addTimedMessage = require('routes/messages/helpers/addTimedMessage.js');
-const CommandListClass = require('classes/CommandList.js');
-const CommandList = new CommandListClass();
+const CommandList = require('classes/CommandList.js');
 
 module.exports = { validateWebhook, getPageData, parseWebhook };
 
@@ -30,7 +29,9 @@ async function parseWebhook({ body: { entry } }, res, next) {
   // simplify the rest of our code
 
   if (isValidMessengerRequest(entry)) {
-    entry[0].event = isPolicyViolation(entry) ? parsePolicyViolation(entry) : await parseUserAction(entry);
+    entry[0].event = isPolicyViolation(entry)
+      ? parsePolicyViolation(entry)
+      : await parseUserAction(entry);
 
     next();
   } else {
@@ -54,15 +55,18 @@ async function parseUserAction(entry) {
   // The 'event' exists for postbacks and user messages
   // It's essentially where the data for those webhooks exists
 
-  const event = entry && entry[0] && entry[0].messaging ? entry[0].messaging[0] : null;
+  const event =
+    entry && entry[0] && entry[0].messaging ? entry[0].messaging[0] : null;
 
   let referralCommand = null;
   if (event && entry[0].messaging[0].referral) {
-    referralCommand = queryStringToObject(entry[0].messaging[0].referral.ref).command;
-    console.log(referralCommand);
+    referralCommand = queryStringToObject(entry[0].messaging[0].referral.ref)
+      .command;
   }
   // Get user if they exists already in our database
-  let user = event ? await Users.retrieve({ facebook_id: event.sender.id }).first() : null;
+  let user = event
+    ? await Users.retrieve({ facebook_id: event.sender.id }).first()
+    : null;
 
   if (event && !user) {
     // Save sender ID in DB if they're a new user
@@ -89,7 +93,9 @@ async function parseUserAction(entry) {
 
     // Postbacks and quick replies are handled in exactly the same way, the payload
     // is just in a different location in the object.
-    const payload = event.postback ? event.postback.payload : event.message.quick_reply.payload;
+    const payload = event.postback
+      ? event.postback.payload
+      : event.message.quick_reply.payload;
 
     parsed_data =
       event.postback && event.postback.referral
@@ -106,7 +112,7 @@ async function parseUserAction(entry) {
   } else if (event.referral) {
     // If the user has interacted with the bot before and they're following a
     // referral link, this statement will fire
-    
+
     // Sample referral link:
     // http://m.me/109461977131004?ref=command=start_book,book_id=1
 
@@ -126,7 +132,10 @@ async function parseUserAction(entry) {
     // Fires whenever the user types something at the bot
     parsed_data = {
       ...parsed_data,
-      command: event.message.text.toLowerCase().split(' ').join('_'),
+      command: event.message.text
+        .toLowerCase()
+        .split(' ')
+        .join('_'),
       original_message: event.message.text,
       type: 'message'
     };
@@ -139,7 +148,8 @@ function isValidCommand(str) {
 }
 
 function isValidMessengerRequest(entry) {
-  const event = entry && entry[0] && entry[0].messaging ? entry[0].messaging[0] : null;
+  const event =
+    entry && entry[0] && entry[0].messaging ? entry[0].messaging[0] : null;
   return event || (entry && entry[0]);
 }
 
@@ -150,7 +160,7 @@ function isPolicyViolation(entry) {
 function queryStringToObject(query) {
   const obj = {};
   const vars = query.split(',');
-  vars.forEach((v) => {
+  vars.forEach(v => {
     const pair = v.split('=');
     obj[pair[0]] = pair[1];
   });
