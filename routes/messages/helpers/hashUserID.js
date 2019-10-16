@@ -2,13 +2,12 @@ module.exports = (tokens => ({ user_id, token }) => {
   if (token) {
     // Give a token and get a user_id back
     // Token expires after use or server reset
-    const retrieved = tokens[token];
-    delete tokens[token];
-    return retrieved;
+    const user_id = tokens[token];
+    return user_id;
   }
   // Supply a user_id and get a token back
   const str = `${user_id}${process.env.APP_SECRET}${new Date()}`;
-  let token = 0;
+  token = 0;
 
   for (let i = 0; i < str.length; i++) {
     const char = str.charCodeAt(i);
@@ -17,5 +16,6 @@ module.exports = (tokens => ({ user_id, token }) => {
   }
 
   tokens[token] = user_id;
+  console.log('ALL TOKEN: ', tokens);
   return token;
 })({});
