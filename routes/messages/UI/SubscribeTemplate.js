@@ -1,15 +1,14 @@
 const GenericTemplate = require('./GenericTemplate.js');
-const hashUserID = require('../helpers/hashUserID.js');
+const tokenSwap = require('../helpers/tokenSwap.js');
 
-module.exports = user_id => {
+module.exports = event => {
   // Must supply a user_id so a token can be generated
-  const url = `${process.env.FRONTEND_URL}/chooseplan/${hashUserID({
-    user_id
-  })}`;
+  let url = `${process.env.FRONTEND_URL}/chooseplan/${tokenSwap({ event })}`;
+
   return GenericTemplate([
     {
-      title: 'Subscribe to Chatwise',
-      subtitle: 'and start reading unlimited book summaries!',
+      title: 'Subscribe to Chatwise!',
+      subtitle: 'Start reading unlimited book summaries today!',
       image_url: 'https://i.imgur.com/UdZlgQA.png',
       default_action: {
         type: 'web_url',
