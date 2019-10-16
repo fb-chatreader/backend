@@ -38,7 +38,7 @@ module.exports = async event => {
   const quickReplies = [];
 
   options.forEach((o, i) => {
-    const { title, command, description } = o;
+    const { title, command } = o;
 
     quickReplies.push({
       title,
