@@ -22,7 +22,7 @@ module.exports = async event => {
 
   // Get the user's current chat read summary_id or if they don't have one,
   // Set to the current book's first summary_id
-  let current_summary_id = chatRead ? chatRead.current_summary_id : null;
+  let current_summary_id;
 
   if (!chatRead) {
     // Before proceeding with a new book, verify the user is subscribed or has a credit
@@ -35,8 +35,12 @@ module.exports = async event => {
       await Users.edit({ id: user_id }, { credits: user.credits - 1 });
     }
 
-    const firstSummary = await Summaries.retrieve({ book_id }).first();
+    const firstSummary = await Summaries.retrieve({ book_id })
+      .orderBy('id')
+      .first();
     current_summary_id = firstSummary.id;
+    // Summaries don't always enter in the DB in order yet their row IDs will be in order
+    // So first sort by ID THEN grab the first one
 
     // Increment book read count
     const { read_count } = await Books.retrieve({ 'b.id': book_id }).first();
@@ -63,6 +67,7 @@ module.exports = async event => {
         );
   } else {
     // It already exists and we just need to update the current summary being tracked
+    current_summary_id = chatRead.current_summary_id;
     await UserTracking.edit(
       { user_id, book_id },
       { last_summary_id: current_summary_id }
