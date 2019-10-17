@@ -34,5 +34,13 @@ module.exports = async event => {
     })
   }));
 
+  replies.push({
+      title: 'Other categories',
+      payload: JSON.stringify({
+        command: 'get_other_categories',
+        user_id
+      })
+  });
+
   return [QuickReplyTemplate(text, replies)];
 };
