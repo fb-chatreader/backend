@@ -117,7 +117,7 @@ module.exports = async event => {
                     type: 'postback',
                     title: 'Finish',
                     payload: JSON.stringify({
-                      command: 'buy_book',
+                      command: 'end_book',
                       book_id
                     })
                   }
