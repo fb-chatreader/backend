@@ -7,8 +7,7 @@
     "test": "cross-env DB_ENVIRONMENT=testing jest --watch",
     "start": "node index.js",
     "server": "nodemon index.js",
-    "seed-single-page": "node models/seeds/singleBook/seed_single_book_page.js",
-    "update-book-ratings": "node models/seeds/allBooks/updateBooksWithReviews.js"
+    "seed-single-page": "node models/seeds/singleBook/seed_single_book_page.js"
   },
   "repository": {
     "type": "git",
