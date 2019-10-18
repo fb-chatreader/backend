@@ -13,7 +13,7 @@ module.exports = async event => {
           buttons: [
             {
               type: 'postback',
-              title: 'Continue to summary',
+              title: 'Continue to Summary',
               payload: JSON.stringify({
                 command: 'get_summary',
                 book_id
