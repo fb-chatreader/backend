@@ -5,6 +5,7 @@ module.exports = ({ user }) => {
 
   let canRead = stripe_subscription_status === 'active';
 
+  // Only use tokens if the user is NOT subscribed
   if (!canRead && credits) {
     canRead = true;
     // If the account is not subscribed, decrement credits
