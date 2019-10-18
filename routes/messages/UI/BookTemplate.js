@@ -44,7 +44,7 @@ module.exports = async (event, books) => {
             buttons.push({
               type: 'web_url',
               title: 'Share',
-              url: 'https://chatreader.netlify.com'
+              url: process.env.FRONTEND_URL
             });
 
             return {
