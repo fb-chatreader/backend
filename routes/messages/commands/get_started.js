@@ -2,15 +2,8 @@ const Books = require('models/db/books.js');
 const getUserInfo = require('../helpers/getUserInfo.js');
 const UserCategories = require('models/db/userCategories.js');
 const UserLibraries = require('models/db/userLibraries.js');
-const sortBooks = require('../../books/helpers/sortBooksByRating');
-// sortBooks({category_name:'Health'});
-// const bookRatings = require('../../../jobs/bookRatings');
-// console.log(bookRatings.length);
 
 const QuickReplyTemplate = require('../UI/QuickReplyTemplate.js');
-// const generateRatings = require('../../../routes/books/helpers/generateRatings');
-// const books = '../../../models/seeds/allBooks/ratings.json';
-// generateRatings();
 
 module.exports = async event => {
   const { bookCount } = event;
@@ -41,43 +34,6 @@ async function getMultipleBooks(event) {
   const firstTimeText = `Hi ${FIRST_NAME}, welcome to Chatwise!\n\nWe summarize 2000+ popular non-fiction books into chat messages with key insights. Each book is summarized into a 10-15 minute read.`;
 
   const text = userCategories.length === 0 ? firstTimeText : introText;
-
-  // const buttons = [
-  //   {
-  //     type: 'postback',
-  //     title: 'Browse Books',
-  //     payload: JSON.stringify({
-  //       command: 'browse'
-  //     })
-  //   }
-  // ];
-
-  // if (userLibraries.length) {
-  //   buttons.push({
-  //     type: 'postback',
-  //     title: 'View Library',
-  //     payload: JSON.stringify({ command: 'library' })
-  //   });
-  // }
-
-  // buttons.push({
-  //   type: 'postback',
-  //   title: 'Get Help',
-  //   payload: JSON.stringify({ command: 'help' })
-  // });
-
-  // return [
-  //   {
-  //     attachment: {
-  //       type: 'template',
-  //       payload: {
-  //         template_type: 'button',
-  //         text,
-  //         buttons
-  //       }
-  //     }
-  //   }
-  // ];
 
   const replyOptions = userLibraries.length
     ? [
