@@ -59,7 +59,7 @@ module.exports = class Message {
 
   async _sendToMessengerAPI(message) {
     // Send a single message object to the Facebook API
-    if (message) {
+    if (message && !Array.isArray(message)) {
       const msgObj = {
         recipient: {
           id: this.sender
@@ -67,13 +67,17 @@ module.exports = class Message {
         message
       };
       const url = `https://graph.facebook.com/v2.6/me/messages?access_token=${this.access_token}`;
-      await axios
-        .post(url, msgObj)
-        .catch(err =>
-          console.error('Error sending Response: ', err.response.data)
-        );
+      await axios.post(url, msgObj).catch(err => {
+        err.response
+          ? console.error('Error sending Response: ', err.response.data)
+          : console.error('Error sending Response: ', err);
+      });
     } else {
-      console.error('Error: No message to send!');
+      Array.isArray(message)
+        ? console.error(
+            `Error: received an array for a message from ${event.command}`
+          )
+        : console.error('Error: No message to send!');
     }
   }
 };
