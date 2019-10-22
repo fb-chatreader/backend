@@ -22,7 +22,8 @@ function retrieve(filter) {
           'b.created_at as created_at',
           'b.image_url as image_url',
           'c.name as category',
-          'b.read_count as read_count'
+          'b.read_count as read_count',
+          'b.shortSummary as shortSummary'
         )
         .where(filter)
         .leftJoin('book_categories as bc', { 'bc.book_id': 'b.id' })
