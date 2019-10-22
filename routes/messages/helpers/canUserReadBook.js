@@ -1,5 +1,7 @@
 const Users = require('models/db/users.js');
 
+// Given an event object, determines if the user can start a new book
+// If so, decrement their credits
 module.exports = ({ user }) => {
   const { stripe_subscription_status, credits, id } = user;
 
