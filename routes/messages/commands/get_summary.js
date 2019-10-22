@@ -17,6 +17,8 @@ module.exports = async event => {
 
   const { user_id, book_id, user } = event;
 
+  const allSummaries = await Summaries.retrieve({ book_id }).orderBy('id');
+
   const { stripe_subscription_status, credits } = user;
   const isSubscribed = stripe_subscription_status === 'active';
 
@@ -37,10 +39,7 @@ module.exports = async event => {
       await Users.edit({ id: user_id }, { credits: user.credits - 1 });
     }
 
-    const firstSummary = await Summaries.retrieve({ book_id })
-      .orderBy('id')
-      .first();
-    current_summary_id = firstSummary.id;
+    current_summary_id = allSummaries[0].id;
     // Summaries don't always enter in the DB in order yet their row IDs will be in order
     // So first sort by ID THEN grab the first one
 
@@ -102,6 +101,12 @@ module.exports = async event => {
         { current_summary_id: next_summary_id }
       );
 
+  const currentProgress =
+    current_summary_id -
+    allSummaries[0].id +
+    (parseInt(process.env.BLOCK_LENGTH, 10) || 3) +
+    1;
+
   return summaries.block.map((s, i) => {
     if (i < summaries.block.length - 1) {
       return {
@@ -139,7 +144,9 @@ module.exports = async event => {
                 buttons: [
                   {
                     type: 'postback',
-                    title: 'Continue',
+                    title: `Continue to ${next_summary_id -
+                      allSummaries[0].id +
+                      1}/${allSummaries.length - 1}`,
                     payload: JSON.stringify({
                       command: 'get_summary',
                       book_id
