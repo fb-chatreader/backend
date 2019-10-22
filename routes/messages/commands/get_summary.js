@@ -146,7 +146,7 @@ module.exports = async event => {
                     type: 'postback',
                     title: `Continue to ${next_summary_id -
                       allSummaries[0].id +
-                      1}/${allSummaries.length - 1}`,
+                      1}/${allSummaries.length}`,
                     payload: JSON.stringify({
                       command: 'get_summary',
                       book_id
