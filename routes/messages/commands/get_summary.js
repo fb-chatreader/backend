@@ -14,8 +14,13 @@ const get_synopsis = require('./get_synopsis.js');
 module.exports = async event => {
   if (event.type !== 'postback' && event.type !== 'referral') return;
   // Collect needed data from DB
+  const { user_id, book_id, user } = event;
 
-  const { user_id, book_id } = event;
+  const allSummaries = await Summaries.retrieve({ book_id }).orderBy('id');
+
+  const { stripe_subscription_status, credits } = user;
+  const isSubscribed = stripe_subscription_status === 'active';
+
 
   const chatRead = await ChatReads.retrieve({ user_id, book_id }).first();
 
@@ -31,13 +36,9 @@ module.exports = async event => {
         return [SubscribeTemplate({ ...event, command: 'start_book' })];
       }
     }
-    const firstSummary = await Summaries.retrieve({ book_id })
-      .orderBy('id')
-      .first();
-    current_summary_id = firstSummary.id;
-    // Summaries don't always enter in the DB in order yet their row IDs will be in order
-    // So first sort by ID THEN grab the first one
-
+    
+    current_summary_id = allSummaries[0].id;
+    
     // Increment book read count
     const { read_count } = await Books.retrieve({ 'b.id': book_id }).first();
     await Books.edit({ id: book_id }, { read_count: read_count + 1 });
@@ -48,6 +49,7 @@ module.exports = async event => {
       book_id
     }).first();
 
+    // This should be abstracted away to its own file to simplify this command
     !progressOnBook
       ? await UserTracking.add({
           user_id,
@@ -98,6 +100,12 @@ module.exports = async event => {
         { current_summary_id: next_summary_id }
       );
 
+  const currentProgress =
+    current_summary_id -
+    allSummaries[0].id +
+    (parseInt(process.env.BLOCK_LENGTH, 10) || 3) +
+    1;
+
   return summaries.block.map((s, i) => {
     if (i < summaries.block.length - 1) {
       return {
@@ -135,7 +143,9 @@ module.exports = async event => {
                 buttons: [
                   {
                     type: 'postback',
-                    title: 'Continue',
+                    title: `Continue to ${next_summary_id -
+                      allSummaries[0].id +
+                      1}/${allSummaries.length}`,
                     payload: JSON.stringify({
                       command: 'get_summary',
                       book_id
