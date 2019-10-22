@@ -75,7 +75,8 @@ module.exports = class Message {
     } else {
       Array.isArray(message)
         ? console.error(
-            `Error: received an array for a message from ${event.command}`
+            `Error: received an array for a message from ${this.event.command}: `,
+            message
           )
         : console.error('Error: No message to send!');
     }
