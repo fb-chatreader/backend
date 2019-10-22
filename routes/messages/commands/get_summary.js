@@ -21,7 +21,6 @@ module.exports = async event => {
   const { stripe_subscription_status, credits } = user;
   const isSubscribed = stripe_subscription_status === 'active';
 
-
   const chatRead = await ChatReads.retrieve({ user_id, book_id }).first();
 
   // Get the user's current chat read summary_id or if they don't have one,
@@ -36,9 +35,9 @@ module.exports = async event => {
         return [SubscribeTemplate({ ...event, command: 'start_book' })];
       }
     }
-    
+
     current_summary_id = allSummaries[0].id;
-    
+
     // Increment book read count
     const { read_count } = await Books.retrieve({ 'b.id': book_id }).first();
     await Books.edit({ id: book_id }, { read_count: read_count + 1 });
@@ -99,12 +98,6 @@ module.exports = async event => {
         { user_id, book_id },
         { current_summary_id: next_summary_id }
       );
-
-  const currentProgress =
-    current_summary_id -
-    allSummaries[0].id +
-    (parseInt(process.env.BLOCK_LENGTH, 10) || 3) +
-    1;
 
   return summaries.block.map((s, i) => {
     if (i < summaries.block.length - 1) {
