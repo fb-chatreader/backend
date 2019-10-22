@@ -41,15 +41,16 @@ module.exports = async event => {
     });
     // Get synopsis before starting the book
     if (event.bookCount > 1) {
-      return [await get_synopsis(event)];
+      return get_synopsis(event);
     }
+  } else {
+    current_summary_id = chatRead.current_summary_id;
   }
 
   const summaries = await Summaries.retrieveBlock(
     { book_id },
     current_summary_id
   );
-
   // Update users progress in tracking table
   updateUserTracking(user_id, book_id, current_summary_id);
 
