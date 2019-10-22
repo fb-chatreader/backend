@@ -25,8 +25,8 @@ function retrieve(filter) {
           'b.read_count as read_count'
         )
         .where(filter)
-        .join('book_categories as bc', { 'bc.book_id': 'b.id' })
-        .join('categories as c', { 'c.id': 'bc.category_id' })
+        .leftJoin('book_categories as bc', { 'bc.book_id': 'b.id' })
+        .leftJoin('categories as c', { 'c.id': 'bc.category_id' })
     : db('books as b')
         .select(
           'b.id as id',

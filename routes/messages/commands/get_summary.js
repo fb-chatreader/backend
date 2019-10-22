@@ -2,7 +2,7 @@ const ChatReads = require('models/db/chatReads.js');
 const Books = require('models/db/books.js');
 const Summaries = require('models/db/summaryParts.js');
 const UserTracking = require('models/db/userTracking.js');
-const Users = require('models/db/users.js');
+const handleSubscription = require('../helpers/handleSubscriptionStatus.js');
 const SubscribeTemplate = require('../UI/SubscribeTemplate.js');
 
 const get_synopsis = require('./get_synopsis.js');
@@ -14,13 +14,13 @@ const get_synopsis = require('./get_synopsis.js');
 module.exports = async event => {
   if (event.type !== 'postback' && event.type !== 'referral') return;
   // Collect needed data from DB
-
   const { user_id, book_id, user } = event;
 
   const allSummaries = await Summaries.retrieve({ book_id }).orderBy('id');
 
   const { stripe_subscription_status, credits } = user;
   const isSubscribed = stripe_subscription_status === 'active';
+
 
   const chatRead = await ChatReads.retrieve({ user_id, book_id }).first();
 
@@ -29,20 +29,16 @@ module.exports = async event => {
   let current_summary_id;
 
   if (!chatRead) {
-    // Before proceeding with a new book, verify the user is subscribed or has a credit
-    if (!isSubscribed && !credits) {
-      return [SubscribeTemplate({ ...event, command: 'start_book' })];
+    if (event.bookCount > 1) {
+      // Before proceeding with a new book, verify the user is subscribed or has a credit
+      const canRead = handleSubscription(event);
+      if (!canRead) {
+        return [SubscribeTemplate({ ...event, command: 'start_book' })];
+      }
     }
-
-    if (!isSubscribed) {
-      // If the account is not subscribed, decrement credits
-      await Users.edit({ id: user_id }, { credits: user.credits - 1 });
-    }
-
+    
     current_summary_id = allSummaries[0].id;
-    // Summaries don't always enter in the DB in order yet their row IDs will be in order
-    // So first sort by ID THEN grab the first one
-
+    
     // Increment book read count
     const { read_count } = await Books.retrieve({ 'b.id': book_id }).first();
     await Books.edit({ id: book_id }, { read_count: read_count + 1 });
@@ -53,6 +49,7 @@ module.exports = async event => {
       book_id
     }).first();
 
+    // This should be abstracted away to its own file to simplify this command
     !progressOnBook
       ? await UserTracking.add({
           user_id,
@@ -73,7 +70,9 @@ module.exports = async event => {
       current_summary_id
     });
     // Get synopsis before starting the book
-    return [await get_synopsis(event)];
+    if (event.bookCount > 1) {
+      return [await get_synopsis(event)];
+    }
   } else {
     // It already exists and we just need to update the current summary being tracked
     current_summary_id = chatRead.current_summary_id;
@@ -127,7 +126,7 @@ module.exports = async event => {
                     type: 'postback',
                     title: 'Finish',
                     payload: JSON.stringify({
-                      command: 'buy_book',
+                      command: 'end_book',
                       book_id
                     })
                   }

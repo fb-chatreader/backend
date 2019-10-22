@@ -6,8 +6,6 @@ const CommandList = require('classes/CommandList.js');
 
 module.exports = { validateWebhook, getPageData, parseWebhook };
 
-// const commands = Object.keys(CommandList.commands);
-
 function validateWebhook({ body }, res, next) {
   if (body.object === 'page' && body.entry && body.entry[0]) {
     next();
