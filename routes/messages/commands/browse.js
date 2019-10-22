@@ -1,6 +1,6 @@
 const UserCategories = require('models/db/userCategories.js');
 const Categories = require('models/db/categories.js');
-const Users = require('models/db/categories.js');
+const Users = require('models/db/users.js');
 
 const QRT = require('../UI/QuickReplyTemplate.js');
 
