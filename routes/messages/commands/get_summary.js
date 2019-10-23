@@ -1,68 +1,38 @@
 const ChatReads = require('models/db/chatReads.js');
 const Books = require('models/db/books.js');
 const Summaries = require('models/db/summaryParts.js');
-const UserTracking = require('models/db/userTracking.js');
-const handleSubscription = require('../helpers/handleSubscriptionStatus.js');
+
+const updateUserTracking = require('../helpers/updateUserTracking.js');
+const canUserReadBook = require('../helpers/canUserReadBook.js');
+
 const SubscribeTemplate = require('../UI/SubscribeTemplate.js');
+const QRT = require('../UI/QuickReplyTemplate.js');
 
 const get_synopsis = require('./get_synopsis.js');
 
-// Query database to get current summary location
-// If there isn't one, create it
-// Otherwise, increment and get next summary (check for end of book)
-
 module.exports = async event => {
   if (event.type !== 'postback' && event.type !== 'referral') return;
-  // Collect needed data from DB
-  const { user_id, book_id, user } = event;
 
+  const { user_id, book_id } = event;
   const allSummaries = await Summaries.retrieve({ book_id }).orderBy('id');
-
-  const { stripe_subscription_status, credits } = user;
-  const isSubscribed = stripe_subscription_status === 'active';
-
-
   const chatRead = await ChatReads.retrieve({ user_id, book_id }).first();
 
-  // Get the user's current chat read summary_id or if they don't have one,
-  // Set to the current book's first summary_id
   let current_summary_id;
-
   if (!chatRead) {
+    // Triggers when starting a book (first time or re-reads)
     if (event.bookCount > 1) {
       // Before proceeding with a new book, verify the user is subscribed or has a credit
-      const canRead = handleSubscription(event);
+      const canRead = canUserReadBook(event);
       if (!canRead) {
         return [SubscribeTemplate({ ...event, command: 'start_book' })];
       }
     }
-    
+
     current_summary_id = allSummaries[0].id;
-    
+
     // Increment book read count
     const { read_count } = await Books.retrieve({ 'b.id': book_id }).first();
     await Books.edit({ id: book_id }, { read_count: read_count + 1 });
-
-    // If the chatRead doesn't exists, either create it or update it in user tracking
-    const progressOnBook = await UserTracking.retrieve({
-      user_id,
-      book_id
-    }).first();
-
-    // This should be abstracted away to its own file to simplify this command
-    !progressOnBook
-      ? await UserTracking.add({
-          user_id,
-          book_id,
-          last_summary_id: current_summary_id
-        })
-      : await UserTracking.edit(
-          { user_id, book_id },
-          {
-            last_summary_id: current_summary_id,
-            repeat_count: progressOnBook.repeat_count + 1
-          }
-        );
 
     await ChatReads.add({
       user_id,
@@ -71,90 +41,49 @@ module.exports = async event => {
     });
     // Get synopsis before starting the book
     if (event.bookCount > 1) {
-      return [await get_synopsis(event)];
+      return get_synopsis(event);
     }
   } else {
-    // It already exists and we just need to update the current summary being tracked
     current_summary_id = chatRead.current_summary_id;
-    await UserTracking.edit(
-      { user_id, book_id },
-      { last_summary_id: current_summary_id }
-    );
   }
+
   const summaries = await Summaries.retrieveBlock(
     { book_id },
     current_summary_id
   );
-
-  // For the next round, update to the next summary_id (which will just be
-  // the last id in the series if there are no more for the current book)
-  const next_summary_id = current_summary_id + summaries.block.length;
+  // Update users progress in tracking table
+  updateUserTracking(user_id, book_id, current_summary_id);
 
   // Is this the final summary?  If so, delete their progress
   // If not, just update the table with the new ID
-
-  summaries.isFinal
+  const next_summary_id = current_summary_id + summaries.block.length;
+  chatRead && summaries.isFinal
     ? await ChatReads.remove(chatRead.id)
     : await ChatReads.edit(
         { user_id, book_id },
         { current_summary_id: next_summary_id }
       );
 
-  const currentProgress =
-    current_summary_id -
-    allSummaries[0].id +
-    (parseInt(process.env.BLOCK_LENGTH, 10) || 3) +
-    1;
-
   return summaries.block.map((s, i) => {
     if (i < summaries.block.length - 1) {
+      // For every summary except the last, just send the text
       return {
         text: s.summary
       };
     } else {
+      const title = summaries.isFinal
+        ? 'Finish'
+        : `Continue to ${next_summary_id - allSummaries[0].id + 1}/${
+            allSummaries.length
+          }`;
+
+      const payload = JSON.stringify({
+        command: summaries.isFinal ? 'end_book' : 'get_summary',
+        book_id
+      });
       // summaries.isFinal will be true if the block contains the final summary
       // Thus, send a different button
-      return summaries.isFinal
-        ? {
-            attachment: {
-              type: 'template',
-              payload: {
-                template_type: 'button',
-                text: s.summary,
-                buttons: [
-                  {
-                    type: 'postback',
-                    title: 'Finish',
-                    payload: JSON.stringify({
-                      command: 'end_book',
-                      book_id
-                    })
-                  }
-                ]
-              }
-            }
-          }
-        : {
-            attachment: {
-              type: 'template',
-              payload: {
-                template_type: 'button',
-                text: s.summary,
-                buttons: [
-                  {
-                    type: 'postback',
-                    title: `Continue to ${next_summary_id -
-                      allSummaries[0].id +
-                      1}/${allSummaries.length}`,
-                    payload: JSON.stringify({
-                      command: 'get_summary',
-                      book_id
-                    })
-                  }
-                ]
-              }
-            }
-          };
+      return QRT(s.summary, [{ title, payload }]);
     }
   });
 };

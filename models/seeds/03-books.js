@@ -17,7 +17,8 @@ exports.seed = function(knex) {
         intro,
         image_url,
         rating_qty,
-        avg_rating
+        avg_rating,
+        headers
       } = book;
 
       return {
@@ -28,7 +29,8 @@ exports.seed = function(knex) {
         image_url: image_url || 'https://i.imgur.com/pRMQU6d.jpg',
         page_id,
         avg_rating: avg_rating || 0,
-        rating_qty: rating_qty || 0
+        rating_qty: rating_qty || 0,
+        shortSummary: JSON.stringify(headers.slice(1, headers.length - 1))
       };
     })
   );

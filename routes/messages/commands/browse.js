@@ -1,8 +1,12 @@
 const UserCategories = require('models/db/userCategories.js');
 const Categories = require('models/db/categories.js');
+const Users = require('models/db/users.js');
+
+const QRT = require('../UI/QuickReplyTemplate.js');
+
 const pick_category = require('./pick_category.js');
 const request_email = require('./request_email.js');
-const QuickReplyTemplate = require('../UI/QuickReplyTemplate.js');
+const request_summary_preference = require('./request_summary_preference.js');
 
 module.exports = async event => {
   const { user_id } = event;
@@ -17,6 +21,18 @@ module.exports = async event => {
 
   if (!event.user.email) {
     return request_email(event);
+  }
+
+  if (event.hasOwnProperty('prefersLongSummaries')) {
+    // event.prefersLongSummaries will exist on the postback return from request_summary_preference
+    const { prefersLongSummaries } = event;
+    const updatedUser = await Users.edit(
+      { id: user_id },
+      { prefersLongSummaries }
+    );
+    event.user = updatedUser;
+  } else if (event.user.prefersLongSummaries === null) {
+    return request_summary_preference(event);
   }
 
   const text = 'Which category would you like to browse?';
@@ -35,12 +51,12 @@ module.exports = async event => {
   }));
 
   replies.push({
-      title: 'Other categories',
-      payload: JSON.stringify({
-        command: 'get_other_categories',
-        user_id
-      })
+    title: 'Other categories',
+    payload: JSON.stringify({
+      command: 'get_other_categories',
+      user_id
+    })
   });
 
-  return [QuickReplyTemplate(text, replies)];
+  return [QRT(text, replies)];
 };
