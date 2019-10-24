@@ -41,8 +41,10 @@ module.exports = async event => {
     };
   });
 
+  const firstMessage = event.command === 'browse' ? 'To get started, p' : 'P';
+
   const text = !userCategories.length
-    ? 'To get started, please select 3 categories'
+    ? firstMessage + 'lease select 3 categories'
     : userCategories.length === 1
     ? '2 more to go...'
     : 'Last one!';
