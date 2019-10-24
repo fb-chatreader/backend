@@ -17,16 +17,19 @@ module.exports = async event => {
       }
     ];
   }
-  const text = 'Which of your settings would you like to change?';
-  return [
-    QRT(text, [
-      {
-        title: `${user.prefersLongSummaries ? '2' : '10'} Minute Summaries`,
-        payload: JSON.stringify({
-          command: 'view_settings',
-          setting: 'summaryLength'
-        })
-      }
-    ])
+  const quick_replies = [
+    {
+      title: `${user.prefersLongSummaries ? '2' : '10'} Minute Summaries`,
+      payload: JSON.stringify({
+        command: 'view_settings',
+        setting: 'summaryLength'
+      })
+    },
+    {
+      title: 'Reset Categories',
+      payload: JSON.stringify({ command: 'reset_categories', reset: true })
+    }
   ];
+  const text = 'Which of your settings would you like to change?';
+  return [QRT(text, quick_replies)];
 };
