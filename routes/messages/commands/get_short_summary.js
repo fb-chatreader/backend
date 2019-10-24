@@ -16,6 +16,7 @@ module.exports = async event => {
   const { shortSummary } = await Books.retrieve({ 'b.id': book_id }).first();
 
   const summaries = getSummaryParts(JSON.parse(shortSummary).join(' '));
+
   return summaries.map((text, i) => {
     if (i < summaries.length - 1) {
       return { text };
@@ -25,7 +26,8 @@ module.exports = async event => {
           title: 'Read Long Summary',
           payload: JSON.stringify({
             command: 'get_summary',
-            book_id
+            book_id,
+            summaryLength: 'long'
           })
         },
         {
