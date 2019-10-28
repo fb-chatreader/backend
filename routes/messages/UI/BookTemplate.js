@@ -6,6 +6,18 @@ module.exports = async (event, books) => {
   const { user_id, bookCount, user } = event;
   const { prefersLongSummaries } = user;
 
+  let command = 'get_summary';
+  if (event.summaryLength) {
+    // There are multiple conditions to consider when loading a long or short summary.
+    // To give the code the option to override the user's settings, the event object
+    // is checked for a summaryLength first.  Then, if one wasn't provided, go with the user's settings.
+    // If all else fails, default to long summaries.
+    command =
+      event.summaryLength === 'long' ? 'get_summary' : 'get_short_summary';
+  } else if (user.hasOwnProperty('prefersLongSummaries')) {
+    command = prefersLongSummaries ? 'get_summary' : 'get_short_summary';
+  }
+
   books = Array.isArray(books) ? books : [books];
   return [
     GenericTemplate(
@@ -17,9 +29,7 @@ module.exports = async (event, books) => {
               type: 'postback',
               title: 'Start Summary',
               payload: JSON.stringify({
-                command: prefersLongSummaries
-                  ? 'get_summary'
-                  : 'get_short_summary',
+                command,
                 book_id
               })
             }
