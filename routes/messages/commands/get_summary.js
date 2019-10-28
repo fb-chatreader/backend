@@ -10,21 +10,21 @@ const QRT = require('../Templates/QuickReply.js');
 
 const get_synopsis = require('./get_synopsis.js');
 
-module.exports = async event => {
-  if (event.type !== 'postback' && event.type !== 'referral') return;
+module.exports = async Event => {
+  if (Event.type !== 'postback' && Event.type !== 'referral') return;
 
-  const { user_id, book_id } = event;
+  const { user_id, book_id } = Event;
   const allSummaries = await Summaries.retrieve({ book_id }).orderBy('id');
   const chatRead = await ChatReads.retrieve({ user_id, book_id }).first();
 
   let current_summary_id;
   if (!chatRead) {
     // Triggers when starting a book (first time or re-reads)
-    if (event.bookCount > 1) {
+    if (Event.bookCount > 1) {
       // Before proceeding with a new book, verify the user is subscribed or has a credit
-      const canRead = canUserReadBook(event);
+      const canRead = canUserReadBook(Event);
       if (!canRead) {
-        return [SubscribeTemplate({ ...event, command: 'start_book' })];
+        return [SubscribeTemplate({ ...Event, command: 'start_book' })];
       }
     }
 
@@ -40,8 +40,8 @@ module.exports = async event => {
       current_summary_id
     });
     // Get synopsis before starting the book
-    if (event.bookCount > 1) {
-      return get_synopsis(event);
+    if (Event.bookCount > 1) {
+      return get_synopsis(Event);
     }
   } else {
     current_summary_id = chatRead.current_summary_id;

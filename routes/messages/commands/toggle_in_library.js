@@ -1,7 +1,7 @@
 const UserLibrary = require('models/db/userLibraries.js');
 
-module.exports = async event => {
-  const { user_id, book_id, isAdding } = event;
+module.exports = async Event => {
+  const { user_id, book_id, isAdding } = Event;
   if (!book_id) {
     console.error('No book ID supplied, returning without a response');
     return;

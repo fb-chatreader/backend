@@ -1,18 +1,12 @@
-const get_started = require('./get_started.js');
-const Books = require('models/db/books.js');
 const QuickReplyTemplate = require('../Templates/QuickReply.js');
 
-module.exports = async event => {
-  const books = await Books.retrieve({ 'b.page_id': event.page.id });
-
+module.exports = async Event => {
   // This command is only useful for pages with multiple books
   // So handle the cases first where the page is not multi-book
-  if (!books.length) {
-    return [
-      { text: "Sorry, we're still setting this page up, try again soon!" }
-    ];
-  } else if (books.length === 1) {
-    return get_started(event);
+  if (Event.isNewPage()) {
+    return {
+      text: "Sorry, we're still setting this page up, try again soon!"
+    };
   }
 
   const options = [

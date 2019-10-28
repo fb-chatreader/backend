@@ -6,12 +6,12 @@ const SubscribeTemplate = require('../Templates/Subscribe.js');
 const getSummaryParts = require('../../books/helpers/getSummaryParts.js');
 const canUserReadBook = require('../helpers/canUserReadBook.js');
 
-module.exports = async event => {
-  const { book_id } = event;
+module.exports = async Event => {
+  const { book_id } = Event;
 
-  const canRead = canUserReadBook(event);
+  const canRead = canUserReadBook(Event);
   if (!canRead) {
-    return [SubscribeTemplate({ ...event, command: 'start_book' })];
+    return [SubscribeTemplate({ ...Event, command: 'start_book' })];
   }
   const { shortSummary } = await Books.retrieve({ 'b.id': book_id }).first();
 

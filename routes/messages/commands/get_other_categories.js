@@ -2,8 +2,8 @@ const UserCategories = require('models/db/userCategories.js');
 const Categories = require('models/db/categories.js');
 const QuickReplyTemplate = require('../Templates/QuickReply.js');
 
-module.exports = async event => {
-  const { user_id } = event;
+module.exports = async Event => {
+  const { user_id } = Event;
 
   const userCategories = await UserCategories.retrieve({ user_id });
   const userCategoryIDs = userCategories.map(cat => {

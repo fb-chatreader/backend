@@ -1,11 +1,11 @@
-const Categories = require('models/db/categories.js');
+module.exports = async Event => {
+  const { user_id } = Event;
+  const [Categories, UserCategories] = this.withDBs(
+    'categories',
+    'userCategories'
+  );
 
-const QRT = require('../Templates/QuickReply.js');
-
-module.exports = async event => {
-  const { user_id } = event;
-
-  const text = 'Which category would you like to browse?';
+  const userCategories = UserCategories.retrieve({ user_id });
 
   const categories = await Promise.all(
     userCategories.map(
@@ -28,5 +28,6 @@ module.exports = async event => {
     })
   });
 
-  return [QRT(text, replies)];
+  const text = 'Which category would you like to browse?';
+  return this.sendTemplate('QuickReply', text, replies);
 };

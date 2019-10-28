@@ -1,10 +1,10 @@
 const UserLibrary = require('models/db/userLibraries.js');
 const Books = require('models/db/books.js');
-module.exports = async event => {
+module.exports = async Event => {
   const {
     user_id,
     page: { id: page_id }
-  } = event;
+  } = Event;
 
   const userLibrary = await UserLibrary.retrieve({ user_id, page_id });
 

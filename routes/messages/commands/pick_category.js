@@ -1,7 +1,6 @@
-module.exports = async () => {
-  const { event, user_id, page_id } = this;
-  const { getNewCategoriesForUser } = this.helpers
-  const { category_id, isAdding } = event;
+module.exports = async Event => {
+  const { user_id, page_id, category_id, isAdding } = Event;
+  const { getNewCategoriesForUser } = this.helpers;
 
   let userCategories = await UserCategories.retrieve({ user_id });
 
@@ -23,13 +22,6 @@ module.exports = async () => {
       : userCategories;
   }
 
-  if (userCategories.length >= 3) {
-    // If the user was sent here by another command, let that command know they have enough categories by returning 'Done'
-    return 'Done';
-  }
-
-  // Currently categories are not tied to a page_id so we'd have to loop over their books or just add
-  // a page_id to categories
   const categories = await getNewCategoriesForUser(user_id, page_id);
 
   const quick_replies = categories.map(c => {
