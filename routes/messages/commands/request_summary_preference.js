@@ -1,4 +1,4 @@
-const QRT = require('../UI/QuickReplyTemplate.js');
+const QRT = require('../Templates/QuickReply.js');
 
 // Part of onboarding, requires the user to specify if they want long or short summaries.
 

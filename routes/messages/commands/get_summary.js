@@ -5,8 +5,8 @@ const Summaries = require('models/db/summaryParts.js');
 const updateUserTracking = require('../helpers/updateUserTracking.js');
 const canUserReadBook = require('../helpers/canUserReadBook.js');
 
-const SubscribeTemplate = require('../UI/SubscribeTemplate.js');
-const QRT = require('../UI/QuickReplyTemplate.js');
+const SubscribeTemplate = require('../Templates/Subscribe.js');
+const QRT = require('../Templates/QuickReply.js');
 
 const get_synopsis = require('./get_synopsis.js');
 

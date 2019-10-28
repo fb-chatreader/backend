@@ -1,5 +1,5 @@
 const UserLibraries = require('models/db/userLibraries.js');
-const GenericTemplate = require('./GenericTemplate.js');
+const GenericTemplate = require('./Generic.js');
 
 module.exports = async (event, books) => {
   // await books;

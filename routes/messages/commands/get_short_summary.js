@@ -1,7 +1,7 @@
 const Books = require('models/db/books.js');
 
-const QRT = require('../UI/QuickReplyTemplate.js');
-const SubscribeTemplate = require('../UI/SubscribeTemplate.js');
+const QRT = require('../Templates/QuickReply.js');
+const SubscribeTemplate = require('../Templates/Subscribe.js');
 
 const getSummaryParts = require('../../books/helpers/getSummaryParts.js');
 const canUserReadBook = require('../helpers/canUserReadBook.js');

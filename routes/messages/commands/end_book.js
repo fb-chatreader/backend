@@ -1,6 +1,6 @@
 const Books = require('models/db/books.js');
 const getUserInfo = require('../helpers/getUserInfo.js');
-const GenericTemplate = require('../UI/GenericTemplate.js');
+const GenericTemplate = require('../Templates/Generic.js');
 
 module.exports = async event => {
   const { book_id } = event;

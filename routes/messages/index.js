@@ -5,28 +5,19 @@ const router = require('express')
 
 const Pages = require('models/db/pages.js');
 
-const {
-  validateWebhook,
-  getPageData,
-  parseWebhook
-} = require('middleware/webhooks.js');
+const { validateWebhook } = require('middleware/messages.js');
+const Dispatch = require('classes/Dispatch.js');
 
-const CommandList = require('classes/CommandList.js');
-
-router.post(
-  '/',
-  validateWebhook,
-  getPageData,
-  parseWebhook,
-  async (req, res) => {
-    const { event } = req.body.entry[0];
-
-    await CommandList.run(event);
-    return res.sendStatus(200);
-  }
-);
+router.post('/', validateWebhook, async (req, res) => {
+  // Route that fires for every webhook event
+  const { Event } = req.body.entry[0];
+  await Dispatch.parse(Event);
+  return res.sendStatus(200);
+});
 
 router.get('/', async (req, res) => {
+  // When providing Facebook with your callback URL,
+  // this route is fired to validate the route.
   const mode = req.query['hub.mode'];
   const token = req.query['hub.verify_token'];
   const challenge = req.query['hub.challenge'];

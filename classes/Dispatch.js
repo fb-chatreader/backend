@@ -4,10 +4,10 @@ const reqDir = require('require-dir');
 class Dispatch {
   constructor() {
     this.commands = reqDir('../routes/messages/commands/');
-    this.templates = reqDir('routes/messages/UI/');
-    this.conditions = reqDir('routes/messages/conditions/');
-    this.db = reqDir('models/db/');
-    this.helpers = reqDir('routes/messages/helpers');
+    this.templates = reqDir('../routes/messages/Templates/');
+    this.conditions = reqDir('../routes/messages/conditions/');
+    this.db = reqDir('../models/db/');
+    this.helpers = reqDir('../routes/messages/helpers');
   }
 
   run(event) {

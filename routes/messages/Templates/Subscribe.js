@@ -1,4 +1,4 @@
-const GenericTemplate = require('./GenericTemplate.js');
+const GenericTemplate = require('./Generic.js');
 const tokenSwap = require('../helpers/tokenSwap.js');
 
 module.exports = event => {

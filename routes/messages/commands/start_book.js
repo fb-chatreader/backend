@@ -1,7 +1,7 @@
 const Books = require('models/db/books.js');
 
 const get_started = require('./get_started.js');
-const BookTemplate = require('../UI/BookTemplate.js');
+const BookTemplate = require('../Templates/Book.js');
 
 module.exports = async event => {
   if (event.type !== 'referral' && event.type !== 'postback') {

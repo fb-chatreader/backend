@@ -1,6 +1,6 @@
 const Categories = require('models/db/categories.js');
 
-const QRT = require('../UI/QuickReplyTemplate.js');
+const QRT = require('../Templates/QuickReply.js');
 
 module.exports = async event => {
   const { user_id } = event;

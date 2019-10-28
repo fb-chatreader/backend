@@ -3,7 +3,7 @@ const getUserInfo = require('../helpers/getUserInfo.js');
 const UserCategories = require('models/db/userCategories.js');
 const UserLibraries = require('models/db/userLibraries.js');
 
-const QuickReplyTemplate = require('../UI/QuickReplyTemplate.js');
+const QuickReplyTemplate = require('../Templates/QuickReply.js');
 
 module.exports = async event => {
   const { bookCount } = event;

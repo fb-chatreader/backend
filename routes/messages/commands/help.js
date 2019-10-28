@@ -1,6 +1,6 @@
 const get_started = require('./get_started.js');
 const Books = require('models/db/books.js');
-const QuickReplyTemplate = require('../UI/QuickReplyTemplate.js');
+const QuickReplyTemplate = require('../Templates/QuickReply.js');
 
 module.exports = async event => {
   const books = await Books.retrieve({ 'b.page_id': event.page.id });
