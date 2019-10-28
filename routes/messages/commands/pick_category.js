@@ -1,8 +1,15 @@
-module.exports = async Event => {
-  const { user_id, page_id, category_id, isAdding } = Event;
-  const { getNewCategoriesForUser } = this.helpers;
+// const UserCategories = require('models/db/userCategories.js');
+// const { getNewCategoriesForUser } = require('../helpers/categories.js');
 
-  let userCategories = await UserCategories.retrieve({ user_id });
+module.exports = async Event => {
+  const {
+    user_id,
+    category_id,
+    isAdding,
+    page: { id: page_id }
+  } = Event;
+
+  const userCategories = await UserCategories.retrieve({ user_id });
 
   if (isAdding) {
     const newCategory =
@@ -12,16 +19,13 @@ module.exports = async Event => {
     newCategory ? userCategories.push(newCategory) : null;
   }
 
-  if (isAdding === false) {
-    const removedCategory =
-      category_id && userCategories.find(c => c.category_id === category_id)
-        ? await UserCategories.remove({ user_id, category_id })
-        : null;
-    userCategories = removedCategory
-      ? userCategories.filter(c => c.category_id !== category_id)
-      : userCategories;
+  if (userCategories.length >= 3) {
+    // If the user was sent here by another command, let that command know they have enough categories by returning 'Done'
+    return 'Done';
   }
 
+  // Currently categories are not tied to a page_id so we'd have to loop over their books or just add
+  // a page_id to categories
   const categories = await getNewCategoriesForUser(user_id, page_id);
 
   const quick_replies = categories.map(c => {
@@ -29,18 +33,20 @@ module.exports = async Event => {
     return {
       title,
       payload: JSON.stringify({
-        command: 'browse',
+        command: Event.command,
         category_id: c.id,
         isAdding: true
       })
     };
   });
 
+  const firstMessage = Event.command === 'browse' ? 'To get started, p' : 'P';
+
   const text = !userCategories.length
-    ? 'To get started, please select 3 categories'
+    ? firstMessage + 'lease select 3 categories'
     : userCategories.length === 1
     ? '2 more to go...'
     : 'Last one!';
 
-  return [QuickReply(text, quick_replies)];
+  return [QRT(text, quick_replies)];
 };
