@@ -1,7 +1,6 @@
 const UserCategories = require('models/db/userCategories.js');
 const { getNewCategoriesForUser } = require('../helpers/categories.js');
-const request_email = require('./request_email.js');
-const QuickReply = require('../UI/QuickReplyTemplate.js');
+const QRT = require('../UI/QuickReplyTemplate.js');
 
 module.exports = async event => {
   const {
@@ -11,7 +10,7 @@ module.exports = async event => {
     page: { id: page_id }
   } = event;
 
-  let userCategories = await UserCategories.retrieve({ user_id });
+  const userCategories = await UserCategories.retrieve({ user_id });
 
   if (isAdding) {
     const newCategory =
@@ -19,16 +18,6 @@ module.exports = async event => {
         ? await UserCategories.add({ user_id, category_id })
         : null;
     newCategory ? userCategories.push(newCategory) : null;
-  }
-
-  if (isAdding === false) {
-    const removedCategory =
-      category_id && userCategories.find(c => c.category_id === category_id)
-        ? await UserCategories.remove({ user_id, category_id })
-        : null;
-    userCategories = removedCategory
-      ? userCategories.filter(c => c.category_id !== category_id)
-      : userCategories;
   }
 
   if (userCategories.length >= 3) {
@@ -45,18 +34,20 @@ module.exports = async event => {
     return {
       title,
       payload: JSON.stringify({
-        command: 'browse',
+        command: event.command,
         category_id: c.id,
         isAdding: true
       })
     };
   });
 
+  const firstMessage = event.command === 'browse' ? 'To get started, p' : 'P';
+
   const text = !userCategories.length
-    ? 'To get started, please select 3 categories'
+    ? firstMessage + 'lease select 3 categories'
     : userCategories.length === 1
     ? '2 more to go...'
     : 'Last one!';
 
-  return [QuickReply(text, quick_replies)];
+  return [QRT(text, quick_replies)];
 };
