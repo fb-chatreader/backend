@@ -1,27 +1,64 @@
 const reqDir = require('require-dir');
 
-/* 
-  Dispatcher holds all the current commands as well as what they need in order to run.
-  If you execute a command, it will verify that command passes all conditions before
-  sending.  In the event a condition fails, it will instead dispatch a command to fix
-  the issue.
-*/
+class Queue {
+  // Standard linked list queue
+  constructor() {
+    this.head;
+    this.tail;
+    this.length = 0;
+  }
+
+  add(...args) {
+    args.forEach(value => {
+      const newNode = { value, next };
+      if (!this.length) {
+        this.head = newNode;
+        this.tail = newNode;
+      } else {
+        const lastNode = this.head;
+        lastNode.prev = newNode;
+        this.head = newNode;
+      }
+      this.length++;
+    });
+  }
+
+  next() {
+    if (this.length) {
+      const next = this.tail;
+      this.tail = next.prev;
+      this.length--;
+
+      if (!this.length) {
+        this.head = undefined;
+      }
+      return next.value;
+    } else {
+      return null;
+    }
+  }
+}
+
 class Dispatch {
+  /*
+    Dispatcher holds all the current commands as well as what they need in order to run.
+    If you execute a command, it will verify that command passes all conditions before
+    sending.  In the event a condition fails, it will instead dispatch a command to fix
+    the issue.
+  */
   constructor() {
     this.commands = reqDir('../routes/messages/commands/');
     this.templates = reqDir('../routes/messages/Templates/');
     this.conditions = reqDir('../routes/messages/conditions/');
     this.db = reqDir('../models/db/');
     this.helpers = reqDir('../routes/messages/helpers');
+
+    this.queue = new Queue();
   }
 
   async execute(Event) {
     Event.validateCommand(this._findCommand(Event));
-    const commandReady = await this._validateConditions(Event);
-
-    if (!commandReady) {
-      Event.setOverride(await this._findOverride(Event));
-    }
+    await this._validateConditions(Event);
 
     Event.setResponse(this._getResponse(Event));
     if (Event.willRespond) {
@@ -34,6 +71,8 @@ class Dispatch {
     // Call this method with what type of import you want (check approvedKeys below)
     // then a string of arguments (separated by commas) of the files you want
     // And it'll return them in an array in the same order to be easily destructured
+
+    // Argument strings must match file name.  Rename to whatever you like when destructuring
     const imported = [];
     const approvedKeys = {
       templates: true,
@@ -84,13 +123,13 @@ class Dispatch {
     }
   }
 
-  async respond() {
-    if (!this.response) return;
+  async respond(Event) {
     // If the response isn't a promise, make it one.
     // Now we can always assume it's a promise.
-    this.response = Promise.resolve(this.response);
+    Event.response = Promise.resolve(this.response);
 
-    const resolved = await this._resolvePromises();
+    const resolved = await Event.response;
+
     if (!resolved) {
       console.error(
         `No response sent to user.  ${this.command} returned: ${resolved}`
@@ -98,6 +137,7 @@ class Dispatch {
       return;
     }
     this._messageQueue(resolved);
+    this._sendToMessengerAPI(Event);
   }
 
   _findCommand(Event) {
@@ -128,13 +168,22 @@ class Dispatch {
     return this.conditions[Event.validatedCommand].action(Event).then(x => x);
   }
 
-  _validateConditions(Event) {
-    return this.conditions[Event.validatedCommand].evaluate(Event).then(x => x);
+  async _validateConditions(Event) {
+    const conditions = this.conditions[Event.validatedCommand];
+    if (conditions) {
+      // Set to a promise in case forgets to make a condition async
+      return Promise.resolve(conditions(Event)).then(r => r);
+    } else {
+      return true;
+    }
   }
 
   _getResponse(Event) {
-    // Run the command returned by _findCommand and feed it the Event class
-    return this.commands[Event.validatedCommand].call(this, Event);
+    // Override command is given priority.  Otherwise, run the validated command
+    const command = Event.override
+      ? this._findCommand(Event.override)
+      : Event.validatedCommand;
+    return this.commands[command].call(this, Event).then(r => r);
   }
 
   _isValidCommand(command) {
@@ -162,56 +211,50 @@ class Dispatch {
     );
   }
 
-  _resolvePromises(promise = this.response) {
-    if (promise.then) {
-      return promise.then(res => res);
-    } else if (promise[0] && promise[0].then) {
-      return Promise.all(this.response).then(res => res);
-    } else return promise;
-  }
-
-  async _messageQueue(resolved) {
-    await resolved;
+  _queueMessages(resolved) {
     if (Array.isArray(resolved[0])) {
-      resolved = [...resolved[0], resolved.slice(1)];
+      // If given nested arrays, recursively flatten it
+      this._queueMessages(resolved.shift());
+      this._queueMessages(resolved);
+    } else if (Array.isArray(resolved)) {
+      // Given an array, spread it into the queue
+      this.queue.add(...resolved);
+    } else {
+      // or just simply add it to the queue
+      this.queue.add(resolved);
     }
-    if (!Array.isArray(resolved)) {
-      console.error(
-        `No message sent.  An array must be returned from ${this.event.command}`
-      );
-      return;
-    }
-    const message = resolved.shift();
-
-    await this._sendToMessengerAPI(message);
-
-    if (resolved.length) {
-      this._messageQueue(resolved);
-    } else console.log('Message Sent');
   }
 
-  async _sendToMessengerAPI(message) {
+  async _sendToMessengerAPI(Event) {
     // Send a single message object to the Facebook API
-    if (message && !Array.isArray(message)) {
-      const msgObj = {
-        recipient: {
-          id: this.sender
-        },
-        message
-      };
-      const url = `https://graph.facebook.com/v2.6/me/messages?access_token=${this.access_token}`;
-      await axios.post(url, msgObj).catch(err => {
-        err.response
-          ? console.error('Error sending Response: ', err.response.data)
-          : console.error('Error sending Response: ', err);
-      });
-    } else {
-      Array.isArray(message)
-        ? console.error(
-            `Error: received an array for a message from ${this.event.command}: `,
-            message
-          )
-        : console.error('Error: No message to send!');
+    let message = this.queue.next();
+    while (message !== null) {
+      // Sometimes for a buggy command, the response from it will be empty.
+      // The if/else statement below exists solely to help debug that case.
+      if (message) {
+        const msgObj = {
+          recipient: {
+            id: this.sender
+          },
+          message
+        };
+        const url = `https://graph.facebook.com/v2.6/me/messages?access_token=${this.access_token}`;
+        axios
+          .post(url, msgObj)
+          .then(x => x)
+          .catch(err =>
+            console.error(
+              `Error when sending response from ${Event.override ||
+                Event.validatedCommand} : `,
+              err.response ? err.response.data : err
+            )
+          );
+      } else {
+        console.error(
+          'Error: No message to send from: ',
+          Event.override || Event.validatedCommand
+        );
+      }
     }
   }
 }
