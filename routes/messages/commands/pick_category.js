@@ -1,15 +1,7 @@
-const UserCategories = require('models/db/userCategories.js');
-const { getNewCategoriesForUser } = require('../helpers/categories.js');
-const request_email = require('./request_email.js');
-const QuickReply = require('../UI/QuickReplyTemplate.js');
-
-module.exports = async event => {
-  const {
-    user_id,
-    category_id,
-    isAdding,
-    page: { id: page_id }
-  } = event;
+module.exports = async () => {
+  const { event, user_id, page_id } = this;
+  const { getNewCategoriesForUser } = this.helpers
+  const { category_id, isAdding } = event;
 
   let userCategories = await UserCategories.retrieve({ user_id });
 
