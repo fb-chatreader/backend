@@ -21,7 +21,7 @@ router.post(
   async (req, res) => {
     const { event } = req.body.entry[0];
 
-    await CommandList.execute(event);
+    await CommandList.run(event);
     return res.sendStatus(200);
   }
 );
