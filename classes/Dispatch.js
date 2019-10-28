@@ -1,6 +1,11 @@
-const EventClass = require('./WebhookEvent.js');
 const reqDir = require('require-dir');
 
+/* 
+  Dispatcher holds all the current commands as well as what they need in order to run.
+  If you execute a command, it will verify that command passes all conditions before
+  sending.  In the event a condition fails, it will instead dispatch a command to fix
+  the issue.
+*/
 class Dispatch {
   constructor() {
     this.commands = reqDir('../routes/messages/commands/');
@@ -10,53 +15,126 @@ class Dispatch {
     this.helpers = reqDir('../routes/messages/helpers');
   }
 
-  run(event) {
-    const Event = new EventClass(event);
-    Event.response = this._getResponseObject(Event);
+  async execute(Event) {
+    Event.validateCommand(this._findCommand(Event));
+    const commandReady = await this._validateConditions(Event);
 
-    message.respond();
-  }
+    if (!commandReady) {
+      Event.setOverride(await this._findOverride(Event));
+    }
 
-  async setConditions(...args) {
-    for (let i = 0; i < args.length; i++) {
-      const c = args[i];
-      if (!this.conditions[c]) {
-        console.error(`Warning: condition ${c} was not found.`);
-        continue;
-      }
-
-      const condition = this.conditions[c];
-
-      const passes = await condition.evaluate.call(this);
-      if (!passes) {
-        return await condition.action.call(this);
-      }
+    Event.setResponse(this._getResponse(Event));
+    if (Event.willRespond) {
+      this.respond(Event);
     }
   }
 
-  withDBs(...args) {
-    const dbs = [];
+  import(key, ...args) {
+    // Alternate way of importing
+    // Call this method with what type of import you want (check approvedKeys below)
+    // then a string of arguments (separated by commas) of the files you want
+    // And it'll return them in an array in the same order to be easily destructured
+    const imported = [];
+    const approvedKeys = {
+      templates: true,
+      db: true,
+      helpers: true
+    };
+
+    if (!approvedKeys[key]) {
+      throw new Error(
+        `Cannot import ${key}.  Approved imports are: ${Object.keys(
+          approvedKeys
+        )}`
+      );
+    }
 
     args.forEach(name => {
-      dbs.push(this.db[name]);
+      const item = this[key][name];
+      if (item) {
+        imported.push(item);
+      } else {
+        throw new Error(`Error importing ${key} '${name}': not found`);
+      }
     });
 
     return dbs;
   }
 
-  _getResponseObject(message) {
-    let command;
-    if (this._isValidCommand(message.event.command)) {
-      // User submitted valid command or postback
-      command = message.event.command;
-    } else if (this._processMessage(message)) {
-      // User submitted data, like an email address
-      command = this._processMessage(message);
+  withDBs(...args) {
+    return this.import('db', ...args);
+  }
+
+  withTemplates(...args) {
+    return this.import('templates', ...args);
+  }
+
+  withHelpers(...args) {
+    return this.import('helpers', ...args);
+  }
+
+  async sendTemplate(name, ...args) {
+    // If you want to immediately run a template instead of importing it then running it,
+    // run this with any arguments the template wants, everything separated by a comma.
+    const template = this.templates[name];
+    if (template) {
+      return await template(...args);
     } else {
-      // User sent something the bot doesn't recognize
-      command = 'get_started';
+      throw new Error(`Error importing template '${name}': not found`);
     }
-    return this.commands[command].call(message);
+  }
+
+  async respond() {
+    if (!this.response) return;
+    // If the response isn't a promise, make it one.
+    // Now we can always assume it's a promise.
+    this.response = Promise.resolve(this.response);
+
+    const resolved = await this._resolvePromises();
+    if (!resolved) {
+      console.error(
+        `No response sent to user.  ${this.command} returned: ${resolved}`
+      );
+      return;
+    }
+    this._messageQueue(resolved);
+  }
+
+  _findCommand(Event) {
+    // This method is necessary since sometimes what the user types isn't a command
+    // For example, if they type an email, the bot has to figure out to run save_email with
+    // the information they typed
+    if (this._isValidCommand(Event.command)) {
+      // User submitted valid command or postback
+      return Event.command;
+    } else if (this._processMessage(Event.command)) {
+      // User submitted data, like an email address
+      return this._processMessage(Event.command);
+    }
+
+    // Default command if nothing else is found, including no command at all
+    return 'get_started';
+  }
+
+  _findOverride(Event) {
+    // Command user gave isn't ready to fire yet.  Find out what conditions
+    // are failing and run the necessary commands to rectify.
+
+    // The importance of this step is bots need to be fluid.  They shouldn't
+    // lock users into a certain loop.  Using this pattern means the user can
+    // navigate away from the current command if they want to.  However, if they
+    // try to offending command again, they'll be sent back to whatever conditions
+    // were not met
+    return this.conditions[Event.validatedCommand].action(Event).then(x => x);
+  }
+
+  _validateConditions(Event) {
+    return this.conditions[Event.validatedCommand].evaluate(Event).then(x => x);
+  }
+
+  _getResponse(Event) {
+    // Run the command returned by _findCommand and feed it the Event class
+    return this.commands[Event.validatedCommand].call(this, Event);
   }
 
   _isValidCommand(command) {
@@ -64,11 +142,7 @@ class Dispatch {
   }
 
   _processMessage(message) {
-    if (!message.event) {
-      console.log('No message sent.  "Event" not found: ', message);
-      return;
-    }
-    if (this._containsValidEmail(message.event.original_message)) {
+    if (this._containsValidEmail(message)) {
       // User sent a message that is a valid email
       return 'save_email';
     }
@@ -86,22 +160,6 @@ class Dispatch {
       /[a-zA-Z0-9]/.test(email[0]) &&
       /[a-zA-Z0-9]/.test(email[email.length - 1])
     );
-  }
-
-  async respond() {
-    if (!this.response) return;
-    // If the response isn't a promise, make it one.
-    // Now we can always assume it's a promise.
-    this.response = Promise.resolve(this.response);
-
-    const resolved = await this._resolvePromises();
-    if (!resolved) {
-      console.error(
-        `No response sent to user.  ${this.command} returned: ${resolved}`
-      );
-      return;
-    }
-    this._messageQueue(resolved);
   }
 
   _resolvePromises(promise = this.response) {
