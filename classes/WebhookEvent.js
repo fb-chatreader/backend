@@ -2,20 +2,52 @@ const Users = require('models/db/users.js');
 const Books = require('models/db/books.js');
 const addTimedMessage = require('routes/messages/helpers/addTimedMessage.js');
 
+/*
+  Whenever a webhook you are subscribed to is fired, WebhookEvents will parse the data
+  into a consistent format used by the bot, greatly simplifying the commands.
+*/
 module.exports = class WebhookEvent {
   constructor() {
+    // The 'command' is kind of a misnomer, as 'input' might be more accurate.
+    // However, for ease of postback payloads, we've left it as command.
+    // The 'command' value should never be overridden, as it's critical for knowing
+    // what the user intended to do.
     this.command;
-    this.sender;
-    this.event;
+    // validatedCommand is set once the Dispatcher identifies the command the user wants to run.
+    // Generally not overridden but doesn't break anything in the app.
+    this.validatedCommand;
+    // The override command can be overridden whenever needed.  It is set when
+    // a condition for a command is not met and something must be ran first
+    this.override;
 
+    // sender is the PSID of whoever triggered the webhook
+    this.sender_id;
+
+    // The 'user' and 'page' objects are broken down into smaller parts for ease of
+    // destructuring, as things like user_id are used in almost every command
     this.user;
     this.user_id;
-
     this.page;
     this.page_id;
     this.access_token;
 
-    // Trigger timed message check for each message
+    // The response the bot will send to this webhook event
+    this.response;
+
+    // Change value if your command doesn't respond to the user
+    this.willRespond = true;
+  }
+
+  isMultiBookPage() {
+    return this.bookCount > 1;
+  }
+
+  isNewPage() {
+    return !this.bookCount;
+  }
+
+  isSingleBookPage() {
+    return this.bookCount === 1;
   }
 
   processHook(entry) {
@@ -27,13 +59,6 @@ module.exports = class WebhookEvent {
     } else {
       return false;
     }
-  }
-
-  setUser(u) {
-    const { id, ...user } = u;
-    this.user = user;
-    this.user_id = id;
-    addTimedMessage(id, this.page_id);
   }
 
   setEventData(e) {
@@ -53,6 +78,10 @@ module.exports = class WebhookEvent {
     }
   }
 
+  setOverride(command) {
+    this.override = command;
+  }
+
   setPage(page) {
     Promise.resolve(page).then(p => {
       const { id, access_token, ...page } = p;
@@ -62,12 +91,19 @@ module.exports = class WebhookEvent {
     });
   }
 
-  isSingleBookPage() {
-    return this.bookCount === 1;
+  setResponse(response) {
+    this.response = response;
   }
 
-  isMultiBookPage() {
-    return this.bookCount > 1;
+  setUser(u) {
+    const { id, ...user } = u;
+    this.user = user;
+    this.user_id = id;
+    addTimedMessage(id, this.page_id);
+  }
+
+  validateCommand(command) {
+    this.validatedCommand = command;
   }
 
   _isPolicyViolation(entry) {
