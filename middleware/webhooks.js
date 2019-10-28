@@ -1,8 +1,6 @@
 const Users = require('models/db/users.js');
 const Pages = require('models/db/pages.js');
 const Books = require('models/db/books.js');
-const addTimedMessage = require('routes/messages/helpers/addTimedMessage.js');
-const CommandList = require('classes/CommandList.js');
 
 module.exports = { validateWebhook, getPageData, parseWebhook };
 
@@ -25,12 +23,11 @@ async function parseWebhook({ body: { entry } }, res, next) {
   // We receive data for our commands from a variety of places.
   // This middleware is meant to organize that data into a single place to
   // simplify the rest of our code
-
-  if (isValidMessengerRequest(entry)) {
-    entry[0].event = isPolicyViolation(entry)
-      ? parsePolicyViolation(entry)
-      : await parseUserAction(entry);
-
+  if (isPolicyViolation(entry)) {
+    entry[0].event = parsePolicyViolation(entry);
+    next();
+  } else if (isValidUserAction(entry)) {
+    entry[0].event = await parseUserAction(entry);
     next();
   } else {
     return res.sendStatus(400);
@@ -46,36 +43,23 @@ function parsePolicyViolation(entry) {
   };
 }
 async function parseUserAction(entry) {
-  // Order of importance for webhooks --> Postback > Referrals > Commands
-  // Type added in case we need to verify source (do we want users to say "policy violation"
-  // and trigger our policy violation command?)
+  // The 'event' is what triggered the webhook and we store
+  // its data under a variable with the same name
+  const event = entry[0].messaging[0];
 
-  // The 'event' exists for postbacks and user messages
-  // It's essentially where the data for those webhooks exists
-
-  const event =
-    entry && entry[0] && entry[0].messaging ? entry[0].messaging[0] : null;
-
-  let referralCommand = null;
-  if (event && entry[0].messaging[0].referral) {
-    referralCommand = queryStringToObject(entry[0].messaging[0].referral.ref)
-      .command;
-  }
   // Get user if they exists already in our database
-  let user = event
-    ? await Users.retrieve({ facebook_id: event.sender.id }).first()
-    : null;
+  let user = await Users.retrieve({ facebook_id: event.sender.id }).first();
 
-  if (event && !user) {
+  if (!user) {
     // Save sender ID in DB if they're a new user
     user = await Users.add({ facebook_id: event.sender.id });
   }
-  // Any interaction with the bot will trigger a 24 hour message to be sent later.
-  // Only 1 timed message can exist for a user per page
-  await addTimedMessage(user.id, entry[0].page.id);
 
+  // So many commands currently rely on how many books are available
+  // for the page, we've added the bookCount as a default
   const books = await Books.retrieve({ 'b.page_id': entry[0].page.id });
 
+  // Default data based to every command
   let parsed_data = {
     sender: event.sender.id,
     user,
@@ -85,9 +69,10 @@ async function parseUserAction(entry) {
   };
 
   if (event.postback || (event.message && event.message.quick_reply)) {
-    // This statement will fire for a postback or quick reply event but also if
-    // the user is following a referral link and it's their first interaction with
-    // the bot.
+    // There are 3 conditions that can fire this block:
+    // 1) User clicked a postback button
+    // 2) User clicked a quick reply button
+    // 3) User followed a referral link and has never used the bot before
 
     // Postbacks and quick replies are handled in exactly the same way, the payload
     // is just in a different location in the object.
@@ -95,35 +80,29 @@ async function parseUserAction(entry) {
       ? event.postback.payload
       : event.message.quick_reply.payload;
 
-    parsed_data =
-      event.postback && event.postback.referral
-        ? {
-            ...parsed_data,
-            ...queryStringToObject(event.postback.referral.ref),
-            type: 'referral'
-          }
-        : {
-            ...parsed_data,
-            ...JSON.parse(payload),
-            type: 'postback'
-          };
+    const isReferral = event.postback && event.postback.referral;
+
+    parsed_data = isReferral
+      ? {
+          ...parsed_data,
+          ...handleReferral(event.postback.referral.ref),
+          type: 'referral'
+        }
+      : {
+          ...parsed_data,
+          ...JSON.parse(payload),
+          type: 'postback'
+        };
   } else if (event.referral) {
-    // If the user has interacted with the bot before and they're following a
-    // referral link, this statement will fire
+    // This block will fire under one condition:
+    // 1) User clicked a referral link and has used the bot before
 
     // Sample referral link:
     // http://m.me/109461977131004?ref=command=start_book,book_id=1
 
-    if (isValidCommand(referralCommand) === false) {
-      return (parsed_data = {
-        ...parsed_data,
-        ...queryStringToObject('command=start_book,book_id=1'),
-        type: 'referral'
-      });
-    }
     parsed_data = {
       ...parsed_data,
-      ...queryStringToObject(event.referral.ref),
+      ...handleReferral(entry[0].messaging[0].referral.ref),
       type: 'referral'
     };
   } else if (event && event.message) {
@@ -134,25 +113,27 @@ async function parseUserAction(entry) {
         .toLowerCase()
         .split(' ')
         .join('_'),
-      original_message: event.message.text,
       type: 'message'
     };
   }
   return parsed_data;
 }
 
-function isValidCommand(str) {
-  return CommandList.commands.hasOwnProperty(str);
-}
-
-function isValidMessengerRequest(entry) {
-  const event =
-    entry && entry[0] && entry[0].messaging ? entry[0].messaging[0] : null;
-  return event || (entry && entry[0]);
+function isValidUserAction(entry) {
+  return entry && entry[0] && entry[0].messaging;
 }
 
 function isPolicyViolation(entry) {
-  return !!entry[0]['policy-enforcement'];
+  return entry[0] && entry[0]['policy-enforcement'];
+}
+
+function handleReferral(qs) {
+  const refData = queryStringToObject(qs);
+
+  refData.command = refData.command ? refData.command : 'start_book';
+  delete refData.command;
+
+  return refData;
 }
 
 function queryStringToObject(query) {
