@@ -11,7 +11,7 @@ const Dispatch = require('classes/Dispatch.js');
 router.post('/', validateWebhook, async (req, res) => {
   // Route that fires for every webhook event
   const { Event } = req.body.entry[0];
-  await Dispatch.parse(Event);
+  await Dispatch.execute(Event);
   return res.sendStatus(200);
 });
 
