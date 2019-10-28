@@ -6,7 +6,7 @@ class CommandList {
     this.commands = reqDir('../routes/messages/commands/');
   }
 
-  execute(event) {
+  run(event) {
     const message = new Message(event);
     message.response = this._getResponseObject(message);
 
@@ -14,18 +14,18 @@ class CommandList {
   }
 
   _getResponseObject(message) {
+    let command;
     if (this._isValidCommand(message.event.command)) {
       // User submitted valid command or postback
-      return this.commands[message.event.command](message.event);
+      command = message.event.command;
     } else if (this._processMessage(message)) {
       // User submitted data, like an email address
-      message.event.command = this._processMessage(message);
-      return this.commands[message.event.command](message.event);
+      command = this._processMessage(message);
     } else {
-      // User sent message or postback the bot doesn't recognize
-      const defaultCommand = 'get_started';
-      return this.commands[defaultCommand](message.event);
+      // User sent something the bot doesn't recognize
+      command = 'get_started';
     }
+    return this.commands[command].call(message);
   }
 
   _isValidCommand(command) {
