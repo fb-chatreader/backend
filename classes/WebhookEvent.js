@@ -38,12 +38,52 @@ module.exports = class WebhookEvent {
     this.willRespond = true;
   }
 
+  doNotRespond() {
+    this.willRespond = false;
+  }
+
   isMultiBookPage() {
     return this.bookCount > 1;
   }
 
   isNewPage() {
     return !this.bookCount;
+  }
+
+  async isNotUserMessage() {
+    return this.type !== 'command';
+  }
+
+  async isUserMessage() {
+    return this.type === 'command';
+  }
+
+  async isOnboarded() {
+    const { user_id } = this;
+    const [UserCategories, Users] = this.withDBs('userCategories', 'users');
+
+    const userCategories = await UserCategories.retrieve({ user_id });
+
+    if (userCategories.length < 3) {
+      return Event.setOverride('pick_category');
+    } else if (!event.user.email) {
+      return Event.setOverride('request_email');
+    } else if (event.user.prefersLongSummaries === null) {
+      return Event.setOverride('request_summary_preference');
+    }
+
+    // User has completed onboarding
+    if (Event.hasOwnProperty('prefersLongSummaries')) {
+      // Event.prefersLongSummaries will exist on the postback
+      // from request_summary_preference (in English: the user sent the final
+      // piece needed to complete onboarding and should progress)
+      const { prefersLongSummaries } = event;
+      const updatedUser = await Users.edit(
+        { id: user_id },
+        { prefersLongSummaries }
+      );
+      Event.user = updatedUser;
+    }
   }
 
   isSingleBookPage() {
