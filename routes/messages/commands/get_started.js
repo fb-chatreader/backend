@@ -1,7 +1,10 @@
 const UserCategories = require('models/db/userCategories.js');
 const UserLibraries = require('models/db/userLibraries.js');
+const Books = require('models/db/books.js');
 
-module.exports = async Event => {
+const getUserInfo = require('../helpers/getUserInfo.js');
+
+module.exports = async function(Event) {
   if (Event.isNewPage()) {
     return [
       {
@@ -11,15 +14,13 @@ module.exports = async Event => {
     ];
   }
   return Event.isSingleBookPage()
-    ? getMultipleBooks.call(this, Event)
-    : getSingleBook.call(this, Event);
+    ? getSingleBook.call(this, Event)
+    : getMultipleBooks.call(this, Event);
 };
 
 async function getMultipleBooks(Event) {
   // For now, the bot assumes if there are multiple books, it's on ChatReader
   const { user_id } = Event;
-
-  const [getUserInfo] = this.withHelpers('getUserInfo');
 
   const userCategories = await UserCategories.retrieve({ user_id });
   const userLibraries = await UserLibraries.retrieve({ user_id });
@@ -66,11 +67,8 @@ async function getMultipleBooks(Event) {
 }
 
 async function getSingleBook(Event) {
-  const [Books] = this.withDBs('Books');
-  const [getUserInfo] = this.withHelpers('getUserInfo');
-
-  const book = await Books.retrieve({ 'b.page_id': Event.page.id }).first();
-  const userInfo = await getUserInfo(Event.sender, Event.page.access_token);
+  const book = await Books.retrieve({ 'b.page_id': Event.page_id }).first();
+  const userInfo = await getUserInfo(Event);
 
   const { id: book_id, title, author, synopsis, intro, image_url } = book;
 
