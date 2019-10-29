@@ -5,7 +5,6 @@ const WebhookEvent = require('classes/WebhookEvent.js');
 module.exports = { validateWebhook };
 
 async function validateWebhook({ body: { entry, object } }, res, next) {
-  console.log('RECEIVED MESSAGE', object, entry);
   try {
     if (object === 'page' && entry && entry[0]) {
       const { id } = entry[0];
@@ -23,6 +22,7 @@ async function validateWebhook({ body: { entry, object } }, res, next) {
         return res.sendStatus(403);
       }
     }
+    return res.sendStatus(401);
   } catch (err) {
     console.error('Something went wrong validating the webhook event: ', err);
     // Sending a 500+ error seems to time FB sending webhook events out, which is a disaster
