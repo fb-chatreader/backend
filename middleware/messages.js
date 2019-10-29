@@ -11,20 +11,14 @@ async function validateWebhook({ body: { entry, object } }, res, next) {
       const page = await Pages.retrieve({ id }).first();
 
       if (!page) {
-        console.error('Page not found: ', page);
+        console.error('Page not found: ', page, 'from', id);
         return res.sendStatus(404);
       }
-
       // Initialize a new webhook event, set the page for it
-      const Event = new WebhookEvent();
-      Event.setPage(page);
-      const goodHook = await Event.processHook(entry[0]);
-      if (goodHook) {
-        entry[0].Event = Event;
-        next();
-      } else {
-        return res.sendStatus(403);
-      }
+      entry[0].Event = new WebhookEvent(page);
+      const validHook = await entry[0].Event.processHook(entry[0]);
+
+      return validHook ? next() : res.sendStatus(403);
     }
     return res.sendStatus(401);
   } catch (err) {
