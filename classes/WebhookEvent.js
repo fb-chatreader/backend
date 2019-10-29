@@ -42,12 +42,16 @@ module.exports = class WebhookEvent {
     this.willRespond = false;
   }
 
-  isMultiBookPage() {
-    return this.bookCount > 1;
-  }
-
   isNewPage() {
     return !this.bookCount;
+  }
+
+  isSingleBookPage() {
+    return this.bookCount === 1;
+  }
+
+  isMultiBookPage() {
+    return this.bookCount > 1;
   }
 
   async isNotUserMessage() {
@@ -60,7 +64,6 @@ module.exports = class WebhookEvent {
 
   async isOnboarded() {
     const { user_id } = this;
-    const [UserCategories, Users] = this.withDBs('userCategories', 'users');
 
     const userCategories = await UserCategories.retrieve({ user_id });
 
@@ -86,16 +89,12 @@ module.exports = class WebhookEvent {
     }
   }
 
-  isSingleBookPage() {
-    return this.bookCount === 1;
-  }
-
   processHook(entry) {
     // Tries to identify the type of webhook and save the relevant data
     if (this._isPolicyViolation(entry)) {
       return this._parsePolicyViolation(entry);
     } else if (this._isValidUserAction(entry)) {
-      return this._parseUserAction(entry[0].messaging[0]).then(x => x);
+      return this._parseUserAction(entry.messaging[0]).then(x => x);
     } else {
       return false;
     }
@@ -147,7 +146,7 @@ module.exports = class WebhookEvent {
   }
 
   _isPolicyViolation(entry) {
-    return entry[0] && entry[0]['policy-enforcement'];
+    return entry['policy-enforcement'];
   }
 
   _parsePolicyViolation(entry) {
@@ -164,7 +163,7 @@ module.exports = class WebhookEvent {
   }
 
   _isValidUserAction(entry) {
-    return entry && entry[0] && entry[0].messaging;
+    return entry.messaging;
   }
 
   async _parseUserAction(message) {
@@ -183,12 +182,11 @@ module.exports = class WebhookEvent {
 
     // So many commands currently rely on how many books are available
     // for the page, we've added the bookCount as a default
-    const books = await Books.retrieve({ 'b.page_id': entry[0].page.id });
+    const books = await Books.retrieve({ 'b.page_id': this.page.id });
 
     // Default data based to every command
     const parsed_data = {
       sender: message.sender,
-      page: entry[0].page,
       bookCount: books.length
     };
 
