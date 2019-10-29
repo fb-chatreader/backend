@@ -7,6 +7,11 @@ module.exports = async Event => {
     const request = await axios.get(url);
     return request.data;
   } catch (err) {
-    if (process.env.DB_ENVIRONMENT !== 'testing') console.log(err);
+    if (process.env.DB_ENVIRONMENT !== 'testing') {
+      console.error(
+        'Error querying user info: ',
+        err.response ? err.response.data : err
+      );
+    }
   }
 };
