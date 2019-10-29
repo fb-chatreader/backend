@@ -9,7 +9,11 @@ async function validateWebhook({ body: { entry, object } }, res, next) {
     if (object === 'page' && entry && entry[0]) {
       const { id } = entry[0];
       const page = await Pages.retrieve({ id }).first();
-      if (!page) return res.sendStatus(404);
+
+      if (!page) {
+        console.error('Page not found: ', page);
+        return res.sendStatus(404);
+      }
 
       // Initialize a new webhook event, set the page for it
       const Event = new WebhookEvent();
