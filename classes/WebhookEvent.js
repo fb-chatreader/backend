@@ -2,12 +2,14 @@ const Users = require('models/db/users.js');
 const Books = require('models/db/books.js');
 const addTimedMessage = require('routes/messages/helpers/addTimedMessage.js');
 
+const Queue = require('./MessageQueue.js');
+
 /*
   Whenever a webhook you are subscribed to is fired, WebhookEvents will parse the data
   into a consistent format used by the bot, greatly simplifying the commands.
 */
 module.exports = class WebhookEvent {
-  constructor() {
+  constructor(pageInfo) {
     // The 'command' is kind of a misnomer, as 'input' might be more accurate.
     // However, for ease of postback payloads, we've left it as command.
     // The 'command' value should never be overridden, as it's critical for knowing
@@ -27,15 +29,19 @@ module.exports = class WebhookEvent {
     // destructuring, as things like user_id are used in almost every command
     this.user;
     this.user_id;
-    this.page;
-    this.page_id;
-    this.access_token;
+
+    const { id: page_id, access_token, ...page } = pageInfo;
+    this.page = page;
+    this.page_id = page_id;
+    this.access_token = access_token;
 
     // The response the bot will send to this webhook event
     this.response;
 
     // Change value if your command doesn't respond to the user
     this.willRespond = true;
+
+    this.queue = new Queue(this);
   }
 
   doNotRespond() {
@@ -89,19 +95,19 @@ module.exports = class WebhookEvent {
     }
   }
 
-  processHook(entry) {
+  async processHook(entry) {
     // Tries to identify the type of webhook and save the relevant data
     if (this._isPolicyViolation(entry)) {
       return this._parsePolicyViolation(entry);
     } else if (this._isValidUserAction(entry)) {
-      return this._parseUserAction(entry.messaging[0]).then(x => x);
+      return await this._parseUserAction(entry);
     } else {
       return false;
     }
   }
 
   setEventData(e) {
-    const { command, type, sender, bookCount, ...specifics } = e;
+    const { command, type, sender_id, bookCount, ...specifics } = e;
     this.command = command;
     this.type = type;
 
@@ -110,9 +116,9 @@ module.exports = class WebhookEvent {
       this[key] = specifics[key];
     }
 
-    if (sender) {
+    if (sender_id) {
       // Policy violations do not have these properties
-      this.sender = sender.id;
+      this.sender_id = sender_id;
       this.bookCount = bookCount;
     }
   }
@@ -135,7 +141,7 @@ module.exports = class WebhookEvent {
   }
 
   setUser(u) {
-    const { id, ...user } = u;
+    const { id, facebook_id, ...user } = u;
     this.user = user;
     this.user_id = id;
     addTimedMessage(id, this.page_id);
@@ -166,7 +172,10 @@ module.exports = class WebhookEvent {
     return entry.messaging;
   }
 
-  async _parseUserAction(message) {
+  async _parseUserAction(entry) {
+    const { Event } = entry;
+    const message = entry.messaging[0];
+
     // If the user does something to trigger a webhook (referral link, postback, send a message, etc)
     // this finds the relevant data and stores it
 
@@ -182,11 +191,11 @@ module.exports = class WebhookEvent {
 
     // So many commands currently rely on how many books are available
     // for the page, we've added the bookCount as a default
-    const books = await Books.retrieve({ 'b.page_id': this.page.id });
+    const books = await Books.retrieve({ 'b.page_id': Event.page_id });
 
     // Default data based to every command
     const parsed_data = {
-      sender: message.sender,
+      sender_id: message.sender.id,
       bookCount: books.length
     };
 
@@ -224,7 +233,7 @@ module.exports = class WebhookEvent {
 
       this.setEventData({
         ...parsed_data,
-        ...handleReferral(entry[0].messaging[0].referral.ref),
+        ...handleReferral(message.referral.ref),
         type: 'referral'
       });
     } else if (message && message.message) {
@@ -238,7 +247,7 @@ module.exports = class WebhookEvent {
         type: 'message'
       });
     }
-    return parsed_data;
+    return true;
   }
 
   _handleReferral(qs) {
