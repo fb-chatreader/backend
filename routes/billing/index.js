@@ -46,6 +46,37 @@ router.get('/productsandplans/:token', async (req, res) => {
   return res.status(201).json(products);
 });
 
+// GET endpoint for PUBLIC PRICING to retrieve all products and plans WITHOUT id_token:
+router.get('/publicprices', async (req, res) => {
+  const productsFromStripe = await stripe.products.list({});
+  const plansFromStripe = await stripe.plans.list({});
+
+  // get data from responses above, which contains array of products/plans:
+  let products = productsFromStripe.data;
+  let plans = plansFromStripe.data;
+
+  // Sort plans in ascending order of price (amount):
+  plans = plans
+    .sort((a, b) => {
+      return a.amount - b.amount;
+    })
+    .map(plan => {
+      // Map to new array with formatted price (amount) for each plan:
+      amount = UTILS.formatUSD(plan.amount);
+      return { ...plan, amount };
+    });
+  // Attach each plan to its corresponding product:
+  products.forEach(product => {
+    const filteredPlans = plans.filter(plan => {
+      return plan.product === product.id;
+    });
+
+    product.plans = filteredPlans;
+  });
+
+  return res.status(201).json(products);
+});
+
 // POST endpoint to create a new subscription when a customer completes checkout:
 router.post('/checkout/newsub/', async (req, res) => {
   // POSSIBLE TO DO:
