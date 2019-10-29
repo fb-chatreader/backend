@@ -1,3 +1,6 @@
+const UserCategories = require('models/db/userCategories.js');
+const UserLibraries = require('models/db/userLibraries.js');
+
 module.exports = async Event => {
   if (Event.isNewPage()) {
     return [
@@ -15,10 +18,7 @@ module.exports = async Event => {
 async function getMultipleBooks(Event) {
   // For now, the bot assumes if there are multiple books, it's on ChatReader
   const { user_id } = Event;
-  const [userCategories, userLibraries] = this.withDBs(
-    'UserCategories',
-    'UserLibraries'
-  );
+
   const [getUserInfo] = this.withHelpers('getUserInfo');
 
   const userCategories = await UserCategories.retrieve({ user_id });
