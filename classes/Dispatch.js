@@ -1,44 +1,5 @@
 const reqDir = require('require-dir');
 
-class Queue {
-  // Standard linked list queue
-  constructor() {
-    this.head;
-    this.tail;
-    this.length = 0;
-  }
-
-  add(...args) {
-    args.forEach(value => {
-      const newNode = { value, next };
-      if (!this.length) {
-        this.head = newNode;
-        this.tail = newNode;
-      } else {
-        const lastNode = this.head;
-        lastNode.prev = newNode;
-        this.head = newNode;
-      }
-      this.length++;
-    });
-  }
-
-  next() {
-    if (this.length) {
-      const next = this.tail;
-      this.tail = next.prev;
-      this.length--;
-
-      if (!this.length) {
-        this.head = undefined;
-      }
-      return next.value;
-    } else {
-      return null;
-    }
-  }
-}
-
 class Dispatch {
   /*
     Dispatcher holds all the current commands as well as what they need in order to run.
@@ -52,15 +13,13 @@ class Dispatch {
     this.conditions = reqDir('../routes/messages/conditions/');
     this.db = reqDir('../models/db/');
     this.helpers = reqDir('../routes/messages/helpers');
-
-    this.queue = new Queue();
   }
 
   async execute(Event) {
     Event.validateCommand(this._findCommand(Event));
-    await this._validateConditions(Event);
+    await this.conditions[Event.validatedCommand];
 
-    Event.setResponse(this._getResponse(Event));
+    Event.setResponse(await this._getResponse(Event));
     if (Event.willRespond) {
       this.respond(Event);
     }
@@ -97,7 +56,7 @@ class Dispatch {
       }
     });
 
-    return dbs;
+    return imported;
   }
 
   withDBs(...args) {
@@ -126,25 +85,26 @@ class Dispatch {
   async respond(Event) {
     // If the response isn't a promise, make it one.
     // Now we can always assume it's a promise.
-    Event.response = Promise.resolve(this.response);
-
-    const resolved = await Event.response;
+    const resolved = await Promise.resolve(Event.response);
+    // console.log('RESOLVED: ', resolved);
 
     if (!resolved) {
       console.error(
-        `No response sent to user.  ${this.command} returned: ${resolved}`
+        `No response sent to user.  ${Event.command} returned: ${resolved}`
       );
       return;
     }
-    this._messageQueue(resolved);
-    this._sendToMessengerAPI(Event);
+    this._queueMessages(resolved).then(m => {
+      Event.queue.add(...m);
+      Event.queue.send();
+    });
   }
 
   _findCommand(Event) {
     // This method is necessary since sometimes what the user types isn't a command
     // For example, if they type an email, the bot has to figure out to run save_email with
     // the information they typed
-    if (this._isValidCommand(Event.command)) {
+    if (this.commands[Event.command]) {
       // User submitted valid command or postback
       return Event.command;
     } else if (this._processMessage(Event.command)) {
@@ -168,26 +128,12 @@ class Dispatch {
     return this.conditions[Event.validatedCommand].action(Event).then(x => x);
   }
 
-  async _validateConditions(Event) {
-    const conditions = this.conditions[Event.validatedCommand];
-    if (conditions) {
-      // Set to a promise in case forgets to make a condition async
-      return Promise.resolve(conditions(Event)).then(r => r);
-    } else {
-      return true;
-    }
-  }
-
-  _getResponse(Event) {
+  async _getResponse(Event) {
     // Override command is given priority.  Otherwise, run the validated command
     const command = Event.override
       ? this._findCommand(Event.override)
       : Event.validatedCommand;
-    return this.commands[command].call(this, Event).then(r => r);
-  }
-
-  _isValidCommand(command) {
-    return this.commands[command];
+    return await this.commands[command].call(this, Event);
   }
 
   _processMessage(message) {
@@ -211,52 +157,39 @@ class Dispatch {
     );
   }
 
-  _queueMessages(resolved) {
-    if (Array.isArray(resolved[0])) {
-      // If given nested arrays, recursively flatten it
-      this._queueMessages(resolved.shift());
-      this._queueMessages(resolved);
-    } else if (Array.isArray(resolved)) {
-      // Given an array, spread it into the queue
-      this.queue.add(...resolved);
+  async _queueMessages(messages) {
+    if (Array.isArray(messages)) {
+      return Promise.all(messages);
+      //this._handleArrayOfMessages(messages).then(m => this.queue.add(...m));
     } else {
-      // or just simply add it to the queue
-      this.queue.add(resolved);
+      // If just one message, add it to queue (its promises has already been resolved)
+      return [messages];
     }
   }
 
-  async _sendToMessengerAPI(Event) {
-    // Send a single message object to the Facebook API
-    let message = this.queue.next();
-    while (message !== null) {
-      // Sometimes for a buggy command, the response from it will be empty.
-      // The if/else statement below exists solely to help debug that case.
-      if (message) {
-        const msgObj = {
-          recipient: {
-            id: this.sender
-          },
-          message
-        };
-        const url = `https://graph.facebook.com/v2.6/me/messages?access_token=${this.access_token}`;
-        axios
-          .post(url, msgObj)
-          .then(x => x)
-          .catch(err =>
-            console.error(
-              `Error when sending response from ${Event.override ||
-                Event.validatedCommand} : `,
-              err.response ? err.response.data : err
-            )
-          );
-      } else {
-        console.error(
-          'Error: No message to send from: ',
-          Event.override || Event.validatedCommand
-        );
-      }
-    }
-  }
+  // _handleArrayOfMessages(messages) {
+  //   return Promise.all(
+  //     messages.reduce(
+  //       (acc, m) =>
+  //         acc.then(resolved => {
+  //           if (Array.isArray(m)) {
+  //             return this._handleArrayOfMessages(m).then(r => {
+  //               // Given a nested array, flatten it recursively.
+  //               resolved.push(...r);
+  //               return resolved;
+  //             });
+  //           } else {
+  //             // Otherwise, just push into return array
+  //             return Promise.resolve(m).then(r => {
+  //               resolved.push(r);
+  //               return resolved;
+  //             });
+  //           }
+  //         }),
+  //       Promise.resolve([])
+  //     )
+  //   );
+  // }
 }
 
 module.exports = new Dispatch();
