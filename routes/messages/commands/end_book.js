@@ -6,7 +6,7 @@ module.exports = async Event => {
   const { book_id } = Event;
   const book = await Books.retrieve({ 'b.id': book_id }).first();
 
-  const user_info = await getUserInfo(Event.sender, Event.page.access_token);
+  const user_info = await getUserInfo(Event);
 
   const title = `${user_info.first_name}, thank you for reading a quick summary of ${book.title}!`;
 
