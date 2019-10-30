@@ -25,35 +25,43 @@ module.exports = class MessageQueue {
   }
 
   send() {
-    while (this.length) {
-      const message = this._next();
-      console.log('MESSAGE: ', message);
-      if (message) {
-        const msgObj = {
-          recipient: {
-            id: this.Event.sender_id
-          },
-          message
-        };
-        const url = `https://graph.facebook.com/v2.6/me/messages?access_token=${this.Event.access_token}`;
-        axios
-          .post(url, msgObj)
-          .then(x => x)
-          .catch(err =>
-            console.error(
-              `Error when sending response from ${this.Event.override ||
-                this.Event.validatedCommand} : `,
-              err.response ? err.response.data : err
-            )
-          );
-      } else {
-        console.error(
-          'Error: No message to send from: ',
-          this.Event.override || this.Event.validatedCommand
-        );
-      }
-    }
-    console.log('Messages Sent');
+    this._getAllMessages()
+      .reduce(
+        (acc, message) =>
+          acc
+            .then(_ => {
+              // This reduce pattern ensures acc is always a promise.  And since this block only runs
+              // after the .then, it means the previous iteration is fulfilled before moving on to the next.
+              // In English, this ensures that our messages send in order.
+              if (message) {
+                const msgObj = {
+                  recipient: {
+                    id: this.Event.sender_id
+                  },
+                  message
+                };
+                const url = `https://graph.facebook.com/v2.6/me/messages?access_token=${this.Event.access_token}`;
+                return axios.post(url, msgObj);
+              } else {
+                // This block isn't needed for any functional reason but sometimes a command returns an empty message.
+                // So this exists purely to aid in debugging
+                console.error(
+                  'Error: No message to send from: ',
+                  this.Event.override || this.Event.validatedCommand
+                );
+                return Promise.resolve();
+              }
+            })
+            .catch(err =>
+              console.error(
+                `Error when sending response from ${this.Event.override ||
+                  this.Event.validatedCommand} : `,
+                err.response ? err.response.data : err
+              )
+            ),
+        Promise.resolve()
+      )
+      .then(_ => console.log('Messages Sent'));
   }
 
   _next() {
@@ -69,5 +77,14 @@ module.exports = class MessageQueue {
     } else {
       return null;
     }
+  }
+
+  _getAllMessages() {
+    const messages = [];
+    while (this.length) {
+      const m = this._next();
+      messages.push(m);
+    }
+    return messages;
   }
 };
