@@ -9,19 +9,33 @@ class Dispatch {
   */
   constructor() {
     this.commands = reqDir('../routes/messages/commands/');
-    this.templates = reqDir('../routes/messages/Templates/');
     this.conditions = reqDir('../routes/messages/conditions/');
+
+    this.templates = reqDir('../routes/messages/Templates/');
     this.db = reqDir('../models/db/');
     this.helpers = reqDir('../routes/messages/helpers');
   }
 
-  async execute(Event) {
-    Event.validateCommand(this._findCommand(Event));
-    await this.conditions[Event.validatedCommand];
+  async execute(Event, override) {
+    if (!override) {
+      // You should generally NOT provide an override to execute.  Only useful if you want to
+      // control the command being ran.  If so, place your own validatedCommand on the Event
+      // and set the override parameter to true
+      Event.validatedCommand = this._findCommand(Event.command);
+    }
+
+    if (this.conditions[Event.validatedCommand]) {
+      // Run conditions to find out if an override command should be set,
+      // if conditions exist for the command
+      await this.conditions[Event.validatedCommand].call(this, Event);
+    }
 
     Event.setResponse(await this._getResponse(Event));
-    if (Event.willRespond) {
-      this.respond(Event);
+
+    if (Event.willRespond && Event.response) {
+      // If you don't want a command to respond, you can always run
+      // Event.doNotRespond()
+      return this.respond(Event);
     }
   }
 
@@ -82,6 +96,11 @@ class Dispatch {
     }
   }
 
+  redirectTo(Event, command) {
+    Event.validatedCommand = command;
+    return this.execute(Event, true);
+  }
+
   async respond(Event) {
     // If the response isn't a promise, make it one.
     // Now we can always assume it's a promise.
@@ -94,22 +113,23 @@ class Dispatch {
       );
       return;
     }
+
     this._queueMessages(resolved).then(m => {
       Event.queue.add(...m);
       Event.queue.send();
     });
   }
 
-  _findCommand(Event) {
+  _findCommand(command) {
     // This method is necessary since sometimes what the user types isn't a command
     // For example, if they type an email, the bot has to figure out to run save_email with
     // the information they typed
-    if (this.commands[Event.command]) {
+    if (this.commands[command]) {
       // User submitted valid command or postback
-      return Event.command;
-    } else if (this._processMessage(Event.command)) {
+      return command;
+    } else if (this._processMessage(command)) {
       // User submitted data, like an email address
-      return this._processMessage(Event.command);
+      return this._processMessage(command);
     }
 
     // Default command if nothing else is found, including no command at all
@@ -130,9 +150,10 @@ class Dispatch {
 
   async _getResponse(Event) {
     // Override command is given priority.  Otherwise, run the validated command
-    const command = Event.override
+    const command = Event.isOverridden
       ? this._findCommand(Event.override)
       : Event.validatedCommand;
+    console.log('Running: ', command, ' Original: ', Event.command);
     return await this.commands[command].call(this, Event);
   }
 
@@ -159,7 +180,7 @@ class Dispatch {
 
   async _queueMessages(messages) {
     if (Array.isArray(messages)) {
-      return Promise.all(messages);
+      return this._flatten(messages);
       //this._handleArrayOfMessages(messages).then(m => this.queue.add(...m));
     } else {
       // If just one message, add it to queue (its promises has already been resolved)
@@ -167,29 +188,27 @@ class Dispatch {
     }
   }
 
-  // _handleArrayOfMessages(messages) {
-  //   return Promise.all(
-  //     messages.reduce(
-  //       (acc, m) =>
-  //         acc.then(resolved => {
-  //           if (Array.isArray(m)) {
-  //             return this._handleArrayOfMessages(m).then(r => {
-  //               // Given a nested array, flatten it recursively.
-  //               resolved.push(...r);
-  //               return resolved;
-  //             });
-  //           } else {
-  //             // Otherwise, just push into return array
-  //             return Promise.resolve(m).then(r => {
-  //               resolved.push(r);
-  //               return resolved;
-  //             });
-  //           }
-  //         }),
-  //       Promise.resolve([])
-  //     )
-  //   );
-  // }
+  _flatten(messages) {
+    return Promise.all(messages).then(res =>
+      res.reduce(
+        (acc, m) =>
+          acc.then(resolved => {
+            if (Array.isArray(m)) {
+              return this._flatten(m).then(r => {
+                // Given a nested array, flatten it recursively.
+                resolved.push(...r);
+                return resolved;
+              });
+            } else {
+              // Otherwise, just push into return array
+              resolved.push(m);
+              return resolved;
+            }
+          }),
+        Promise.resolve([])
+      )
+    );
+  }
 }
 
 module.exports = new Dispatch();
