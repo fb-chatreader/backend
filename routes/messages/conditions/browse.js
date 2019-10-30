@@ -1,3 +1,1 @@
-module.exports = async Event => {
-  await Event.isOnboarded();
-};
+module.exports = async Event => await Event.overrideIfNotOnboarded();
