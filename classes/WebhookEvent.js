@@ -1,7 +1,8 @@
 const Users = require('models/db/users.js');
 const Books = require('models/db/books.js');
-const addTimedMessage = require('routes/messages/helpers/addTimedMessage.js');
+const UserCategories = require('models/db/userCategories.js');
 
+const addTimedMessage = require('routes/messages/helpers/addTimedMessage.js');
 const Queue = require('./MessageQueue.js');
 
 /*
@@ -21,6 +22,7 @@ module.exports = class WebhookEvent {
     // The override command can be overridden whenever needed.  It is set when
     // a condition for a command is not met and something must be ran first
     this.override;
+    this.isOverridden = false;
 
     // sender is the PSID of whoever triggered the webhook
     this.sender_id;
@@ -60,38 +62,36 @@ module.exports = class WebhookEvent {
     return this.bookCount > 1;
   }
 
-  async isNotUserMessage() {
-    return this.type !== 'command';
-  }
-
-  async isUserMessage() {
-    return this.type === 'command';
-  }
-
-  async isOnboarded() {
-    const { user_id } = this;
-
-    const userCategories = await UserCategories.retrieve({ user_id });
-
-    if (userCategories.length < 3) {
-      return Event.setOverride('pick_category');
-    } else if (!event.user.email) {
-      return Event.setOverride('request_email');
-    } else if (event.user.prefersLongSummaries === null) {
-      return Event.setOverride('request_summary_preference');
+  overrideOnUserMessage(command) {
+    if (this.type === 'message' && !this.isOverridden) {
+      this.setOverride(command);
     }
+  }
 
+  async overrideIfNotOnboarded() {
     // User has completed onboarding
-    if (Event.hasOwnProperty('prefersLongSummaries')) {
+    if (this.hasOwnProperty('prefersLongSummaries')) {
       // Event.prefersLongSummaries will exist on the postback
       // from request_summary_preference (in English: the user sent the final
       // piece needed to complete onboarding and should progress)
-      const { prefersLongSummaries } = event;
+      const { prefersLongSummaries } = this;
       const updatedUser = await Users.edit(
-        { id: user_id },
+        { id: this.user_id },
         { prefersLongSummaries }
       );
-      Event.user = updatedUser;
+      this.user = updatedUser;
+    }
+
+    if (!this.isOverridden) {
+      const { user_id } = this;
+      const userCategories = await UserCategories.retrieve({ user_id });
+      if (userCategories.length < 3) {
+        return this.setOverride('pick_category');
+      } else if (!this.user.email) {
+        return this.setOverride('request_email');
+      } else if (this.user.prefersLongSummaries === null) {
+        return this.setOverride('request_summary_preference');
+      }
     }
   }
 
@@ -124,7 +124,16 @@ module.exports = class WebhookEvent {
   }
 
   setOverride(command) {
-    this.override = command;
+    // The first override should receive priority
+    if (!this.isOverridden && !this.override) {
+      console.log('Overriding to: ', command);
+      this.isOverridden = true;
+      this.override = command;
+    }
+  }
+
+  hasOverride() {
+    return this.isOverridden;
   }
 
   setPage(page) {
