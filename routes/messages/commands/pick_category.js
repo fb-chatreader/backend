@@ -18,7 +18,7 @@ module.exports = async Event => {
       payload: JSON.stringify({
         command: 'save_category',
         category_id: c.id,
-        redirect: Event.command
+        redirect: Event.validatedCommand
       })
     };
   });
