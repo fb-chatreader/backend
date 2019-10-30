@@ -38,8 +38,8 @@ module.exports = async function(Event) {
 
   return [
     this.sendTemplate('Book', Event, books),
-    isEndOfCategory
-      ? this.redirectTo(Event, 'browse')
+    !isEndOfCategory
+      ? this.getReturnFrom(Event, 'browse')
       : this.sendTemplate('QuickReply', text, quickReplies)
   ];
 };
