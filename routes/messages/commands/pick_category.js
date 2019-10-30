@@ -1,28 +1,12 @@
-// const UserCategories = require('models/db/userCategories.js');
-// const { getNewCategoriesForUser } = require('../helpers/categories.js');
+const UserCategories = require('models/db/userCategories.js');
+const { getNewCategoriesForUser } = require('../helpers/categories.js');
+const QRT = require('../Templates/QuickReply.js');
 
 module.exports = async Event => {
-  const {
-    user_id,
-    category_id,
-    isAdding,
-    page: { id: page_id }
-  } = Event;
+  console.log('PICK!');
+  const { user_id, page_id } = Event;
 
   const userCategories = await UserCategories.retrieve({ user_id });
-
-  if (isAdding) {
-    const newCategory =
-      category_id && !userCategories.find(c => c.category_id === category_id)
-        ? await UserCategories.add({ user_id, category_id })
-        : null;
-    newCategory ? userCategories.push(newCategory) : null;
-  }
-
-  if (userCategories.length >= 3) {
-    // If the user was sent here by another command, let that command know they have enough categories by returning 'Done'
-    return 'Done';
-  }
 
   // Currently categories are not tied to a page_id so we'd have to loop over their books or just add
   // a page_id to categories
@@ -33,9 +17,8 @@ module.exports = async Event => {
     return {
       title,
       payload: JSON.stringify({
-        command: Event.command,
-        category_id: c.id,
-        isAdding: true
+        command: 'save_category',
+        category_id: c.id
       })
     };
   });
@@ -48,5 +31,5 @@ module.exports = async Event => {
     ? '2 more to go...'
     : 'Last one!';
 
-  return [QRT(text, quick_replies)];
+  return QRT(text, quick_replies);
 };

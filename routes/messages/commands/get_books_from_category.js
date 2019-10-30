@@ -1,19 +1,16 @@
 const Categories = require('models/db/categories');
 const getBooksInCategories = require('../helpers/getBooksInCategories.js');
-const BookTemplate = require('../Templates/Book.js');
-const QuickReplyTemplate = require('../Templates/QuickReply.js');
-const browse = require('./browse.js');
 
-module.exports = async Event => {
+module.exports = async function(Event) {
   const { category_id, user_id } = Event;
-  const currentCat = await Categories.retrieve({ id: category_id });
+  const category = await Categories.retrieve({ id: category_id }).first();
 
   const { isEndOfCategory, books } = await getBooksInCategories(
     user_id,
     category_id
   );
 
-  const text = `Would you like to see more books on ${currentCat[0].name}?`;
+  const text = `Would you like to see more books on ${category.name}?`;
   const quickReplies = [];
   const options = [
     {
@@ -38,11 +35,11 @@ module.exports = async Event => {
       })
     });
   });
-  const browseQR = await browse(Event);
-  return isEndOfCategory
-    ? [await BookTemplate(Event, books), ...browseQR]
-    : [
-        await BookTemplate(Event, books),
-        await QuickReplyTemplate(text, quickReplies)
-      ];
+
+  return [
+    this.sendTemplate('Book', Event, books),
+    isEndOfCategory
+      ? this.redirectTo('browse')
+      : this.sendTemplate('QuickReply', text, quickReplies)
+  ];
 };
