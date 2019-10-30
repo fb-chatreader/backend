@@ -8,5 +8,5 @@ module.exports = async function(Event) {
     await UserCategories.add({ user_id, category_id });
   }
 
-  this.redirectTo(Event, 'browse');
+  this.redirectTo(Event, Event.redirect);
 };

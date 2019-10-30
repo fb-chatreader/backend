@@ -3,7 +3,6 @@ const { getNewCategoriesForUser } = require('../helpers/categories.js');
 const QRT = require('../Templates/QuickReply.js');
 
 module.exports = async Event => {
-  console.log('PICK!');
   const { user_id, page_id } = Event;
 
   const userCategories = await UserCategories.retrieve({ user_id });
@@ -18,15 +17,17 @@ module.exports = async Event => {
       title,
       payload: JSON.stringify({
         command: 'save_category',
-        category_id: c.id
+        category_id: c.id,
+        redirect: Event.command
       })
     };
   });
 
-  const firstMessage = Event.command === 'browse' ? 'To get started, p' : 'P';
+  const intro =
+    Event.command === 'browse' ? 'To get started, please ' : 'Please ';
 
   const text = !userCategories.length
-    ? firstMessage + 'lease select 3 categories'
+    ? intro + 'select 3 categories'
     : userCategories.length === 1
     ? '2 more to go...'
     : 'Last one!';

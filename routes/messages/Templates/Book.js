@@ -1,19 +1,19 @@
 const UserLibraries = require('models/db/userLibraries.js');
 const GenericTemplate = require('./Generic.js');
 
-module.exports = async (event, books) => {
+module.exports = async (Event, books) => {
   // await books;
-  const { user_id, bookCount, user } = event;
+  const { user_id, user } = Event;
   const { prefersLongSummaries } = user;
 
   let command = 'get_summary';
-  if (event.summaryLength) {
+  if (Event.summaryLength) {
     // There are multiple conditions to consider when loading a long or short summary.
-    // To give the code the option to override the user's settings, the event object
+    // To give the code the option to override the user's settings, the Event object
     // is checked for a summaryLength first.  Then, if one wasn't provided, go with the user's settings.
     // If all else fails, default to long summaries.
     command =
-      event.summaryLength === 'long' ? 'get_summary' : 'get_short_summary';
+      Event.summaryLength === 'long' ? 'get_summary' : 'get_short_summary';
   } else if (user.hasOwnProperty('prefersLongSummaries')) {
     command = prefersLongSummaries ? 'get_summary' : 'get_short_summary';
   }
@@ -35,7 +35,7 @@ module.exports = async (event, books) => {
             }
           ];
 
-          if (bookCount > 1) {
+          if (Event.isMultiBookPage()) {
             const usersLibrary = await UserLibraries.retrieve({ user_id });
             const isInLibrary = usersLibrary.find(
               lib => lib.id === parseInt(book_id, 10)
