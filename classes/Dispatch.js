@@ -102,7 +102,10 @@ class Dispatch {
   }
 
   getReturnFrom(Event, command) {
-    return this.commands[command].call(this, { ...Event });
+    return this.commands[command].call(this, {
+      ...Event,
+      validatedCommand: command
+    });
   }
 
   async respond(Event) {
