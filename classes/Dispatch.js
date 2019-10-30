@@ -35,7 +35,7 @@ class Dispatch {
     if (Event.willRespond && Event.response) {
       // If you don't want a command to respond, you can always run
       // Event.doNotRespond()
-      return this.respond(Event);
+      this.respond(Event);
     }
   }
 
@@ -98,7 +98,11 @@ class Dispatch {
 
   redirectTo(Event, command) {
     Event.validatedCommand = command;
-    return this.execute(Event, true);
+    this.execute(Event, true);
+  }
+
+  getReturnFrom(Event, command) {
+    return this.commands[command].call(this, { ...Event });
   }
 
   async respond(Event) {
