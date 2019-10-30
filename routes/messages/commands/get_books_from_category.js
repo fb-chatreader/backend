@@ -39,7 +39,7 @@ module.exports = async function(Event) {
   return [
     this.sendTemplate('Book', Event, books),
     isEndOfCategory
-      ? this.redirectTo('browse')
+      ? this.redirectTo(Event, 'browse')
       : this.sendTemplate('QuickReply', text, quickReplies)
   ];
 };
