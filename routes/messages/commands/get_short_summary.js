@@ -25,7 +25,8 @@ module.exports = async Event => {
           payload: JSON.stringify({
             command: 'get_summary',
             book_id,
-            summaryLength: 'long'
+            summaryLength: 'long',
+            freePass: true
           })
         },
         {
