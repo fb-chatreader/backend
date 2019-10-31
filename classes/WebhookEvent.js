@@ -342,7 +342,7 @@ module.exports = class WebhookEvent {
       isReferral
         ? this.setEventData({
             ...parsed_data,
-            ...handleReferral(message.postback.referral.ref),
+            ...this.handleReferral(message.postback.referral.ref),
             type: 'referral'
           })
         : this.setEventData({
@@ -359,7 +359,7 @@ module.exports = class WebhookEvent {
 
       this.setEventData({
         ...parsed_data,
-        ...handleReferral(message.referral.ref),
+        ...this.handleReferral(message.referral.ref),
         type: 'referral'
       });
     } else if (message && message.message) {
