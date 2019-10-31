@@ -1,8 +1,8 @@
 const TimedMessages = require('../models/db/timedMessages.js');
 const Users = require('models/db/users.js');
 const Pages = require('models/db/pages.js');
-const Message = require('classes/Message.js');
-const GenericTemplate = require('routes/messages/UI/GenericTemplate.js');
+const Message = require('classes/WebhookEvent.js');
+const GenericTemplate = require('routes/messages/Templates/Generic.js');
 
 module.exports = setInterval(cycleMessages, 1000 * 60 * 30);
 

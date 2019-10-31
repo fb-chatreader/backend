@@ -22,12 +22,11 @@ const errorHandler = require('./middleware/errorHandling');
 // Server config
 const server = express();
 server.use(cors());
+server.use(express.json());
 
 // trying to send raw req for stripe signature to verify,
 // hence defining this route before app.use(express.json());
 server.use('/api/stripe-webhooks', stripeWebhooksRouter);
-
-server.use(express.json());
 
 // Use routes
 server.use('/api/messenger', messageRouter);
@@ -48,3 +47,33 @@ server.get('*', function(req, res) {
 server.use(errorHandler);
 
 module.exports = server;
+
+server.put('/api/users/:id', async (req, res) => {
+  const { id } = req.params;
+  const body = req.body;
+
+  if (!body.name || !body.bio) {
+    return res
+      .status(400)
+      .json({ errorMessage: 'Please provide name and bio for the user' });
+  }
+
+  const user = await db.findById(id);
+
+  if (!user) {
+    return res
+      .status(404)
+      .json({ message: 'The user with the specified ID does not exist.' });
+  }
+
+  const updated = await db.update(id, body);
+
+  if (!updated) {
+    return res
+      .status(500)
+      .json({ error: 'The user information could not be modified' });
+  }
+
+  const updatedUser = await db.findById(id);
+  return res.status(200).json(updatedUser);
+});

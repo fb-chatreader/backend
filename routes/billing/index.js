@@ -3,7 +3,7 @@ const UTILS = require('../utils/format-numbers.js');
 const Users = require('models/db/users.js');
 const getUserID = require('routes/messages/helpers/tokenSwap.js');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-const CommandList = require('classes/CommandList.js');
+// const CommandList = require('classes/CommandList.js');
 
 // GET endpoint to retrieve all products and plans from Stripe:
 router.get('/productsandplans/:token', async (req, res) => {
@@ -102,7 +102,7 @@ router.post('/checkout/newsub/', async (req, res) => {
   };
 
   event.user = await Users.edit({ id: event.user_id }, userUpdates);
-  CommandList.execute(event);
+  // CommandList.execute(event);
   res.status(201).send('SUCCESS!');
 });
 

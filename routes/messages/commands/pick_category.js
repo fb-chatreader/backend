@@ -1,53 +1,40 @@
 const UserCategories = require('models/db/userCategories.js');
-const { getNewCategoriesForUser } = require('../helpers/categories.js');
-const QRT = require('../UI/QuickReplyTemplate.js');
+const QRT = require('../Templates/QuickReply.js');
 
-module.exports = async event => {
-  const {
-    user_id,
-    category_id,
-    isAdding,
-    page: { id: page_id }
-  } = event;
+module.exports = async Event => {
+  const { user_id } = Event;
 
   const userCategories = await UserCategories.retrieve({ user_id });
 
-  if (isAdding) {
-    const newCategory =
-      category_id && !userCategories.find(c => c.category_id === category_id)
-        ? await UserCategories.add({ user_id, category_id })
-        : null;
-    newCategory ? userCategories.push(newCategory) : null;
-  }
+  // Only show categories the user has not saved
+  const categories = await Event.getNewCategoriesForUser();
 
-  if (userCategories.length >= 3) {
-    // If the user was sent here by another command, let that command know they have enough categories by returning 'Done'
-    return 'Done';
-  }
-
-  // Currently categories are not tied to a page_id so we'd have to loop over their books or just add
-  // a page_id to categories
-  const categories = await getNewCategoriesForUser(user_id, page_id);
+  // If command given is this command, push them toward browse as a default behavior
+  console.log('VAL: ', Event.validatedCommand);
+  const redirect =
+    Event.validatedCommand === 'pick_category'
+      ? 'browse'
+      : Event.validatedCommand;
 
   const quick_replies = categories.map(c => {
-    let title = c.name;
     return {
-      title,
+      title: c.name,
       payload: JSON.stringify({
-        command: event.command,
+        command: 'save_category',
         category_id: c.id,
-        isAdding: true
+        redirect
       })
     };
   });
 
-  const firstMessage = event.command === 'browse' ? 'To get started, p' : 'P';
+  const intro =
+    Event.command === 'browse' ? 'To get started, please ' : 'Please ';
 
   const text = !userCategories.length
-    ? firstMessage + 'lease select 3 categories'
+    ? intro + 'select 3 categories'
     : userCategories.length === 1
     ? '2 more to go...'
     : 'Last one!';
 
-  return [QRT(text, quick_replies)];
+  return QRT(text, quick_replies);
 };

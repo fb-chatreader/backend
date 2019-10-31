@@ -1,12 +1,10 @@
 const Users = require('models/db/users.js');
 
-const QRT = require('../UI/QuickReplyTemplate.js');
-
-module.exports = async event => {
-  const { user } = event;
-  if (event.setting === 'summaryLength') {
+module.exports = async function(Event) {
+  const { user, user_id } = Event;
+  if (Event.setting === 'summaryLength') {
     const changes = await Users.edit(
-      { id: user.id },
+      { id: user_id },
       { prefersLongSummaries: !user.prefersLongSummaries }
     );
     return [
@@ -27,9 +25,9 @@ module.exports = async event => {
     },
     {
       title: 'Reset Categories',
-      payload: JSON.stringify({ command: 'reset_categories', reset: true })
+      payload: JSON.stringify({ command: 'reset_categories' })
     }
   ];
   const text = 'Which of your settings would you like to change?';
-  return [QRT(text, quick_replies)];
+  return this.sendTemplate('QuickReply', text, quick_replies);
 };

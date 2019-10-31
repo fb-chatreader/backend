@@ -1,14 +1,9 @@
-const Books = require('models/db/books.js');
-const getUserInfo = require('../helpers/getUserInfo.js');
 const UserCategories = require('models/db/userCategories.js');
 const UserLibraries = require('models/db/userLibraries.js');
+const Books = require('models/db/books.js');
 
-const QuickReplyTemplate = require('../UI/QuickReplyTemplate.js');
-
-module.exports = async event => {
-  const { bookCount } = event;
-
-  if (!bookCount) {
+module.exports = async function(Event) {
+  if (Event.isNewPage()) {
     return [
       {
         text:
@@ -16,22 +11,22 @@ module.exports = async event => {
       }
     ];
   }
-  return bookCount > 1 ? getMultipleBooks(event) : getSingleBook(event);
+  return Event.isSingleBookPage()
+    ? getSingleBook.call(this, Event)
+    : getMultipleBooks.call(this, Event);
 };
 
-async function getMultipleBooks(event) {
+async function getMultipleBooks(Event) {
   // For now, the bot assumes if there are multiple books, it's on ChatReader
-  const { user_id } = event;
+  const { user_id } = Event;
+
   const userCategories = await UserCategories.retrieve({ user_id });
   const userLibraries = await UserLibraries.retrieve({ user_id });
 
-  const facebookID = event.user.facebook_id;
-  const accessToken = event.page.access_token;
-  const facebookUser = await getUserInfo(facebookID, accessToken);
-  const FIRST_NAME = facebookUser.first_name;
+  const { first_name } = await Event.getUserInfo();
 
   const introText = `Chatwise summarizes 2000+ popular non-fiction books into chat messages with key insights. Each book is summarized into a 10-15 minute read.`;
-  const firstTimeText = `Hi ${FIRST_NAME}, welcome to Chatwise!\n\nWe summarize 2000+ popular non-fiction books into chat messages with key insights. Each book is summarized into a 10-15 minute read.`;
+  const firstTimeText = `Hi ${first_name}, welcome to Chatwise!\n\nWe summarize 2000+ popular non-fiction books into chat messages with key insights. Each book is summarized into a 10-15 minute read.`;
 
   const text = userCategories.length === 0 ? firstTimeText : introText;
 
@@ -61,22 +56,17 @@ async function getMultipleBooks(event) {
         }
       ];
 
-  const quickReplies = [];
-  replyOptions.forEach(o => {
-    const { title, command } = o;
+  const quickReplies = replyOptions.map(({ title, command }) => ({
+    title,
+    payload: JSON.stringify({ command })
+  }));
 
-    quickReplies.push({
-      title,
-      payload: JSON.stringify({ command: command.toLowerCase() })
-    });
-  });
-
-  return [await QuickReplyTemplate(text, quickReplies)];
+  return this.sendTemplate('QuickReply', text, quickReplies);
 }
 
-async function getSingleBook(event) {
-  const book = await Books.retrieve({ 'b.page_id': event.page.id }).first();
-  const userInfo = await getUserInfo(event.sender, event.page.access_token);
+async function getSingleBook(Event) {
+  const book = await Books.retrieve({ 'b.page_id': Event.page_id }).first();
+  const userInfo = await Event.getUserInfo();
 
   const { id: book_id, title, author, synopsis, intro, image_url } = book;
 
@@ -105,61 +95,13 @@ async function getSingleBook(event) {
 
   return [
     { text },
-    {
-      attachment: {
-        type: 'template',
-        payload: {
-          template_type: 'generic',
-          elements: [
-            {
-              title,
-              image_url,
-              subtitle: `by ${author}`,
-              buttons
-            }
-          ]
-        }
+    this.sendTemplate('Generic', [
+      {
+        title,
+        image_url,
+        subtitle: `by ${author}`,
+        buttons
       }
-    }
+    ])
   ];
 }
-
-/*
-
-Working second response object for a carousel of categories:
-
-{
-      attachment: {
-        type: 'template',
-        payload: {
-          template_type: 'generic',
-          elements: allCategories
-            .filter(c => c.other !== 1)
-            .map(c => {
-              // Everything except the category name must be destructured
-              // for this to work
-              const { id, image_url, flavor_text, ...categories } = c;
-
-              const title = Object.keys(categories).filter(
-                name => categories[name]
-              )[0];
-              return {
-                title: title[0].toUpperCase() + title.substring(1),
-                image_url: image_url,
-                subtitle: flavor_text ? flavor_text : null,
-                buttons: [
-                  {
-                    type: 'postback',
-                    title,
-                    payload: JSON.stringify({
-                      command: 'save_favorite',
-                      category_id: id
-                    })
-                  }
-                ]
-              };
-            })
-        }
-      }
-    }
-    */
