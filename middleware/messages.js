@@ -5,6 +5,7 @@ const WebhookEvent = require('classes/WebhookEvent.js');
 module.exports = { validateWebhook };
 
 async function validateWebhook({ body: { entry, object } }, res, next) {
+  console.log('MIddleware Hit');
   try {
     if (object === 'page' && entry && entry[0]) {
       const { id } = entry[0];

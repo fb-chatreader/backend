@@ -2,8 +2,6 @@ const UserCategories = require('models/db/userCategories.js');
 const UserLibraries = require('models/db/userLibraries.js');
 const Books = require('models/db/books.js');
 
-const getUserInfo = require('../helpers/getUserInfo.js');
-
 module.exports = async function(Event) {
   if (Event.isNewPage()) {
     return [
@@ -25,7 +23,7 @@ async function getMultipleBooks(Event) {
   const userCategories = await UserCategories.retrieve({ user_id });
   const userLibraries = await UserLibraries.retrieve({ user_id });
 
-  const { first_name } = await getUserInfo(Event);
+  const { first_name } = await Event.getUserInfo();
 
   const introText = `Chatwise summarizes 2000+ popular non-fiction books into chat messages with key insights. Each book is summarized into a 10-15 minute read.`;
   const firstTimeText = `Hi ${first_name}, welcome to Chatwise!\n\nWe summarize 2000+ popular non-fiction books into chat messages with key insights. Each book is summarized into a 10-15 minute read.`;
@@ -68,7 +66,7 @@ async function getMultipleBooks(Event) {
 
 async function getSingleBook(Event) {
   const book = await Books.retrieve({ 'b.page_id': Event.page_id }).first();
-  const userInfo = await getUserInfo(Event);
+  const userInfo = await Event.getUserInfo();
 
   const { id: book_id, title, author, synopsis, intro, image_url } = book;
 

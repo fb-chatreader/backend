@@ -1,8 +1,12 @@
+const axios = require('axios');
+
 const Users = require('models/db/users.js');
 const Books = require('models/db/books.js');
+const Categories = require('models/db/categories.js');
 const UserCategories = require('models/db/userCategories.js');
+const TimedMessages = require('models/db/timedMessages.js');
+const UserTracking = require('models/db/userTracking.js');
 
-const addTimedMessage = require('routes/messages/helpers/addTimedMessage.js');
 const Queue = require('./MessageQueue.js');
 
 /*
@@ -16,9 +20,11 @@ module.exports = class WebhookEvent {
     // The 'command' value should never be overridden, as it's critical for knowing
     // what the user intended to do.
     this.command;
+
     // validatedCommand is set once the Dispatcher identifies the command the user wants to run.
     // Generally not overridden but doesn't break anything in the app.
     this.validatedCommand;
+
     // The override command can be overridden whenever needed.  It is set when
     // a condition for a command is not met and something must be ran first
     this.override;
@@ -32,6 +38,9 @@ module.exports = class WebhookEvent {
     this.user;
     this.user_id;
 
+    // If it's the first time a user is talking to the bot, this value will be true
+    this.isNewUser;
+
     const { id: page_id, access_token, ...page } = pageInfo;
     this.page = page;
     this.page_id = page_id;
@@ -43,7 +52,25 @@ module.exports = class WebhookEvent {
     // Change value if your command doesn't respond to the user
     this.willRespond = true;
 
+    // The messages sent to the user are stored in a queue.  They are an instance of the webhook event instead of
+    // existing globally on Dispatch for ease of debugging.
     this.queue = new Queue(this);
+  }
+
+  async getUserInfo() {
+    const { sender_id, access_token } = this;
+    const url = `https://graph.facebook.com/${sender_id}?fields=first_name&access_token=${access_token}`;
+    try {
+      const request = await axios.get(url);
+      return request.data;
+    } catch (err) {
+      if (process.env.DB_ENVIRONMENT !== 'testing') {
+        console.error(
+          'Error querying user info: ',
+          err.response ? err.response.data : err
+        );
+      }
+    }
   }
 
   doNotRespond() {
@@ -145,19 +172,106 @@ module.exports = class WebhookEvent {
     });
   }
 
+  async updateUserTracking(current_summary_id) {
+    const { user_id, book_id } = this;
+    if (!user_id || !book_id || !current_summary_id) {
+      throw new Error(
+        'Cannot update user tracking without: user_id, book_id, & current_summary_id'
+      );
+    }
+    const progressOnBook = await UserTracking.retrieve({
+      user_id,
+      book_id
+    }).first();
+
+    !progressOnBook
+      ? await UserTracking.add({
+          user_id,
+          book_id,
+          last_summary_id: current_summary_id
+        })
+      : await UserTracking.edit(
+          { user_id, book_id },
+          {
+            last_summary_id: current_summary_id,
+            repeat_count: progressOnBook.repeat_count + 1
+          }
+        );
+  }
+
   setResponse(response) {
     this.response = response;
   }
 
   setUser(u) {
-    const { id, facebook_id, ...user } = u;
+    const { id, ...user } = u;
     this.user = user;
     this.user_id = id;
-    addTimedMessage(id, this.page_id);
+    this.addTimedMessage();
   }
 
-  validateCommand(command) {
+  setValidatedCommand(command) {
     this.validatedCommand = command;
+  }
+
+  canUserStartBook() {
+    const { user } = this;
+    if (!user) {
+      throw new Error(
+        'Cannot check if user can start a book before there is a user.'
+      );
+    }
+
+    const { stripe_subscription_status, credits } = user;
+
+    let canRead = stripe_subscription_status === 'active';
+
+    // Only use tokens if the user is NOT subscribed
+    if (!canRead && credits) {
+      canRead = true;
+      // If the account is not subscribed, decrement credits
+      Users.edit({ id: this.user_id }, { credits: user.credits - 1 }).then(
+        x => x
+      );
+    }
+    return canRead;
+  }
+
+  async getNewCategoriesForUser() {
+    const { user_id, page_id } = this;
+    if (!user_id || !page_id) {
+      throw new Error(
+        'Cannot get categories for user before there is a user and page id'
+      );
+    }
+    const allCategories = await Categories.retrieve({ page_id });
+    const userCategories = await UserCategories.retrieve({ user_id });
+    const userCategoryIDs = userCategories.map(c => c.category_id);
+
+    return allCategories.filter(c => userCategoryIDs.indexOf(c.id) === -1);
+  }
+
+  async addTimedMessage() {
+    const { user_id, page_id } = this;
+    if (!user_id || !page_id) {
+      throw new Error(
+        'Cannot create a timed message without user and page IDs'
+      );
+    }
+
+    // To better catch a user at the start of their free time,
+    // only update timed messages if one doesn't already exists
+    const timedMessage = await TimedMessages.retrieve({
+      user_id,
+      page_id
+    }).first();
+
+    if (!timedMessage) {
+      await TimedMessages.add({
+        user_id,
+        page_id
+      });
+    }
   }
 
   _isPolicyViolation(entry) {
@@ -165,6 +279,7 @@ module.exports = class WebhookEvent {
   }
 
   _parsePolicyViolation(entry) {
+    console.log('Received new policy violation');
     // If the bot does something Facebook doesn't like, they'll trigger a policy_violation
     // webhook.  All we do is save it to the database so we can occasionally (manually) check
     // if something has gone wrong
@@ -182,6 +297,7 @@ module.exports = class WebhookEvent {
   }
 
   async _parseUserAction(entry) {
+    console.log('Received user action');
     const { Event } = entry;
     const message = entry.messaging[0];
 
@@ -194,6 +310,7 @@ module.exports = class WebhookEvent {
     if (!user) {
       // Save sender ID in DB if they're a new user
       user = await Users.add({ facebook_id: message.sender.id });
+      Event.isNewUser = true;
     }
 
     this.setUser(user);

@@ -38,7 +38,7 @@ module.exports = async function(Event) {
 
   return [
     this.sendTemplate('Book', Event, books),
-    !isEndOfCategory
+    isEndOfCategory
       ? this.getReturnFrom(Event, 'browse')
       : this.sendTemplate('QuickReply', text, quickReplies)
   ];

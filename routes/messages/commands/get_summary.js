@@ -2,17 +2,9 @@ const ChatReads = require('models/db/chatReads.js');
 const Books = require('models/db/books.js');
 const Summaries = require('models/db/summaryParts.js');
 
-const updateUserTracking = require('../helpers/updateUserTracking.js');
-const canUserReadBook = require('../helpers/canUserReadBook.js');
-
-const SubscribeTemplate = require('../Templates/Subscribe.js');
-const QRT = require('../Templates/QuickReply.js');
-
 const get_synopsis = require('./get_synopsis.js');
 
-module.exports = async Event => {
-  if (Event.type !== 'postback' && Event.type !== 'referral') return;
-
+module.exports = async function(Event) {
   const { user_id, book_id } = Event;
   const allSummaries = await Summaries.retrieve({ book_id }).orderBy('id');
   const chatRead = await ChatReads.retrieve({ user_id, book_id }).first();
@@ -22,9 +14,11 @@ module.exports = async Event => {
     // Triggers when starting a book (first time or re-reads)
     if (Event.bookCount > 1) {
       // Before proceeding with a new book, verify the user is subscribed or has a credit
-      const canRead = canUserReadBook(Event);
-      if (!canRead) {
-        return [SubscribeTemplate({ ...Event, command: 'start_book' })];
+      if (!Event.canUserStartBook()) {
+        return this.sendTemplate('Subscribe', {
+          ...Event,
+          command: 'start_book'
+        });
       }
     }
 
@@ -52,7 +46,7 @@ module.exports = async Event => {
     current_summary_id
   );
   // Update users progress in tracking table
-  updateUserTracking(user_id, book_id, current_summary_id);
+  await Event.updateUserTracking(current_summary_id);
 
   // Is this the final summary?  If so, delete their progress
   // If not, just update the table with the new ID
@@ -83,7 +77,7 @@ module.exports = async Event => {
       });
       // summaries.isFinal will be true if the block contains the final summary
       // Thus, send a different button
-      return QRT(s.summary, [{ title, payload }]);
+      return this.sendTemplate('QuickReply', s.summary, [{ title, payload }]);
     }
   });
 };

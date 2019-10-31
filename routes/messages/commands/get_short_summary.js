@@ -4,13 +4,11 @@ const QRT = require('../Templates/QuickReply.js');
 const SubscribeTemplate = require('../Templates/Subscribe.js');
 
 const getSummaryParts = require('../../books/helpers/getSummaryParts.js');
-const canUserReadBook = require('../helpers/canUserReadBook.js');
 
 module.exports = async Event => {
   const { book_id } = Event;
 
-  const canRead = canUserReadBook(Event);
-  if (!canRead) {
+  if (!Event.canUserStartBook()) {
     return [SubscribeTemplate({ ...Event, command: 'start_book' })];
   }
   const { shortSummary } = await Books.retrieve({ 'b.id': book_id }).first();

@@ -1,12 +1,11 @@
 const Books = require('models/db/books.js');
-const getUserInfo = require('../helpers/getUserInfo.js');
 const GenericTemplate = require('../Templates/Generic.js');
 
 module.exports = async Event => {
   const { book_id } = Event;
   const book = await Books.retrieve({ 'b.id': book_id }).first();
 
-  const user_info = await getUserInfo(Event);
+  const user_info = await Event.getUserInfo();
 
   const title = `${user_info.first_name}, thank you for reading a quick summary of ${book.title}!`;
 
@@ -54,5 +53,5 @@ module.exports = async Event => {
 
   const page_status = Event.bookCount === 1 ? 'singleBook' : 'multiBook';
 
-  return [GenericTemplate(elements[page_status])];
+  return GenericTemplate(elements[page_status]);
 };
