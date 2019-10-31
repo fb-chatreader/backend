@@ -5,16 +5,16 @@ const Summaries = require('models/db/summaryParts.js');
 const get_synopsis = require('./get_synopsis.js');
 
 module.exports = async function(Event) {
-  const { user_id, book_id } = Event;
+  const { user_id, book_id, freePass } = Event;
   const allSummaries = await Summaries.retrieve({ book_id }).orderBy('id');
   const chatRead = await ChatReads.retrieve({ user_id, book_id }).first();
 
   let current_summary_id;
   if (!chatRead) {
     // Triggers when starting a book (first time or re-reads)
-    if (Event.bookCount > 1) {
+    if (Event.isMultiBookPage()) {
       // Before proceeding with a new book, verify the user is subscribed or has a credit
-      if (!Event.canUserStartBook()) {
+      if (!freePass && !Event.canUserStartBook()) {
         return this.sendTemplate('Subscribe', {
           ...Event,
           command: 'start_book'
@@ -35,7 +35,7 @@ module.exports = async function(Event) {
     });
     // Get synopsis before starting the book
     if (Event.bookCount > 1) {
-      return get_synopsis(Event);
+      return this.getReturnFrom(Event, 'get_synopsis');
     }
   } else {
     current_summary_id = chatRead.current_summary_id;
@@ -58,6 +58,10 @@ module.exports = async function(Event) {
         { current_summary_id: next_summary_id }
       );
 
+  const nextBlockNumber = Math.ceil(
+    (next_summary_id - allSummaries[0].id + 1) / process.env.BLOCK_LENGTH
+  );
+
   return summaries.block.map((s, i) => {
     if (i < summaries.block.length - 1) {
       // For every summary except the last, just send the text
@@ -67,9 +71,9 @@ module.exports = async function(Event) {
     } else {
       const title = summaries.isFinal
         ? 'Finish'
-        : `Continue to ${next_summary_id - allSummaries[0].id + 1}/${
-            allSummaries.length
-          }`;
+        : `Continue to ${nextBlockNumber}/${Math.ceil(
+            allSummaries.length / process.env.BLOCK_LENGTH
+          )}`;
 
       const payload = JSON.stringify({
         command: summaries.isFinal ? 'end_book' : 'get_summary',
