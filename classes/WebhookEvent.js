@@ -153,7 +153,6 @@ module.exports = class WebhookEvent {
   setOverride(command) {
     // The first override should receive priority
     if (!this.isOverridden && !this.override) {
-      console.log('Overriding to: ', command);
       this.isOverridden = true;
       this.override = command;
     }
