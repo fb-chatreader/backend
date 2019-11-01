@@ -14,7 +14,7 @@ module.exports = async function(Event) {
   Event.user = await Users.edit({ id }, { email });
 
   const nextCommand = wasPreviousCommand ? Event.validatedCommand : 'browse';
-  console.log('nextCommand: ', nextCommand);
+
   Event.isMultiBookPage()
     ? this.redirectTo(Event, nextCommand)
     : this.redirectTo(Event, 'get_started');
