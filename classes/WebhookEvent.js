@@ -122,6 +122,19 @@ module.exports = class WebhookEvent {
     }
   }
 
+  async isUserOnboarded() {
+    const { user_id } = this;
+    const userCategories = await UserCategories.retrieve({ user_id });
+    if (userCategories.length < 3) {
+      return false;
+    } else if (!this.user.email) {
+      return false;
+    } else if (this.user.prefersLongSummaries === null) {
+      return false;
+    }
+    return true;
+  }
+
   async processHook(entry) {
     // Tries to identify the type of webhook and save the relevant data
     if (this._isPolicyViolation(entry)) {
