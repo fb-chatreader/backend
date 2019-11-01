@@ -91,13 +91,19 @@ module.exports = class WebhookEvent {
 
   overrideOnUserMessage(command = 'get_started') {
     if (this.type === 'message') {
-      this.setOverride(command);
+      return this.setOverride(command);
     }
   }
 
   overrideOnMissingProperty(prop, command = 'get_started') {
     if (!this[prop]) {
-      this.setOverride(command);
+      return this.setOverride(command);
+    }
+  }
+
+  insertPreviousState(state) {
+    for (let property in state) {
+      this[property] = state[property];
     }
   }
 
@@ -174,6 +180,7 @@ module.exports = class WebhookEvent {
     if (!this.isOverridden && !this.override) {
       this.isOverridden = true;
       this.override = command;
+      return this.override;
     }
   }
 
