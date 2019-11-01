@@ -1,1 +1,6 @@
-module.exports = async Event => Event.overrideIfNotOnboarded();
+module.exports = async function(Event) {
+  if (this.hasOpenState(Event)) {
+    this.setState(Event);
+  }
+  Event.overrideIfNotOnboarded();
+};
