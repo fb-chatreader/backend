@@ -86,7 +86,7 @@ class Dispatch {
     return this.import('helpers', ...args);
   }
 
-  setStates(Event) {
+  setState(Event) {
     // Save a single Event object to be pulled later by the app
     // ie: the user is going through onboarding, save the Event
     // that triggered the onboarding
