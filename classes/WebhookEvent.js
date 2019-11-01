@@ -89,8 +89,14 @@ module.exports = class WebhookEvent {
     return this.bookCount > 1;
   }
 
-  overrideOnUserMessage(command) {
-    if (this.type === 'message' && !this.isOverridden) {
+  overrideOnUserMessage(command = 'get_started') {
+    if (this.type === 'message') {
+      this.setOverride(command);
+    }
+  }
+
+  overrideOnMissingProperty(prop, command = 'get_started') {
+    if (!this[prop]) {
       this.setOverride(command);
     }
   }
@@ -113,7 +119,7 @@ module.exports = class WebhookEvent {
       const { user_id } = this;
       const userCategories = await UserCategories.retrieve({ user_id });
       if (userCategories.length < 3) {
-        return this.setOverride('pick_category');
+        return this.setOverride('request_categories');
       } else if (!this.user.email) {
         return this.setOverride('request_email');
       } else if (this.user.prefersLongSummaries === null) {
