@@ -13,7 +13,8 @@ module.exports = async function(Event) {
       title: c.name,
       payload: JSON.stringify({
         command: 'save_category',
-        category_id: c.id
+        category_id: c.id,
+        redirect: Event.validatedCommand
       })
     };
   });
