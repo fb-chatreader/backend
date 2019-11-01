@@ -86,7 +86,7 @@ class Dispatch {
     return this.import('helpers', ...args);
   }
 
-  saveState(Event) {
+  setStates(Event) {
     // Save a single Event object to be pulled later by the app
     // ie: the user is going through onboarding, save the Event
     // that triggered the onboarding
@@ -94,7 +94,16 @@ class Dispatch {
   }
 
   getState(Event) {
-    return this.state[Event.user_id];
+    // Remove the item from state and return it.
+    // Note: it is destructive
+    const state = this.state[Event.user_id];
+    delete this.state[Event.user_id];
+    return state;
+  }
+
+  hasOpenState(Event) {
+    // Boolean return for if a user has data in state
+    return !this.state[Event.user_id];
   }
 
   async sendTemplate(name, ...args) {
