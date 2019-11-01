@@ -128,6 +128,19 @@ module.exports = class WebhookEvent {
     }
   }
 
+  async isUserOnboarded() {
+    const { user_id } = this;
+    const userCategories = await UserCategories.retrieve({ user_id });
+    if (userCategories.length < 3) {
+      return false;
+    } else if (!this.user.email) {
+      return false;
+    } else if (this.user.prefersLongSummaries === null) {
+      return false;
+    }
+    return true;
+  }
+
   async processHook(entry) {
     // Tries to identify the type of webhook and save the relevant data
     if (this._isPolicyViolation(entry)) {
@@ -347,7 +360,7 @@ module.exports = class WebhookEvent {
       isReferral
         ? this.setEventData({
             ...parsed_data,
-            ...handleReferral(message.postback.referral.ref),
+            ...this._handleReferral(message.postback.referral.ref),
             type: 'referral'
           })
         : this.setEventData({
@@ -364,7 +377,7 @@ module.exports = class WebhookEvent {
 
       this.setEventData({
         ...parsed_data,
-        ...handleReferral(message.referral.ref),
+        ...this._handleReferral(message.referral.ref),
         type: 'referral'
       });
     } else if (message && message.message) {
@@ -385,7 +398,6 @@ module.exports = class WebhookEvent {
     const refData = this._queryStringToObject(qs);
 
     refData.command = refData.command ? refData.command : 'start_book';
-    delete refData.command;
 
     return refData;
   }
