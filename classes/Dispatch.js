@@ -90,7 +90,9 @@ class Dispatch {
     // Save a single Event object to be pulled later by the app
     // ie: the user is going through onboarding, save the Event
     // that triggered the onboarding
-    this.state[Event.user_id] = Event;
+
+    // NOTE: Does NOT save across server crashes/restarts at this time
+    this.state[Event.user_id] = { ...Event };
   }
 
   getState(Event) {
@@ -98,12 +100,22 @@ class Dispatch {
     // Note: it is destructive
     const state = this.state[Event.user_id];
     delete this.state[Event.user_id];
-    return state;
+
+    Event.insertPreviousState(state);
+    return Event;
+  }
+
+  clearState(Event) {
+    delete this.state[Event.user_id];
   }
 
   hasOpenState(Event) {
     // Boolean return for if a user has data in state
     return !this.state[Event.user_id];
+  }
+
+  isUsingState(Event) {
+    return this.state[Event.user_id];
   }
 
   async sendTemplate(name, ...args) {
