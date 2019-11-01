@@ -55,7 +55,7 @@ module.exports = async (Event, books) => {
           buttons.push({
             type: 'web_url',
             title: 'Share',
-            url: `${process.env.FRONTEND_URL}/summary/${book_id}`
+            url: `${process.env.FRONTEND_URL}/singlebook/${book_id}`
           });
 
           return {
