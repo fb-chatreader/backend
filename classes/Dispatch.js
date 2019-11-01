@@ -14,6 +14,7 @@ class Dispatch {
     this.templates = reqDir('../routes/messages/Templates/');
     this.db = reqDir('../models/db/');
     this.helpers = reqDir('../routes/messages/helpers');
+    this.state = {};
   }
 
   async execute(Event, override) {
@@ -83,6 +84,17 @@ class Dispatch {
 
   withHelpers(...args) {
     return this.import('helpers', ...args);
+  }
+
+  saveState(Event) {
+    // Save a single Event object to be pulled later by the app
+    // ie: the user is going through onboarding, save the Event
+    // that triggered the onboarding
+    this.state[Event.user_id] = Event;
+  }
+
+  getState(Event) {
+    return this.state[Event.user_id];
   }
 
   async sendTemplate(name, ...args) {
