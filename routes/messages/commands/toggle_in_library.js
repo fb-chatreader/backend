@@ -2,10 +2,6 @@ const UserLibrary = require('models/db/userLibraries.js');
 
 module.exports = async Event => {
   const { user_id, book_id, isAdding } = Event;
-  if (!book_id) {
-    console.error('No book ID supplied, returning without a response');
-    return;
-  }
 
   const currentLibrary = await UserLibrary.retrieve({ 'ul.user_id': user_id });
   const exists = currentLibrary.find(b => b.id === book_id);
@@ -21,5 +17,5 @@ module.exports = async Event => {
     await UserLibrary[method]({ user_id, book_id });
   }
 
-  return null;
+  return { text: 'Saved!' };
 };
