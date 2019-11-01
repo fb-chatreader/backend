@@ -10,7 +10,7 @@ module.exports = async Event => {
   const categories = await Event.getNewCategoriesForUser();
 
   // If command given is this command, push them toward browse as a default behavior
-  console.log('VAL: ', Event.validatedCommand);
+
   const redirect =
     Event.validatedCommand === 'pick_category'
       ? 'browse'
