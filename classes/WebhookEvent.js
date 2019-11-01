@@ -342,7 +342,7 @@ module.exports = class WebhookEvent {
       isReferral
         ? this.setEventData({
             ...parsed_data,
-            ...handleReferral(message.postback.referral.ref),
+            ...this._handleReferral(message.postback.referral.ref),
             type: 'referral'
           })
         : this.setEventData({
@@ -359,7 +359,7 @@ module.exports = class WebhookEvent {
 
       this.setEventData({
         ...parsed_data,
-        ...handleReferral(message.referral.ref),
+        ...this._handleReferral(message.referral.ref),
         type: 'referral'
       });
     } else if (message && message.message) {
@@ -380,7 +380,6 @@ module.exports = class WebhookEvent {
     const refData = this._queryStringToObject(qs);
 
     refData.command = refData.command ? refData.command : 'start_book';
-    delete refData.command;
 
     return refData;
   }
