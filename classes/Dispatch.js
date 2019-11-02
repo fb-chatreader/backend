@@ -92,15 +92,14 @@ class Dispatch {
     // that triggered the onboarding
 
     // NOTE: Does NOT save across server crashes/restarts at this time
+    console.log('SAVING STATE');
     this.state[Event.user_id] = { ...Event };
   }
 
   getState(Event) {
-    // Remove the item from state and return it.
-    // Note: it is destructive
+    console.log('GETTING STATE');
     const state = this.state[Event.user_id];
-    delete this.state[Event.user_id];
-
+    // Can either simply run the method or set Event to the return
     Event.insertPreviousState(state);
     return Event;
   }
@@ -110,11 +109,12 @@ class Dispatch {
   }
 
   hasOpenState(Event) {
-    // Boolean return for if a user has data in state
+    // Returns true is state for user is empty
     return !this.state[Event.user_id];
   }
 
-  isUsingState(Event) {
+  hasState(Event) {
+    // Returns truthy if user has data in state
     return this.state[Event.user_id];
   }
 
@@ -131,6 +131,7 @@ class Dispatch {
 
   redirectTo(Event, command) {
     Event.validatedCommand = command;
+    Event.type = 'redirect';
     this.execute(Event, true);
   }
 

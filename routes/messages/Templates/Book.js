@@ -37,17 +37,17 @@ module.exports = async (Event, books) => {
 
           if (Event.isMultiBookPage()) {
             const usersLibrary = await UserLibraries.retrieve({ user_id });
-            const isInLibrary = usersLibrary.find(
+            const isAdding = !usersLibrary.find(
               lib => lib.id === parseInt(book_id, 10)
             );
 
             buttons.push({
               type: 'postback',
-              title: isInLibrary ? 'Remove from Library' : 'Add to Library',
+              title: isAdding ? 'Add to Library' : 'Remove from Library',
               payload: JSON.stringify({
                 command: 'toggle_in_library',
                 book_id,
-                isAdding: !isInLibrary
+                isAdding
               })
             });
           }

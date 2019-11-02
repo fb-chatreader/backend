@@ -6,7 +6,7 @@ module.exports = async function(Event) {
   const { user_id: id } = Event;
   const email = Event.command;
 
-  const wasPreviousCommand = this.isUsingState(Event);
+  const wasPreviousCommand = this.hasState(Event);
   if (wasPreviousCommand) {
     // Override Event to previous state, if it exists
     this.getState(Event);

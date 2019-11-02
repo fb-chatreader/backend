@@ -89,6 +89,10 @@ module.exports = class WebhookEvent {
     return this.bookCount > 1;
   }
 
+  isPostback() {
+    return this.type === 'postback';
+  }
+
   overrideOnUserMessage(command = 'get_started') {
     if (this.type === 'message') {
       return this.setOverride(command);
@@ -101,26 +105,7 @@ module.exports = class WebhookEvent {
     }
   }
 
-  insertPreviousState(state) {
-    for (let property in state) {
-      this[property] = state[property];
-    }
-  }
-
   async overrideIfNotOnboarded() {
-    // User has completed onboarding
-    if (this.hasOwnProperty('prefersLongSummaries')) {
-      // Event.prefersLongSummaries will exist on the postback
-      // from request_summary_preference (in English: the user sent the final
-      // piece needed to complete onboarding and should progress)
-      const { prefersLongSummaries } = this;
-      const updatedUser = await Users.edit(
-        { id: this.user_id },
-        { prefersLongSummaries }
-      );
-      this.user = updatedUser;
-    }
-
     if (!this.isOverridden) {
       const { user_id } = this;
       const userCategories = await UserCategories.retrieve({ user_id });
@@ -178,6 +163,7 @@ module.exports = class WebhookEvent {
   setOverride(command) {
     // The first override should receive priority
     if (!this.isOverridden && !this.override) {
+      this.type = 'redirect';
       this.isOverridden = true;
       this.override = command;
       return this.override;
@@ -228,11 +214,13 @@ module.exports = class WebhookEvent {
     this.response = response;
   }
 
-  setUser(u) {
+  setUser(u, addTimeUser) {
     const { id, ...user } = u;
     this.user = user;
     this.user_id = id;
-    this.addTimedMessage();
+    if (addTimeUser) {
+      this.addTimedMessage();
+    }
   }
 
   setValidatedCommand(command) {
@@ -274,6 +262,12 @@ module.exports = class WebhookEvent {
     const userCategoryIDs = userCategories.map(c => c.category_id);
 
     return allCategories.filter(c => userCategoryIDs.indexOf(c.id) === -1);
+  }
+
+  insertPreviousState(state) {
+    for (let property in state) {
+      this[property] = state[property];
+    }
   }
 
   async addTimedMessage() {
@@ -322,7 +316,6 @@ module.exports = class WebhookEvent {
   }
 
   async _parseUserAction(entry) {
-    console.log('Received user action');
     const { Event } = entry;
     const message = entry.messaging[0];
 
@@ -338,7 +331,7 @@ module.exports = class WebhookEvent {
       Event.isNewUser = true;
     }
 
-    this.setUser(user);
+    this.setUser(user, true);
 
     // So many commands currently rely on how many books are available
     // for the page, we've added the bookCount as a default
@@ -366,14 +359,14 @@ module.exports = class WebhookEvent {
 
       isReferral
         ? this.setEventData({
+            type: 'referral',
             ...parsed_data,
-            ...this._handleReferral(message.postback.referral.ref),
-            type: 'referral'
+            ...this._handleReferral(message.postback.referral.ref)
           })
         : this.setEventData({
+            type: 'postback',
             ...parsed_data,
-            ...JSON.parse(payload),
-            type: 'postback'
+            ...JSON.parse(payload)
           });
     } else if (message.referral) {
       // This block will fire under one condition:
@@ -383,9 +376,9 @@ module.exports = class WebhookEvent {
       // http://m.me/109461977131004?ref=command=start_book,book_id=1
 
       this.setEventData({
+        type: 'referral',
         ...parsed_data,
-        ...this._handleReferral(message.referral.ref),
-        type: 'referral'
+        ...this._handleReferral(message.referral.ref)
       });
     } else if (message && message.message) {
       // Fires whenever the user types something at the bot
