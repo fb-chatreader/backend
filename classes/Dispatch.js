@@ -14,6 +14,7 @@ class Dispatch {
     this.templates = reqDir('../routes/messages/Templates/');
     this.db = reqDir('../models/db/');
     this.helpers = reqDir('../routes/messages/helpers');
+    this.state = {};
   }
 
   async execute(Event, override) {
@@ -85,6 +86,38 @@ class Dispatch {
     return this.import('helpers', ...args);
   }
 
+  setState(Event) {
+    // Save a single Event object to be pulled later by the app
+    // ie: the user is going through onboarding, save the Event
+    // that triggered the onboarding
+
+    // NOTE: Does NOT save across server crashes/restarts at this time
+    console.log('SAVING STATE');
+    this.state[Event.user_id] = { ...Event };
+  }
+
+  getState(Event) {
+    console.log('GETTING STATE');
+    const state = this.state[Event.user_id];
+    // Can either simply run the method or set Event to the return
+    Event.insertPreviousState(state);
+    return Event;
+  }
+
+  clearState(Event) {
+    delete this.state[Event.user_id];
+  }
+
+  hasOpenState(Event) {
+    // Returns true is state for user is empty
+    return !this.state[Event.user_id];
+  }
+
+  hasState(Event) {
+    // Returns truthy if user has data in state
+    return this.state[Event.user_id];
+  }
+
   async sendTemplate(name, ...args) {
     // If you want to immediately run a template instead of importing it then running it,
     // run this with any arguments the template wants, everything separated by a comma.
@@ -98,6 +131,7 @@ class Dispatch {
 
   redirectTo(Event, command) {
     Event.validatedCommand = command;
+    Event.type = 'redirect';
     this.execute(Event, true);
   }
 

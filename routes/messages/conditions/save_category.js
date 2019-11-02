@@ -1,5 +1,3 @@
-module.exports = ({ category_id }) => {
-  if (!category_id) {
-    Event.setOverride('get_started');
-  }
+module.exports = function(Event) {
+  Event.overrideOnMissingProperty('category_id', 'get_started');
 };

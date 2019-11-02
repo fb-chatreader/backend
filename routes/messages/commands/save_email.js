@@ -4,8 +4,18 @@ module.exports = async function(Event) {
   // When the user types a valid email address, save it to their account.
   // Then redirect them to 'browse'
   const { user_id: id } = Event;
-  Event.user = await Users.edit({ id }, { email: Event.command });
+  const email = Event.command;
+
+  const wasPreviousCommand = this.hasState(Event);
+  if (wasPreviousCommand) {
+    // Override Event to previous state, if it exists
+    this.getState(Event);
+  }
+  Event.user = await Users.edit({ id }, { email });
+
+  const nextCommand = wasPreviousCommand ? Event.validatedCommand : 'browse';
+
   Event.isMultiBookPage()
-    ? this.redirectTo(Event, 'browse')
+    ? this.redirectTo(Event, nextCommand)
     : this.redirectTo(Event, 'get_started');
 };

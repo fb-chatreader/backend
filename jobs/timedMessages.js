@@ -1,7 +1,7 @@
 const TimedMessages = require('../models/db/timedMessages.js');
 const Users = require('models/db/users.js');
 const Pages = require('models/db/pages.js');
-const Message = require('classes/WebhookEvent.js');
+const MessageQueue = require('classes/MessageQueue.js');
 const GenericTemplate = require('routes/messages/Templates/Generic.js');
 
 module.exports = setInterval(cycleMessages, 1000 * 60 * 30);
@@ -16,7 +16,7 @@ async function cycleMessages() {
       const user = await Users.retrieve({ id: m.user_id }).first();
       // This gets us around having to add a page_id column to the timed_messages
       // table but likely won't work long term if books lose the page_id column
-      const page = await Pages.retrieve({ id: m.page_id }).first();
+      const { access_token } = await Pages.retrieve({ id: m.page_id }).first();
       const psid = user.facebook_id;
 
       const response = GenericTemplate([
@@ -34,16 +34,14 @@ async function cycleMessages() {
         }
       ]);
 
-      const timed = new Message(
-        {
-          sender: psid,
-          page,
-          command: 'timed_message'
-        },
-        [response]
-      );
+      const timed = new MessageQueue({
+        sender_id: psid,
+        access_token,
+        validatedCommand: 'timed_message'
+      });
 
-      await timed.respond();
+      timed.add(response);
+      timed.send();
       await TimedMessages.remove(m.id);
       console.log('Sent timed response');
     }
