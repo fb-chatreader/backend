@@ -3,6 +3,7 @@ const UserCategories = require('models/db/userCategories');
 const BookCategories = require('models/db/bookCategories.js');
 const sortBooks = require('../../books/helpers/sortBooksByRating');
 const UserLibrary = require('models/db/userLibraries.js');
+const UserTracking = require('models/db/userTracking.js');
 
 module.exports = async function(Event) {
     const { user_id, page_id } = Event;
@@ -27,9 +28,13 @@ module.exports = async function(Event) {
         allBooksFromCats.push({ category_id: cat.category_id, books });
     }
 
+    // get books in the user's library:
     const libraryBooks = await UserLibrary.retrieve({ user_id, page_id });
-    console.log('libraryBooks:', libraryBooks);
     
+    // Get entries for the user in the user_tracking table:
+    const userSummaryReads = await UserTracking.retrieve({ user_id });
+    console.log('userSummaryReads:', userSummaryReads);
+
 //   const text = `Would you like to see more books on ${category.name}?`;
 //   const quickReplies = [];
 //   const options = [
