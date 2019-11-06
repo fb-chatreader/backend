@@ -5,15 +5,17 @@ const sortBooks = require('../../books/helpers/sortBooksByRating');
 const UserLibrary = require('models/db/userLibraries.js');
 const UserTracking = require('models/db/userTracking.js');
 
+// * NOTE: This strategy returns only books from the user's saved categories.
+    // * The number of books sent from each category is based on a category score, 
+    // * calculated based on how many library books the user has from each category
+    // * and how many book summaries they have read from that category.
+    // * It's possible for a user to have library books from categories other than their saved categories
+    // * and to have read summaries from other categories.
+    // * In that case, it could make sense to include curated books from other categories.
+    // * But for now, the "algorithm" privileges the user's saved categories over all others.
+
 module.exports = async function(Event) {
     const { user_id, page_id } = Event;
-    // *** Steps:
-        // const userCatScores = user's selected/saved categories; array of objects to count cat score
-            // e.g., userCatScores = [{categoryId: 1, count: 0}, {categoryId: 5, count: 0}, {categoryId: 3, count: 0}]
-        // const allBooksFromCats = all books from user's saved categories
-        // const userLibraryBooks = all books from user's library
-        // const userSummaryReads = books for which user has read the summary, from user tracking table
-        // update scores in userCatScores based on library books and summary reads
 
     // Get user's categories and create array to track score for each category:
     const userCats = await UserCategories.retrieve({ user_id });
@@ -34,48 +36,83 @@ module.exports = async function(Event) {
         .retrieve({ user_id })
         .map(async book => {
             return book = await BookCategories.retrieve({ book_id: book.id }).first();
-        })
-    console.log('userBookSummariesRead:', userBookSummariesRead);
+        });
+    // console.log('userBookSummariesRead:', userBookSummariesRead);
 
+    // Update the score for each category in userCatScores:
+    userCatScores.forEach(cat => {
+        userLibraryBooks.forEach(book => {
+            if (cat.category_id === book.category_id) {
+                cat.score++;
+            }
+        });
+        userBookSummariesRead.forEach(book => {
+            if (cat.category_id === book.category_id) {
+                cat.score++;
+            }
+        });
+    });
+    // console.log('userCatScores:', userCatScores);
 
-    // Get all books from each category 
-    // *** may remove later and get books one cat at a time for sorting and filteriing ***
-    // const allBooksFromCats = [];
-    // for (let cat of userCats) {
-    //     let books = await BookCategories.retrieve({ category_id: cat.category_id });
-    //     allBooksFromCats.push({ category_id: cat.category_id, books });
-    // }
+    // Sort user categories by score highest to lowest:
+    const sortedUserCatScores = userCatScores.sort((a, b) => {
+        return b.score - a.score;
+    });
 
-//   const text = `Would you like to see more books on ${category.name}?`;
-//   const quickReplies = [];
-//   const options = [
-//     {
-//       title: 'More',
-//       command: 'get_books_from_category',
-//       category_id
-//     },
-//     {
-//       title: 'Other',
-//       command: 'browse'
-//     }
-//   ];
+    // First attempt at creating curated books array:
+    // const curatedBooks = sortedUserCatScores.map(async cat => {
+    //     const books = await BookCategories.retrieve({ category_id: cat.category_id });
+    //     const sortedBooks = sortBooks(books);
+    //     const filteredBooks = sortedBooks.filter(sb => {
+    //         return userLibraryBooks.some(lb => {
+    //           return lb.id === sb.id;
+    //         });
+    //       });
+    //     return filteredBooks.slice(0, 2);
+    // });
+    // console.log('curatedBooks:', curatedBooks);
 
-//   options.forEach(opt => {
-//     const { title, command, category_id } = opt;
+    // Second attempt at curated books array:
+    const curatedBooks = [];
 
-//     quickReplies.push({
-//       title,
-//       payload: JSON.stringify({
-//         command: command.toLowerCase(),
-//         category_id
-//       })
-//     });
-//   });
+    for (let i = 0; i < sortedUserCatScores.length; i++) {
+        const books = await BookCategories.retrieve({ category_id: sortedUserCatScores[i].category_id });
+        const filteredBooks = books.filter(b => {
+            return userLibraryBooks.some(lb => {
+              return lb.id === b.id;
+            });
+          });
+        const sortedBooks = sortBooks(filteredBooks).slice(0, 5);
+        console.log(sortedBooks);
+    }
+    
+    // *** 
+    // Build/populate the book carousel:
+    // ***
 
-//   return [
-//     this.sendTemplate('Book', Event, books),
-//     isEndOfCategory
-//       ? this.getReturnFrom(Event, 'browse')
-//       : this.sendTemplate('QuickReply', text, quickReplies)
-//   ];
+    // const text = `Would you like to bowse more books?`;
+    // const quickReplies = [];
+    // const options = [
+    //     {
+    //         title: 'Browse books',
+    //         command: 'browse'
+    //     }
+    // ];
+
+    // options.forEach(opt => {
+    //     const { title, command, category_id } = opt;
+
+    //     quickReplies.push({
+    //         title,
+    //         payload: JSON.stringify({
+    //             command: command.toLowerCase(),
+    //             category_id
+    //         })
+    //     });
+    // });
+
+    // return [
+    //     this.sendTemplate('Book', Event, books),
+    //     this.sendTemplate('QuickReply', text, quickReplies)
+    // ];
 };
