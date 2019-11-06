@@ -19,29 +19,32 @@ module.exports = async function(Event) {
     const userCats = await UserCategories.retrieve({ user_id });
     const userCatScores = userCats.map(cat => ({category_id: cat.category_id, score: 0}));
 
-    // Get all books from each category 
-    // *** may remove later and get books one cat at a time for sorting and filteriing ***
-    const allBooksFromCats = [];
-    for (let cat of userCats) {
-        let books = await BookCategories.retrieve({ category_id: cat.category_id });
-        allBooksFromCats.push({ category_id: cat.category_id, books });
-    }
-
-    // get books in the user's library:
-    const userLibraryBooks = await UserLibrary.retrieve({ user_id, page_id });
-    console.log('userLibraryBooks:', userLibraryBooks);
-    // Add category_id to each book in library"
-    // userLibraryBooks.forEach(book => {
-    //     let category_id = await BookCategories
-    // });
+    // Get books in the user's library (doesn't include category_id for each book),
+    // and map over the result, replacing each book with a book that includes category_id
+    // by querying BookCategories:
+    const userLibraryBooks = await UserLibrary
+        .retrieve({ user_id, page_id })
+        .map(async book => {
+            return book = await BookCategories.retrieve({ book_id: book.id }).first();
+        });
+    // console.log('userLibraryBooks:', userLibraryBooks);
 
     // Get entries for the user in the user_tracking table:
-    const userSummaryReads = await UserTracking.retrieve({ user_id });
-    console.log('userSummaryReads:', userSummaryReads);
-    // for each element in userLibraryBooks
+    const userBookSummariesRead = await UserTracking
+        .retrieve({ user_id })
+        .map(async book => {
+            return book = await BookCategories.retrieve({ book_id: book.id }).first();
+        })
+    console.log('userBookSummariesRead:', userBookSummariesRead);
 
 
-
+    // Get all books from each category 
+    // *** may remove later and get books one cat at a time for sorting and filteriing ***
+    // const allBooksFromCats = [];
+    // for (let cat of userCats) {
+    //     let books = await BookCategories.retrieve({ category_id: cat.category_id });
+    //     allBooksFromCats.push({ category_id: cat.category_id, books });
+    // }
 
 //   const text = `Would you like to see more books on ${category.name}?`;
 //   const quickReplies = [];
