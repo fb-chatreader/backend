@@ -9,6 +9,7 @@ function retrieve(filter) {
   return filter
     ? db('book_categories as bc')
         .select(
+          'bc.category_id as category_id',
           'b.id as id',
           'b.page_id as page_id',
           'b.title as title',

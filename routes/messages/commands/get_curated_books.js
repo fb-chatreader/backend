@@ -8,13 +8,12 @@ const UserTracking = require('models/db/userTracking.js');
 module.exports = async function(Event) {
     const { user_id, page_id } = Event;
     // *** Steps:
-        // const userCats = user's selected/saved categories; array of objects to count cat score
-            // e.g., userCats = [{categoryId: 1, count: 0}, {categoryId: 5, count: 0}, {categoryId: 3, count: 0}]
-        // const allBooks = all books from user's saved categories
-        // const libraryBooks = all books from user's library
-        // const readBooks = books for which user has read the summary, from user tracking table
-        // get top 5 books from top category, removing any books already in the user's library
-        // get
+        // const userCatScores = user's selected/saved categories; array of objects to count cat score
+            // e.g., userCatScores = [{categoryId: 1, count: 0}, {categoryId: 5, count: 0}, {categoryId: 3, count: 0}]
+        // const allBooksFromCats = all books from user's saved categories
+        // const userLibraryBooks = all books from user's library
+        // const userSummaryReads = books for which user has read the summary, from user tracking table
+        // update scores in userCatScores based on library books and summary reads
 
     // Get user's categories and create array to track score for each category:
     const userCats = await UserCategories.retrieve({ user_id });
@@ -29,11 +28,20 @@ module.exports = async function(Event) {
     }
 
     // get books in the user's library:
-    const libraryBooks = await UserLibrary.retrieve({ user_id, page_id });
-    
+    const userLibraryBooks = await UserLibrary.retrieve({ user_id, page_id });
+    console.log('userLibraryBooks:', userLibraryBooks);
+    // Add category_id to each book in library"
+    // userLibraryBooks.forEach(book => {
+    //     let category_id = await BookCategories
+    // });
+
     // Get entries for the user in the user_tracking table:
     const userSummaryReads = await UserTracking.retrieve({ user_id });
     console.log('userSummaryReads:', userSummaryReads);
+    // for each element in userLibraryBooks
+
+
+
 
 //   const text = `Would you like to see more books on ${category.name}?`;
 //   const quickReplies = [];

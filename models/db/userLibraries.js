@@ -16,7 +16,7 @@ function retrieve(filter) {
           'b.author as author',
           'b.intro as intro',
           'b.synopsis as synopsis',
-          'b.image_url as image_url'
+          'b.image_url as image_url',
         )
         .where(filter)
         .join('books as b', { 'b.id': 'ul.book_id' })
