@@ -59,7 +59,8 @@ module.exports = async function(Event) {
         return b.score - a.score;
     });
 
-    // First attempt at creating curated books array:
+    // *** First attempt at creating curated books array:
+    // ***************************
     // const curatedBooks = sortedUserCatScores.map(async cat => {
     //     const books = await BookCategories.retrieve({ category_id: cat.category_id });
     //     const sortedBooks = sortBooks(books);
@@ -71,20 +72,48 @@ module.exports = async function(Event) {
     //     return filteredBooks.slice(0, 2);
     // });
     // console.log('curatedBooks:', curatedBooks);
+    // ***************************
 
-    // Second attempt at curated books array:
+    // *** Second attempt at curated books array:
+    // ***************************
+    // const curatedBooks = [];
+
+    // for (let i = 0; i < sortedUserCatScores.length; i++) {
+    //     let books = await BookCategories.retrieve({ category_id: sortedUserCatScores[i].category_id });
+    //     let filteredBooks = books.filter(b => {
+    //         return userLibraryBooks.some(lb => {
+    //           return lb.id === b.id;
+    //         });
+    //       });
+    //     let sortedBooks = sortBooks(filteredBooks).slice(0, 5);
+    //     console.log('sortedBooks:', sortedBooks);
+
+    //     const numberOfBooks = [5, 3, 2];
+
+    //     for (let n = 0; n < numberOfBooks[i]; n++) {
+    //         console.log(`${sortedBooks[n]}:`, sortedBooks[n]);
+    //         curatedBooks.push(sortedBooks[n]);
+    //     }
+    // }
+    // console.log('curatedBooks:', curatedBooks);
+    // ***************************
+
     const curatedBooks = [];
+for (let i = 0; i < sortedUserCatScores.length; i++) {
+  const books = await BookCategories.retrieve({
+    category_id: sortedUserCatScores[i].category_id
+  });
 
-    for (let i = 0; i < sortedUserCatScores.length; i++) {
-        const books = await BookCategories.retrieve({ category_id: sortedUserCatScores[i].category_id });
-        const filteredBooks = books.filter(b => {
-            return userLibraryBooks.some(lb => {
-              return lb.id === b.id;
-            });
-          });
-        const sortedBooks = sortBooks(filteredBooks).slice(0, 5);
-        console.log(sortedBooks);
-    }
+  const filteredBooks = books.filter(b =>
+    userLibraryBooks.find(lb => lb.id === b.id)
+  );
+  console.log("FILTERED COUNT: ", filteredBooks.length);
+  const numberOfBooks = [5, 3, 2];
+  curatedBooks.push(...sortBooks(filteredBooks).slice(0, numberOfBooks[i]));
+  console.log("AFTER PUSH: ", curatedBooks)
+}
+
+console.log('curatedBooks:', curatedBooks);
     
     // *** 
     // Build/populate the book carousel:
