@@ -1,3 +1,4 @@
+const genDummyData = require('../seeds/feedback/generateFeedback');
 
 const feedback = {
   feedback_score: 5,
@@ -17,7 +18,8 @@ exports.seed = function(knex) {
 
       return {
         feedback_score,
-        additional_feedback
+        additional_feedback,
+        email
       };
     })
   );
