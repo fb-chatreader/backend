@@ -36,6 +36,7 @@ module.exports = async function(Event) {
         .map(async book => {
             return book = await BookCategories.retrieve({ book_id: book.id }).first();
         });
+    console.log('userBookSummariesRead:', userBookSummariesRead);
 
     // Update the score for each category in userCatScores:
     userCatScores.forEach(cat => {
@@ -55,7 +56,6 @@ module.exports = async function(Event) {
     const sortedUserCatScores = userCatScores.sort((a, b) => {
         return b.score - a.score;
     });
-    console.log('sortedUserCatScores:', sortedUserCatScores);
 
     // *** Build the curated books array:
     // ***************************
@@ -64,7 +64,7 @@ module.exports = async function(Event) {
     for (let i = 0; i < sortedUserCatScores.length; i++) {
         let books = await BookCategories.retrieve({ category_id: sortedUserCatScores[i].category_id });
         let filteredBooks = books.filter(b =>
-                    !userLibraryBooks.find(lb => lb.id === b.id)
+                    (!userLibraryBooks.find(lb => lb.id === b.id) && !userBookSummariesRead.find(bs => bs.id === b.id))
                 );
         let sortedBooks = sortBooks(filteredBooks).slice(0, 5);
 
