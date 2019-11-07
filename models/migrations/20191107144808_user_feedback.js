@@ -3,6 +3,7 @@ exports.up = function(knex) {
     tbl.increments();
     tbl.integer('feedback_score');
     tbl.text('additional_feedback');
+    tbl.text('email');
     tbl.timestamp('created_at').notNullable().defaultTo(knex.fn.now());
   });
 };
