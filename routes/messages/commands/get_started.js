@@ -14,7 +14,6 @@ module.exports = async function(Event) {
 };
 
 async function getMultipleBooks(Event) {
-  console.log('multibooks');
   // For now, the bot assumes if there are multiple books, it's on ChatReader
   const { user_id } = Event;
 
@@ -63,8 +62,6 @@ async function getMultipleBooks(Event) {
 }
 
 async function getSingleBook(Event) {
-  console.log('singlebook');
-
   const book = await Books.retrieve({ 'b.page_id': Event.page_id }).first();
   const userInfo = await Event.getUserInfo();
 
