@@ -1,7 +1,7 @@
 const Books = require('models/db/books.js');
 const GenericTemplate = require('../Templates/Generic.js');
 
-module.exports = async Event => {
+module.exports = async (Event) => {
   const { book_id } = Event;
   const book = await Books.retrieve({ 'b.id': book_id }).first();
 
@@ -14,8 +14,7 @@ module.exports = async Event => {
   elements.singleBook = [
     {
       title,
-      subtitle:
-        "if you'd like to read more books like this, check out Chatwise!",
+      subtitle: "if you'd like to read more books like this, check out Chatwise!",
       image_url: 'https://i.imgur.com/UdZlgQA.png',
       default_action: {
         type: 'web_url',
@@ -41,12 +40,12 @@ module.exports = async Event => {
           type: 'postback',
           payload: JSON.stringify({ command: 'browse' }),
           title: 'See more books'
-        },
-        {
-          type: 'web_url',
-          title: 'Share',
-          url: process.env.FRONTEND_URL
         }
+        // {
+        //   type: 'web_url',
+        //   title: 'Share',
+        //   url: process.env.FRONTEND_URL
+        // }
       ]
     }
   ];

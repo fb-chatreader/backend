@@ -6,17 +6,15 @@ module.exports = async function(Event) {
   if (Event.isNewPage()) {
     return [
       {
-        text:
-          'Sorry, this bot is still being created, please visit us again soon!'
+        text: 'Sorry, this bot is still being created, please visit us again soon!'
       }
     ];
   }
-  return Event.isSingleBookPage()
-    ? getSingleBook.call(this, Event)
-    : getMultipleBooks.call(this, Event);
+  return Event.isSingleBookPage() ? getSingleBook.call(this, Event) : getMultipleBooks.call(this, Event);
 };
 
 async function getMultipleBooks(Event) {
+  console.log('multibooks');
   // For now, the bot assumes if there are multiple books, it's on ChatReader
   const { user_id } = Event;
 
@@ -65,6 +63,8 @@ async function getMultipleBooks(Event) {
 }
 
 async function getSingleBook(Event) {
+  console.log('singlebook');
+
   const book = await Books.retrieve({ 'b.page_id': Event.page_id }).first();
   const userInfo = await Event.getUserInfo();
 
