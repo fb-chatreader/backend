@@ -1,20 +1,12 @@
-const genDummyData = require('../seeds/feedback/generateFeedback');
+const generateDummyUserData = require('../seeds/feedback/generateFeedback');
 
-const feedback = {
-  feedback_score: 5,
-  additional_feedback: ''
-};
+console.log(generateDummyUserData(5));
+const feedback = generateDummyUserData(5);
 
 exports.seed = function(knex) {
-  // delete all entries
-  const page_id = process.env.PAGE_ID;
-
   return knex('user_feedback').insert(
     feedback.map((datum) => {
-      // if (!book.rating_qty || !book.avg_rating) {
-      //   book = await getRating(book);
-      // }
-      const { feedback_score, additional_feedback } = datum;
+      const { feedback_score, additional_feedback, email } = datum;
 
       return {
         feedback_score,

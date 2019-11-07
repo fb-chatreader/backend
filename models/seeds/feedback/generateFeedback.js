@@ -10,7 +10,7 @@ function generateDummyUserData(qty) {
   const dummyData = [];
   for (let i = 0; i < qty; i++) {
     DUMMY_DATA.push({
-      feedback_score: getRandomInt(5),
+      feedback_score: getRandomInt(1, 5),
       additional_feedback: LOREM_IPSUM,
       email: 'ireadrillgud@dummydatadumps.nerds'
     });
@@ -18,8 +18,10 @@ function generateDummyUserData(qty) {
   return dummyData;
 }
 
-function getRandomInt(max) {
-  return Math.floor(Math.random() * Math.floor(max));
+function getRandomInt(min, max) {
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 module.exports = generateDummyUserData;
