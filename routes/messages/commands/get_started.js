@@ -6,14 +6,11 @@ module.exports = async function(Event) {
   if (Event.isNewPage()) {
     return [
       {
-        text:
-          'Sorry, this bot is still being created, please visit us again soon!'
+        text: 'Sorry, this bot is still being created, please visit us again soon!'
       }
     ];
   }
-  return Event.isSingleBookPage()
-    ? getSingleBook.call(this, Event)
-    : getMultipleBooks.call(this, Event);
+  return Event.isSingleBookPage() ? getSingleBook.call(this, Event) : getMultipleBooks.call(this, Event);
 };
 
 async function getMultipleBooks(Event) {
