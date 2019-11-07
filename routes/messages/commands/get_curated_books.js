@@ -29,7 +29,6 @@ module.exports = async function(Event) {
         .map(async book => {
             return book = await BookCategories.retrieve({ book_id: book.id }).first();
         });
-    // console.log('userLibraryBooks:', userLibraryBooks);
 
     // Get entries for the user in the user_tracking table:
     const userBookSummariesRead = await UserTracking
@@ -37,7 +36,6 @@ module.exports = async function(Event) {
         .map(async book => {
             return book = await BookCategories.retrieve({ book_id: book.id }).first();
         });
-    // console.log('userBookSummariesRead:', userBookSummariesRead);
 
     // Update the score for each category in userCatScores:
     userCatScores.forEach(cat => {
@@ -52,96 +50,60 @@ module.exports = async function(Event) {
             }
         });
     });
-    // console.log('userCatScores:', userCatScores);
 
     // Sort user categories by score highest to lowest:
     const sortedUserCatScores = userCatScores.sort((a, b) => {
         return b.score - a.score;
     });
+    console.log('sortedUserCatScores:', sortedUserCatScores);
 
-    // *** First attempt at creating curated books array:
+    // *** Build the curated books array:
     // ***************************
-    // const curatedBooks = sortedUserCatScores.map(async cat => {
-    //     const books = await BookCategories.retrieve({ category_id: cat.category_id });
-    //     const sortedBooks = sortBooks(books);
-    //     const filteredBooks = sortedBooks.filter(sb => {
-    //         return userLibraryBooks.some(lb => {
-    //           return lb.id === sb.id;
-    //         });
-    //       });
-    //     return filteredBooks.slice(0, 2);
-    // });
-    // console.log('curatedBooks:', curatedBooks);
-    // ***************************
-
-    // *** Second attempt at curated books array:
-    // ***************************
-    // const curatedBooks = [];
-
-    // for (let i = 0; i < sortedUserCatScores.length; i++) {
-    //     let books = await BookCategories.retrieve({ category_id: sortedUserCatScores[i].category_id });
-    //     let filteredBooks = books.filter(b => {
-    //         return userLibraryBooks.some(lb => {
-    //           return lb.id === b.id;
-    //         });
-    //       });
-    //     let sortedBooks = sortBooks(filteredBooks).slice(0, 5);
-    //     console.log('sortedBooks:', sortedBooks);
-
-    //     const numberOfBooks = [5, 3, 2];
-
-    //     for (let n = 0; n < numberOfBooks[i]; n++) {
-    //         console.log(`${sortedBooks[n]}:`, sortedBooks[n]);
-    //         curatedBooks.push(sortedBooks[n]);
-    //     }
-    // }
-    // console.log('curatedBooks:', curatedBooks);
-    // ***************************
-
     const curatedBooks = [];
-for (let i = 0; i < sortedUserCatScores.length; i++) {
-  const books = await BookCategories.retrieve({
-    category_id: sortedUserCatScores[i].category_id
-  });
 
-  const filteredBooks = books.filter(b =>
-    userLibraryBooks.find(lb => lb.id === b.id)
-  );
-  console.log("FILTERED COUNT: ", filteredBooks.length);
-  const numberOfBooks = [5, 3, 2];
-  curatedBooks.push(...sortBooks(filteredBooks).slice(0, numberOfBooks[i]));
-  console.log("AFTER PUSH: ", curatedBooks)
-}
+    for (let i = 0; i < sortedUserCatScores.length; i++) {
+        let books = await BookCategories.retrieve({ category_id: sortedUserCatScores[i].category_id });
+        let filteredBooks = books.filter(b =>
+                    !userLibraryBooks.find(lb => lb.id === b.id)
+                );
+        let sortedBooks = sortBooks(filteredBooks).slice(0, 5);
 
-console.log('curatedBooks:', curatedBooks);
-    
+        const numberOfBooks = [5, 3, 2];
+
+        for (let n = 0; n < numberOfBooks[i]; n++) {
+            curatedBooks.push(sortedBooks[n]);
+        }
+    }
+    console.log('curatedBooks:', curatedBooks);
+    // ***************************
+
     // *** 
     // Build/populate the book carousel:
     // ***
 
-    // const text = `Would you like to bowse more books?`;
-    // const quickReplies = [];
-    // const options = [
-    //     {
-    //         title: 'Browse books',
-    //         command: 'browse'
-    //     }
-    // ];
+    const text = `Would you like to browse more books?`;
+    const quickReplies = [];
+    const options = [
+        {
+            title: 'Browse books',
+            command: 'browse'
+        }
+    ];
 
-    // options.forEach(opt => {
-    //     const { title, command, category_id } = opt;
+    options.forEach(opt => {
+        const { title, command, category_id } = opt;
 
-    //     quickReplies.push({
-    //         title,
-    //         payload: JSON.stringify({
-    //             command: command.toLowerCase(),
-    //             category_id
-    //         })
-    //     });
-    // });
+        quickReplies.push({
+            title,
+            payload: JSON.stringify({
+                command: command.toLowerCase(),
+                category_id
+            })
+        });
+    });
 
-    // return [
-    //     this.sendTemplate('Book', Event, books),
-    //     this.sendTemplate('QuickReply', text, quickReplies)
-    // ];
+    return [
+        this.sendTemplate('Book', Event, curatedBooks),
+        this.sendTemplate('QuickReply', text, quickReplies)
+    ];
 };
