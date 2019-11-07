@@ -9,7 +9,7 @@ const LOREM_IPSUM =
 function generateDummyUserData(qty) {
   const dummyData = [];
   for (let i = 0; i < qty; i++) {
-    DUMMY_DATA.push({
+    dummyData.push({
       feedback_score: getRandomInt(1, 5),
       additional_feedback: LOREM_IPSUM,
       email: 'ireadrillgud@dummydatadumps.nerds'
