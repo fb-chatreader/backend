@@ -29,6 +29,14 @@ module.exports = async function(Event) {
     })
   });
 
+  replies.push({
+    title: 'Curated Books',
+    payload: JSON.stringify({
+      command: 'get_curated_books',
+      user_id
+    })
+  });
+
   const text = 'Which category would you like to browse?';
   return this.sendTemplate('QuickReply', text, replies);
 };

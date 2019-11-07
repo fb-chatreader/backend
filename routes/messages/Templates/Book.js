@@ -41,7 +41,7 @@ module.exports = async (Event, books) => {
               lib => lib.id === parseInt(book_id, 10)
             );
 
-            if (awaitEvent.isUserOnboarded()) {
+            if (await Event.isUserOnboarded()) {
               // Temporary measure.  Don't let the user save to their
               // library if they aren't onboarded
               buttons.push({
