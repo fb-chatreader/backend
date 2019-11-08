@@ -18,6 +18,8 @@ module.exports = (text, replies) => {
 
   return {
     text,
-    quick_replies: replies.map(qr => ({ content_type: 'text', ...qr }))
+    quick_replies: replies
+      .slice(0, 13)
+      .map(qr => ({ content_type: 'text', ...qr }))
   };
 };
