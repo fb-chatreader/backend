@@ -228,6 +228,10 @@ module.exports = class WebhookEvent {
   }
 
   canUserStartBook() {
+    if (process.env.FREE_MODE) {
+      return true;
+    }
+    
     const { user } = this;
     if (!user) {
       throw new Error(
