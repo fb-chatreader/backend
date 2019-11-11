@@ -18,9 +18,17 @@ function retrieve(filter) {
 }
 
 function add(category) {
-  return db(`user_categories`).insert(category, [ '*' ]).then((u) => retrieve({ 'uc.id': u[0].id }).first());
+  console.log('SAVING: ', category);
+  return db(`user_categories`)
+    .insert(category, ['*'])
+    .then(u => {
+      console.log('SAVED: u');
+      return retrieve({ 'uc.id': u[0].id }).first();
+    });
 }
 
 function remove(filter) {
-  return db('user_categories').where(filter).del();
+  return db('user_categories')
+    .where(filter)
+    .del();
 }

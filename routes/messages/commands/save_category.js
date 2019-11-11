@@ -8,7 +8,7 @@ module.exports = async function(Event) {
   console.log('USER CATEGORIES: ', userCategories);
   if (!userCategories.find(c => c.category_id === category_id)) {
     console.log('ADDING CATEGORY: ', category_id);
-    await UserCategories.add({ user_id, category_id });
+    console.log(await UserCategories.add({ user_id, category_id }));
     console.log('SAVED');
   }
   console.log('ROUTING TO: ', Event.redirect);
