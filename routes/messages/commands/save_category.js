@@ -1,4 +1,5 @@
 module.exports = async function(Event) {
+  console.log('Starting Command');
   const { user_id, category_id } = Event;
   console.log('EVENT: ', event);
   const [UserCategories] = this.withDBs('userCategories');
