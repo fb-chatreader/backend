@@ -1,7 +1,7 @@
 module.exports = async function(Event) {
-  console.log('Starting Command');
+  console.log('Starting Command', Event);
+  console.log('Data: ', Event.user_id, Event.category_id);
   const { user_id, category_id } = Event;
-  console.log('EVENT: ', event);
   const [UserCategories] = this.withDBs('userCategories');
   console.log('DB: ', UserCategories);
   const userCategories = await UserCategories.retrieve({ user_id });
