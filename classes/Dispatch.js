@@ -161,6 +161,7 @@ class Dispatch {
       ? this._findCommand(Event.override)
       : Event.validatedCommand;
     console.log('Running: ', command, ' Original: ', Event.command);
+    console.log('Command: ', this.commands[command]);
     return await this.commands[command].call(this, Event);
   }
 
